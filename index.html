@@ -187,8 +187,8 @@
 
 
 /* ---------- Base ---------- */
-html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
-:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; background: var(--bg); }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); background: var(--bg); }
 *, *::before, *::after { box-sizing: border-box; }
 h1, h2, h3, h4, h5, p, ul, ol { margin: 0; }
 body {
@@ -205,7 +205,7 @@ body::before {
   position: fixed;
   inset: 0 0 auto;
   height: env(safe-area-inset-top, 0px);
-  z-index: 10;
+  z-index: 105;
   background: var(--bg);
 }
 button, input, textarea, select { font-family: inherit; }
@@ -3942,6 +3942,17 @@ function pickSubject(name) {
 }
 
 const THEME_STORAGE_KEY = "kaoyan_201_theme";
+function syncMetaThemeColor(mode) {
+  const isSysDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const eff = (mode === "light" || mode === "sepia" || mode === "dark") ? mode : (isSysDark ? "dark" : "light");
+  const colorMap = { light: "#f3f4f6", sepia: "#f5f1e8", dark: "#0f1114" };
+  const hex = colorMap[eff] || "#f3f4f6";
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
+    m.setAttribute("content", hex);
+  });
+  document.documentElement.style.backgroundColor = hex;
+  if (document.body) document.body.style.backgroundColor = hex;
+}
 function applyThemeAttr(mode) {
   const root = document.documentElement;
   if (mode === "light" || mode === "sepia" || mode === "dark") {
@@ -3949,8 +3960,16 @@ function applyThemeAttr(mode) {
   } else {
     root.removeAttribute("data-theme");
   }
+  syncMetaThemeColor(mode);
   document.querySelectorAll("#theme-picker-grid .theme-btn").forEach(btn => {
     btn.classList.toggle("active", btn.getAttribute("data-theme-opt") === mode);
+  });
+}
+if (window.matchMedia) {
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+    let cur = "auto";
+    try { cur = localStorage.getItem(THEME_STORAGE_KEY) || "auto"; } catch (e) {}
+    if (cur === "auto") syncMetaThemeColor("auto");
   });
 }
 function setAppTheme(mode) {
