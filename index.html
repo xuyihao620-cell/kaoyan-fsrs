@@ -938,10 +938,49 @@ body {
     min-height: 52px;
   }
 }
+
+body.mini-widget-mode {
+  padding: 6px 8px;
+}
+body.mini-widget-mode .topbar,
+body.mini-widget-mode .legend-panel {
+  display: none !important;
+}
+body.mini-widget-mode .stage-wrapper {
+  margin: 0 auto;
+  max-width: 520px;
+}
+body.mini-widget-mode .stage-front {
+  padding: 18px 16px 14px;
+}
+body.mini-widget-mode .stage-word {
+  font-size: 30px;
+}
+.widget-exit-pill {
+  display: none;
+  position: fixed;
+  bottom: 8px;
+  right: 10px;
+  z-index: 900;
+  font-size: 11.5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--muted);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+body.mini-widget-mode .widget-exit-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
 </style>
 </head>
 
 <body>
+<button class="widget-exit-pill" onclick="toggleMiniWidgetMode()" title="退出桌面迷你挂件模式 (快捷键 W)">❐ 退出挂件 (W)</button>
 
 <div class="topbar">
   <div class="tb-left">
@@ -1063,6 +1102,20 @@ body {
     <div class="opt-sec">
       <h4><span>FSRS 模拟器 (实验性) — 当前参数下连续 5 次复习的动态间隔与稳定期 <i>S</i> 推演</span></h4>
       <div id="sim-preview-box"></div>
+    </div>
+
+    <div class="opt-sec" style="border-color:rgba(99,102,241,0.35);background:rgba(99,102,241,0.04);">
+      <h4>
+        <span>📱 桌面小组件中心（iPhone / iPad 原生桌面组件 &amp; Mac 迷你悬浮窗）</span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="filter-btn active" onclick="copyScriptableWidgetCode()">📋 一键复制 iPhone/iPad 小组件代码</button>
+          <button class="action-btn" onclick="closeFsrsModal(); toggleMiniWidgetMode();">🪟 切换电脑迷你挂件模式 (快捷键 W)</button>
+        </div>
+      </h4>
+      <div class="opt-sub" style="margin-bottom:0;">
+        • <b>iPhone / iPad 手机桌面小组件</b>：在 App Store 免费下载 <code>Scriptable</code> ➔ 打开后点右上角 <code>+</code> 粘贴刚刚复制的代码 ➔ 在手机桌面长按添加 <code>Scriptable</code>（中号）小组件并选择该脚本。每次亮屏自动显示<b>今日待复习进度 + 1 张当前最该背的考研核心词卡</b>，点击小组件直接跳进该单词抽卡台！<br>
+        • <b>Mac 电脑桌面悬浮挂件</b>：按键盘 <code>W</code> 键（或点击上方按钮）再把浏览器窗口缩到屏幕角落，即可变身为无顶栏的极简桌面背词贴纸。
+      </div>
     </div>
 
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:14px;">
@@ -3138,11 +3191,202 @@ function speakWord(wStr, ev, isAuto) {
   }
 }
 
+function toggleMiniWidgetMode() {
+  const isMini = document.body.classList.toggle("mini-widget-mode");
+  if (isMini && viewMode !== "stage") {
+    setViewMode("stage");
+  }
+  showToast(isMini ? "已开启桌面迷你挂件模式（按 W 键或点右下角退出）" : "已恢复标准完整视图");
+}
+
+function applyUrlDeepLink() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const qWord = (params.get("word") || "").trim();
+    const qWidget = params.get("widget");
+    if (qWidget === "1") {
+      document.body.classList.add("mini-widget-mode");
+    }
+    if (qWord && wordByName[qWord]) {
+      const wObj = wordByName[qWord];
+      const targetCore = wObj.isCore ? wObj.w : (wObj.parent || wObj.w);
+      forcedStageWord = targetCore;
+      activeWord = targetCore;
+      viewMode = "stage";
+      isStageFlipped = true;
+      if (window.history && window.history.replaceState) {
+        const cleanUrl = window.location.pathname + (qWidget === "1" ? "?widget=1" : "");
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+    }
+  } catch (e) {}
+}
+
+function copyScriptableWidgetCode() {
+  const tokenStr = _dtk();
+  const code = `// Variables used by Scriptable.
+// icon-color: deep-purple; icon-glyph: book-open;
+// 考研英语一 5530 · FSRS-6 智能桌面小组件 (iPhone / iPad)
+const APP_URL = "https://xuyihao620-cell.github.io/kaoyan-fsrs/";
+const WORDS_URL = APP_URL + "widget_words.json";
+const SYNC_API = "https://api.github.com/repos/${CLOUD_SYNC_CFG.owner}/${CLOUD_SYNC_CFG.repo}/contents/${CLOUD_SYNC_CFG.path}";
+const GH_TOKEN = "${tokenStr}";
+
+const fm = FileManager.local();
+const cachePath = fm.joinPath(fm.documentsDirectory(), "kaoyan_5530_widget_words.json");
+
+async function loadWords() {
+  if (fm.fileExists(cachePath)) {
+    try { return JSON.parse(fm.readString(cachePath)); } catch (e) {}
+  }
+  const req = new Request(WORDS_URL);
+  req.timeoutInterval = 10;
+  const data = await req.loadJSON();
+  fm.writeString(cachePath, JSON.stringify(data));
+  return data;
+}
+
+async function loadSyncState() {
+  try {
+    const req = new Request(SYNC_API);
+    req.headers = {
+      "Authorization": "Bearer " + GH_TOKEN,
+      "Accept": "application/vnd.github+json",
+      "Cache-Control": "no-cache"
+    };
+    req.timeoutInterval = 8;
+    const meta = await req.loadJSON();
+    if (meta && meta.content) {
+      const raw = Data.fromBase64String(meta.content.replace(/\\s/g, "")).toRawString();
+      return JSON.parse(raw);
+    }
+  } catch (e) {}
+  return { fsrsState: {}, todayCount: 0, date: "" };
+}
+
+const words = await loadWords();
+const sync = await loadSyncState();
+const stMap = sync.fsrsState || {};
+const now = Date.now();
+const todayStr = new Date().toISOString().slice(0, 10);
+const todayCount = (sync.date === todayStr) ? (sync.todayCount || 0) : 0;
+
+let dueList = [];
+let newHighList = [];
+let learnedCnt = 0;
+
+for (const w of words) {
+  const st = stMap[w.w];
+  if (st && st.reps > 0) {
+    learnedCnt++;
+    if (st.due && st.due <= now) dueList.push({ w, st });
+  } else if (w.t === "S3" || w.t === "S2") {
+    newHighList.push(w);
+  }
+}
+
+let pick = null;
+let badgeTxt = "高频待学";
+let badgeColor = new Color("#6366f1");
+
+if (dueList.length > 0) {
+  dueList.sort((a, b) => (a.st.due || 0) - (b.st.due || 0));
+  const pool = dueList.slice(0, Math.min(8, dueList.length));
+  pick = pool[Math.floor(Math.random() * pool.length)].w;
+  badgeTxt = "待复习 · 已刷 " + (stMap[pick.w]?.reps || 1) + " 次";
+  badgeColor = new Color("#ef4444");
+} else if (newHighList.length > 0) {
+  const pool = newHighList.slice(0, Math.min(25, newHighList.length));
+  pick = pool[Math.floor(Math.random() * pool.length)];
+} else {
+  pick = words[Math.floor(Math.random() * words.length)];
+}
+
+const wg = new ListWidget();
+wg.backgroundColor = Color.dynamic(new Color("#faf7f0"), new Color("#151922"));
+wg.setPadding(12, 14, 12, 14);
+wg.url = APP_URL + "?word=" + encodeURIComponent(pick.w);
+
+const topRow = wg.addStack();
+topRow.layoutHorizontally();
+topRow.centerAlignContent();
+
+const statTxt = topRow.addText("今日 " + todayCount + " 卡 · 待复习 " + dueList.length + " · 已学 " + learnedCnt);
+statTxt.font = Font.mediumSystemFont(11);
+statTxt.textColor = Color.dynamic(new Color("#6e665c"), new Color("#94a3b8"));
+topRow.addSpacer();
+
+const tagTxt = topRow.addText(badgeTxt);
+tagTxt.font = Font.boldSystemFont(10.5);
+tagTxt.textColor = badgeColor;
+
+wg.addSpacer(6);
+
+const wordRow = wg.addStack();
+wordRow.layoutHorizontally();
+wordRow.centerAlignContent();
+const dotColors = { S3: "#ef4444", S2: "#f97316", S1: "#10b981", S0: "#94a3b8" };
+const dot = wordRow.addText("● ");
+dot.font = Font.boldSystemFont(14);
+dot.textColor = new Color(dotColors[pick.t] || "#ef4444");
+
+const wTitle = wordRow.addText(pick.w + (pick.star ? (pick.star === 2 ? " ✦✦" : " ✦") : ""));
+wTitle.font = Font.boldSystemFont(22);
+wTitle.textColor = Color.dynamic(new Color("#221f1b"), new Color("#e6edf3"));
+wordRow.addSpacer();
+
+const packTag = wordRow.addText(pick.p);
+packTag.font = Font.mediumMonospacedSystemFont(11);
+packTag.textColor = Color.dynamic(new Color("#6e665c"), new Color("#94a3b8"));
+
+wg.addSpacer(4);
+
+const meanStr = pick.c + (pick.po ? ("  " + pick.po) : "");
+const meanTxt = wg.addText(meanStr);
+meanTxt.font = Font.mediumSystemFont(13);
+meanTxt.textColor = Color.dynamic(new Color("#221f1b"), new Color("#e6edf3"));
+meanTxt.lineLimit = 2;
+
+wg.addSpacer(4);
+
+if (pick.l2) {
+  const cleanL2 = pick.l2.replace(/\\*\\*/g, "");
+  const l2Txt = wg.addText("💡 " + cleanL2);
+  l2Txt.font = Font.systemFont(11.5);
+  l2Txt.textColor = Color.dynamic(new Color("#8a5000"), new Color("#fbbf24"));
+  l2Txt.lineLimit = 2;
+}
+
+Script.setWidget(wg);
+if (config.runsInApp) wg.presentMedium();
+Script.complete();`;
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(() => {
+      showToast("✅ 已复制 iPhone/iPad 桌面小组件代码！打开 Scriptable 粘贴即可使用");
+    }).catch(() => {
+      const area = document.getElementById("json-paste-area");
+      const panel = document.getElementById("json-paste-panel");
+      if (area && panel) {
+        panel.style.display = "block";
+        area.value = code;
+        area.select();
+        showToast("已生成小组件代码，请全选下方文本框复制");
+      }
+    });
+  }
+}
+
 document.addEventListener("keydown", e => {
   if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT")) return;
   if (e.key === "Escape") {
     closePackPopover();
     closeFsrsModal();
+    return;
+  }
+  if (e.key.toLowerCase() === "w" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    e.preventDefault();
+    toggleMiniWidgetMode();
     return;
   }
   if (e.key.toLowerCase() === "f" && !e.ctrlKey && !e.metaKey && !e.altKey) {
@@ -3191,6 +3435,7 @@ document.addEventListener("keydown", e => {
 });
 
 loadState();
+applyUrlDeepLink();
 updateVoiceBtnUI();
 populatePackDropdown();
 renderAll();
