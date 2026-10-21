@@ -1703,8 +1703,8 @@ function formatDueRemaining(st, r) {
 function formatMemBar(wStr) {
   const st = fsrsState[wStr];
   if (!st || !st.reps || st.reps <= 0) {
-    const html = `<div class="mem-wrap" title="尚未学习此卡片"><span class="mem-label">未学</span><div class="mem-track"><div class="mem-fill" style="width:0%"></div></div></div>`;
-    return { isNew: true, pct: 0, cls: "", label: "未学", html };
+    const html = `<div class="mem-wrap" title="尚未学习此卡片"><span class="mem-label">0次</span><div class="mem-track"><div class="mem-fill" style="width:0%"></div></div></div>`;
+    return { isNew: true, pct: 0, cls: "", label: "0次", html };
   }
   const r = getWordR(wStr);
   const pct = Math.max(2, Math.min(100, Math.round((r || 0) * 100)));
@@ -1714,19 +1714,15 @@ function formatMemBar(wStr) {
   else if (pct < 95) cls = "c3";
 
   const dueTxt = formatDueRemaining(st, r);
-  let label = "";
+  const label = `已刷 ${st.reps} 次 · ${pct}% · ${dueTxt}`;
   if (st.state === "learning") {
-    label = `学习中 · ${dueTxt}`;
     cls = (st.grade === 1) ? "c1" : "c2";
   } else if (st.state === "relearning") {
-    label = `重学中 · ${dueTxt}`;
     cls = "c1";
-  } else {
-    label = `R ${pct}% · ${dueTxt}`;
-    if (dueTxt === "待复习" && cls === "c4") cls = "c2";
+  } else if (dueTxt === "待复习" && cls === "c4") {
+    cls = "c2";
   }
-  const titleTip = `稳定性 S=${(st.S || 0).toFixed(2)}d | 难度 D=${(st.D || 0).toFixed(2)} | 复习 ${st.reps} 次 | 实时留存 R=${pct}%`;
-  const html = `<div class="mem-wrap" title="${titleTip}"><span class="mem-label ${cls}">${label}</span><div class="mem-track"><div class="mem-fill ${cls}" style="width:${pct}%"></div></div></div>`;
+  const html = `<div class="mem-wrap"><span class="mem-label ${cls}">${label}</span><div class="mem-track"><div class="mem-fill ${cls}" style="width:${pct}%"></div></div></div>`;
   return { isNew: false, pct, cls, label, html };
 }
 
@@ -1945,15 +1941,6 @@ function renderStageView() {
   const starStr = wObj.star === 2 ? "✦✦" : (wObj.star === 1 ? "✦" : "");
   const mem = formatMemBar(wObj.w);
   const l2Html = (wObj.l2 || "").replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-  const st = fsrsState[wObj.w];
-  let qTypeBadge = "";
-  if (!st || !st.reps || st.reps <= 0) {
-    qTypeBadge = `<span class="pack-id" style="color:var(--accent);border-color:rgba(99,102,241,0.35);background:rgba(99,102,241,0.08);">新词待学</span>`;
-  } else if (st.state === "learning" || st.state === "relearning") {
-    qTypeBadge = `<span class="pack-id" style="color:var(--c2);border-color:rgba(249,115,22,0.35);background:rgba(249,115,22,0.08);">步长巩固</span>`;
-  } else if (isWordDue(wObj.w)) {
-    qTypeBadge = `<span class="pack-id" style="color:var(--c1);border-color:rgba(239,68,68,0.35);background:rgba(239,68,68,0.08);">到期复习</span>`;
-  }
 
   stageEl.innerHTML = `<div class="stage-card">
     <div class="stage-header">
@@ -1963,7 +1950,6 @@ function renderStageView() {
         <span class="tier-badge"><span class="dot ${dotCls}"></span> ${badgeLabel}</span>
       </div>
       <div class="sh-right">
-        ${qTypeBadge}
         <span id="stage-mem-${wObj.w}">${mem.html}</span>
         <span class="pack-id">待刷 ${idx + 1} / ${flat.length}</span>
       </div>
@@ -1988,7 +1974,6 @@ function renderStageView() {
         <div class="sb-layer2">
           <div>${l2Html}</div>
         </div>
-        <div class="sb-meta">${formatCardMetaDiagnostic(wObj.w)}</div>
         ${renderRatingButtonsHTML(wObj.w)}
       </div>
     `}
@@ -2027,10 +2012,7 @@ function renderCardHTML(wObj) {
       </div>
       <div class="cb-layer3">
         ${renderRatingButtonsHTML(wObj.w)}
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-          <span id="meta-${wObj.w}" style="font-size:11.5px;color:var(--muted);font-family:monospace;">${formatCardMetaDiagnostic(wObj.w)}</span>
-          <button class="action-btn" onclick="jumpToStageCard('${wObj.w}', event)">在抽卡台中打开</button>
-        </div>
+        <button class="action-btn" onclick="jumpToStageCard('${wObj.w}', event)">在抽卡台中打开</button>
       </div>
     </div>
   </div>`;
