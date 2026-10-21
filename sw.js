@@ -1,4 +1,4 @@
-const CACHE_NAME = "kaoyan-5530-fsrs-v18";
+const CACHE_NAME = "kaoyan-5530-fsrs-v19";
 const AUDIO_CACHE = "kaoyan-5530-audio-v1";
 const ASSETS = [
   "./",
@@ -11,7 +11,11 @@ const ASSETS = [
 self.addEventListener("install", event => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then(cache =>
+      Promise.all(ASSETS.map(url => fetch(new Request(url, { cache: "no-cache" })).then(resp => {
+        if (resp && resp.status === 200) return cache.put(url, resp);
+      })))
+    )
   );
 });
 
@@ -44,8 +48,10 @@ self.addEventListener("fetch", event => {
     );
     return;
   }
+  const isDoc = event.request.mode === "navigate" || url.pathname.endsWith("/") || url.pathname.endsWith(".html");
+  const fetchOpts = isDoc ? { cache: "no-cache" } : {};
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, fetchOpts)
       .then(resp => {
         if (resp && resp.status === 200 && event.request.method === "GET") {
           const clone = resp.clone();
