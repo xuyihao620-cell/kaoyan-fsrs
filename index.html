@@ -767,6 +767,48 @@ body {
   color: var(--c1);
   border-color: rgba(184, 84, 80, 0.55);
 }
+.spk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 17px;
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: all 0.14s ease;
+  vertical-align: middle;
+  line-height: 1;
+}
+.spk-btn:hover, .spk-btn:active {
+  color: var(--text);
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+  transform: scale(1.06);
+}
+.deriv-chip.clickable, .deriv-w.clickable {
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 0 3px;
+  margin: 0 -3px;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.deriv-chip.clickable:hover, .deriv-w.clickable:hover {
+  background: var(--surface-hover);
+  color: var(--c1);
+}
+.spk-mini {
+  font-style: normal;
+  font-size: 0.72em;
+  opacity: 0.55;
+  margin-left: 2px;
+  vertical-align: 1px;
+}
+.deriv-w.clickable:hover .spk-mini {
+  opacity: 1;
+}
 @media (max-width: 680px) {
   body {
     padding: max(8px, env(safe-area-inset-top)) 10px max(28px, env(safe-area-inset-bottom));
@@ -849,6 +891,7 @@ body {
     <button class="filter-btn" data-filter="high" onclick="setFilter('high')">[高频优先]</button>
     <button class="filter-btn" data-filter="poly" onclick="setFilter('poly')">[僻义 ✦]</button>
     <input type="text" id="search-box" class="search-input" placeholder="搜索单词/词根/释义..." oninput="onSearch(this.value)">
+    <button class="action-btn" id="btn-voice-mode" onclick="cycleVoiceMode()" title="切换翻面自动发音：美音 / 英音 / 静音（快捷键 V 切换，R 重读当前词）">[🔊 美音]</button>
     <button class="action-btn" id="btn-undo" onclick="undoLastRating()" disabled title="撤销上一次评分 (Ctrl+Z / Cmd+Z)">[↶ 撤销]</button>
     <button class="action-btn sync-btn" id="btn-cloud-sync" onclick="cloudSyncPullAndMerge(true)" title="点击立即与 GitHub 私密云账本双向无损同步（Mac 与 iPhone 实时互通）">[☁️ 云同步]</button>
     <button class="action-btn" id="btn-fullscreen" onclick="toggleZenFullscreen()" title="切换全屏无边框沉浸模式 (快捷键 F)">[⛶ 全屏]</button>
@@ -1709,7 +1752,7 @@ function renderFrontDerivsHTML(wStr, isStage) {
   const chips = chList.map(cw => {
     const cObj = wordByName[cw];
     const dotCls = cObj ? tierToDotClass(cObj.t) : "c4";
-    return `<span class="deriv-chip"><span class="dot ${dotCls}"></span><span>${cw}</span></span>`;
+    return `<span class="deriv-chip clickable" onclick="speakWord('${cw}', event, false)" title="点击朗读 ${cw}"><span class="dot ${dotCls}"></span><span>${cw}</span></span>`;
   }).join(`<span class="deriv-sep">·</span>`);
   if (isStage) {
     return `<div class="stage-deriv"><span class="deriv-arrow">↳</span>${chips}</div>`;
@@ -1751,7 +1794,7 @@ function renderLayer1HTML(wObj, isStage) {
         return `<div class="${isStage ? "sb-deriv-line" : "cb-deriv-line"}">
           <span class="deriv-arrow">↳</span>
           <span class="dot ${dotCls}" style="width:${dotSize};height:${dotSize};top:-1px;"></span>
-          <span class="deriv-w">${cObj.w}</span>
+          <span class="deriv-w clickable" onclick="speakWord('${cObj.w}', event, false)" title="点击朗读 ${cObj.w}">${cObj.w}<span class="spk-mini">🔊</span></span>
           <span class="deriv-c">${formatMeaningLineHTML(cObj.c)}</span>
         </div>`;
       }).join("") +
@@ -1842,6 +1885,7 @@ function renderStageView() {
         <span class="dot ${dotCls}" style="width:12px;height:12px;top:-4px;"></span>
         <span class="stage-word">${wObj.w}</span>
         ${starStr ? `<span class="stage-star">${starStr}</span>` : ""}
+        <button class="spk-btn" onclick="speakWord('${wObj.w}', event, false)" title="点击朗读 ${wObj.w} (快捷键 R)">🔊</button>
       </div>
       ${renderFrontDerivsHTML(wObj.w, true)}
     </div>
@@ -1866,6 +1910,7 @@ function renderStageView() {
     <button class="action-btn" onclick="stepStageCard(-1)" ${idx <= 0 ? "disabled" : ""}>[‹ 上一词 (←)]</button>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
       <button class="action-btn" onclick="flipStageCard()">[Space 翻面 / 收起]</button>
+      <button class="action-btn" onclick="speakWord('${wObj.w}', event, false)">[🔊 重读 (R)]</button>
       <button class="action-btn" onclick="undoLastRating()" ${undoStack.length === 0 ? "disabled" : ""}>[↶ 撤销打分]</button>
       <button class="action-btn" onclick="jumpToListCard('${wObj.w}')">[在列表模式中定位]</button>
     </div>
@@ -1884,6 +1929,7 @@ function renderCardHTML(wObj) {
         <span class="dot ${dotCls}"></span>
         <strong class="word">${wObj.w}</strong>
         ${starStr ? `<span class="star">${starStr}</span>` : ""}
+        <button class="spk-btn" style="font-size:13.5px;padding:1px 4px;" onclick="speakWord('${wObj.w}', event, false)" title="点击朗读 ${wObj.w}">🔊</button>
         ${renderFrontDerivsHTML(wObj.w, false)}
       </div>
       <div class="cf-right" id="mem-${wObj.w}">${mem.html}</div>
@@ -2047,6 +2093,9 @@ function setViewMode(mode) {
 function flipStageCard() {
   isStageFlipped = !isStageFlipped;
   renderStageView();
+  if (isStageFlipped && activeWord) {
+    speakWord(activeWord, null, true);
+  }
 }
 
 function stepStageCard(delta) {
@@ -2072,6 +2121,7 @@ function jumpToStageCard(wStr, ev) {
   activeWord = wStr;
   isStageFlipped = true;
   setViewMode("stage");
+  speakWord(wStr, null, true);
 }
 
 function togglePack(pid) {
@@ -2090,12 +2140,14 @@ function toggleCard(wStr) {
   const prevEl = document.getElementById("card-" + activeWord);
   const targetEl = document.getElementById("card-" + wStr);
   if (activeWord === wStr && targetEl) {
-    targetEl.classList.toggle("active");
+    const isNowOpen = targetEl.classList.toggle("active");
+    if (isNowOpen) speakWord(wStr, null, true);
     return;
   }
   if (prevEl) prevEl.classList.remove("active");
   activeWord = wStr;
   if (targetEl) targetEl.classList.add("active");
+  speakWord(wStr, null, true);
 }
 
 function applyRatingToWord(wStr, grade, nowMs) {
@@ -2768,6 +2820,135 @@ if ("serviceWorker" in navigator && (location.protocol === "https:" || location.
   });
 }
 
+// ============================================================================
+// Smart Dual-Engine Pronunciation System (Youdao Native Audio + iOS/Mac Offline Web Speech)
+// ============================================================================
+const VOICE_MODE_KEY = "kaoyan_201_voice_mode";
+let voiceMode = "us"; // 'us' | 'uk' | 'off'
+let lastActiveAccent = "us";
+const _sharedAudio = (typeof Audio !== "undefined") ? new Audio() : null;
+let _audioFallbackTimer = null;
+
+try {
+  const savedVm = localStorage.getItem(VOICE_MODE_KEY);
+  if (savedVm === "us" || savedVm === "uk" || savedVm === "off") {
+    voiceMode = savedVm;
+    if (savedVm === "us" || savedVm === "uk") lastActiveAccent = savedVm;
+  }
+} catch (e) {}
+
+function updateVoiceBtnUI() {
+  const btn = document.getElementById("btn-voice-mode");
+  if (!btn) return;
+  if (voiceMode === "us") {
+    btn.textContent = "[🔊 美音]";
+    btn.style.color = "";
+  } else if (voiceMode === "uk") {
+    btn.textContent = "[🔊 英音]";
+    btn.style.color = "";
+  } else {
+    btn.textContent = "[🔇 静音]";
+    btn.style.color = "var(--muted)";
+  }
+}
+
+function cycleVoiceMode() {
+  if (voiceMode === "us") {
+    voiceMode = "uk";
+    lastActiveAccent = "uk";
+    showToast("🔊 已切换为：英式真人发音（翻面自动朗读）");
+  } else if (voiceMode === "uk") {
+    voiceMode = "off";
+    showToast("🔇 已关闭翻面自动发音（点击 🔊 或按 R 键仍可手动点读）");
+  } else {
+    voiceMode = "us";
+    lastActiveAccent = "us";
+    showToast("🔊 已切换为：美式真人发音（翻面自动朗读）");
+  }
+  try { localStorage.setItem(VOICE_MODE_KEY, voiceMode); } catch (e) {}
+  updateVoiceBtnUI();
+  if (voiceMode !== "off" && activeWord) {
+    speakWord(activeWord, null, false);
+  }
+}
+
+function speakFallbackWebSpeech(wStr, accent) {
+  if (!("speechSynthesis" in window)) return;
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(wStr);
+    u.lang = (accent === "uk") ? "en-GB" : "en-US";
+    u.rate = 0.94;
+    const voices = window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : [];
+    if (voices && voices.length > 0) {
+      const targetLang = (accent === "uk") ? "en-GB" : "en-US";
+      const pref = voices.find(v => v.lang && v.lang.replace("_", "-") === targetLang && (v.name.includes("Samantha") || v.name.includes("Daniel") || v.name.includes("Ava") || v.localService))
+                || voices.find(v => v.lang && v.lang.replace("_", "-").startsWith(targetLang));
+      if (pref) u.voice = pref;
+    }
+    window.speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+function speakWord(wStr, ev, isAuto) {
+  if (ev) ev.stopPropagation();
+  if (!wStr) return;
+  if (isAuto && voiceMode === "off") return;
+
+  const accent = (voiceMode === "uk") ? "uk" : ((voiceMode === "us") ? "us" : lastActiveAccent);
+  const ydType = (accent === "uk") ? 1 : 2;
+  const audioUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(wStr)}&type=${ydType}`;
+
+  if (_audioFallbackTimer) {
+    clearTimeout(_audioFallbackTimer);
+    _audioFallbackTimer = null;
+  }
+
+  if (!navigator.onLine || !_sharedAudio) {
+    speakFallbackWebSpeech(wStr, accent);
+    return;
+  }
+
+  try {
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    _sharedAudio.pause();
+    _sharedAudio.src = audioUrl;
+    let playedOk = false;
+    _sharedAudio.onplaying = () => {
+      playedOk = true;
+      if (_audioFallbackTimer) {
+        clearTimeout(_audioFallbackTimer);
+        _audioFallbackTimer = null;
+      }
+    };
+    _sharedAudio.onerror = () => {
+      if (_audioFallbackTimer) {
+        clearTimeout(_audioFallbackTimer);
+        _audioFallbackTimer = null;
+      }
+      if (!playedOk) speakFallbackWebSpeech(wStr, accent);
+    };
+    _audioFallbackTimer = setTimeout(() => {
+      if (!playedOk) {
+        try { _sharedAudio.pause(); } catch (e) {}
+        speakFallbackWebSpeech(wStr, accent);
+      }
+    }, 1600);
+    const playPromise = _sharedAudio.play();
+    if (playPromise && typeof playPromise.catch === "function") {
+      playPromise.catch(() => {
+        if (_audioFallbackTimer) {
+          clearTimeout(_audioFallbackTimer);
+          _audioFallbackTimer = null;
+        }
+        if (!playedOk) speakFallbackWebSpeech(wStr, accent);
+      });
+    }
+  } catch (e) {
+    speakFallbackWebSpeech(wStr, accent);
+  }
+}
+
 document.addEventListener("keydown", e => {
   if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT")) return;
   if (e.key === "Escape") {
@@ -2777,6 +2958,16 @@ document.addEventListener("keydown", e => {
   if (e.key.toLowerCase() === "f" && !e.ctrlKey && !e.metaKey && !e.altKey) {
     e.preventDefault();
     toggleZenFullscreen();
+    return;
+  }
+  if (e.key.toLowerCase() === "r" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    e.preventDefault();
+    if (activeWord) speakWord(activeWord, null, false);
+    return;
+  }
+  if (e.key.toLowerCase() === "v" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    e.preventDefault();
+    cycleVoiceMode();
     return;
   }
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
@@ -2810,6 +3001,7 @@ document.addEventListener("keydown", e => {
 });
 
 loadState();
+updateVoiceBtnUI();
 populatePackDropdown();
 renderAll();
 cloudSyncPullAndMerge(false);
