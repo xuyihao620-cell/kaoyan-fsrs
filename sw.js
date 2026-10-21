@@ -1,4 +1,4 @@
-const CACHE_NAME = "kaoyan-5530-fsrs-v10";
+const CACHE_NAME = "kaoyan-5530-fsrs-v11";
 const AUDIO_CACHE = "kaoyan-5530-audio-v1";
 const ASSETS = [
   "./",

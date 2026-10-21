@@ -3377,19 +3377,43 @@ Script.setWidget(wg);
 if (config.runsInApp) wg.presentMedium();
 Script.complete();`;
 
+  const fallbackCopy = (txt) => {
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = txt;
+      ta.style.position = "fixed";
+      ta.style.top = "-9999px";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      if (ok) {
+        showToast("✅ 已复制 iPhone/iPad 桌面小组件代码！打开 Scriptable 粘贴即可使用");
+        return true;
+      }
+    } catch (e) {}
+    const area = document.getElementById("json-paste-area");
+    const panel = document.getElementById("json-paste-panel");
+    if (area && panel) {
+      panel.style.display = "block";
+      area.value = txt;
+      area.focus();
+      area.select();
+      showToast("已在下方文本框生成小组件代码，请全选复制");
+    }
+    return false;
+  };
+
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(code).then(() => {
       showToast("✅ 已复制 iPhone/iPad 桌面小组件代码！打开 Scriptable 粘贴即可使用");
     }).catch(() => {
-      const area = document.getElementById("json-paste-area");
-      const panel = document.getElementById("json-paste-panel");
-      if (area && panel) {
-        panel.style.display = "block";
-        area.value = code;
-        area.select();
-        showToast("已生成小组件代码，请全选下方文本框复制");
-      }
+      fallbackCopy(code);
     });
+  } else {
+    fallbackCopy(code);
   }
 }
 
