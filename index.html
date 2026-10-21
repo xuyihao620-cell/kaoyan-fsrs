@@ -2908,6 +2908,9 @@ function getCloudSyncCreds() {
 
 let _cloudPushTimer = null;
 let _isSyncing = false;
+let _isPushingCloud = false;
+let _hasPendingCloudPush = false;
+let _pushQueuedAfterCurrent = false;
 
 function setSyncBtnState(status, text) {
   const btn = document.getElementById("btn-cloud-sync");
@@ -2919,16 +2922,33 @@ function setSyncBtnState(status, text) {
 }
 
 function scheduleCloudSyncPush() {
+  _hasPendingCloudPush = true;
   if (_cloudPushTimer) clearTimeout(_cloudPushTimer);
-  setSyncBtnState("syncing", "☁️ 同步中...");
+  setSyncBtnState("ok", "☁️ 待打包同步");
   _cloudPushTimer = setTimeout(() => {
+    _cloudPushTimer = null;
     cloudSyncPush(false);
-  }, 550);
+  }, 8000);
 }
 
-async function cloudSyncPush(forceReset) {
+function flushPendingCloudSync() {
+  if (!_hasPendingCloudPush) return;
+  if (_cloudPushTimer) {
+    clearTimeout(_cloudPushTimer);
+    _cloudPushTimer = null;
+  }
+  cloudSyncPush(true, true);
+}
+
+async function cloudSyncPush(forceReset, useKeepalive) {
   const creds = getCloudSyncCreds();
   if (!creds || !creds.g || !creds.t) return;
+  if (_isPushingCloud) {
+    _pushQueuedAfterCurrent = true;
+    return;
+  }
+  _isPushingCloud = true;
+  _hasPendingCloudPush = false;
   try {
     setSyncBtnState("syncing", "☁️ 同步中...");
     if (!forceReset) {
@@ -2947,6 +2967,7 @@ async function cloudSyncPush(forceReset) {
     };
     const resp = await fetch(`https://api.github.com/gists/${creds.g}`, {
       method: "PATCH",
+      keepalive: !!useKeepalive,
       headers: {
         "Authorization": `token ${creds.t}`,
         "Accept": "application/vnd.github+json",
@@ -2963,10 +2984,17 @@ async function cloudSyncPush(forceReset) {
     if (resp.ok) {
       setSyncBtnState("ok", "☁️ 已同步");
     } else {
+      _hasPendingCloudPush = true;
       setSyncBtnState("err", "☁️ 离线暂存");
     }
   } catch (e) {
+    _hasPendingCloudPush = true;
     setSyncBtnState("err", "☁️ 离线暂存");
+  }
+  _isPushingCloud = false;
+  if (_pushQueuedAfterCurrent) {
+    _pushQueuedAfterCurrent = false;
+    scheduleCloudSyncPush();
   }
 }
 
@@ -3060,7 +3088,13 @@ document.addEventListener("visibilitychange", () => {
     if (_swReg && typeof _swReg.update === "function") {
       _swReg.update().catch(() => {});
     }
+  } else if (document.visibilityState === "hidden") {
+    flushPendingCloudSync();
   }
+});
+
+window.addEventListener("pagehide", () => {
+  flushPendingCloudSync();
 });
 
 if ("serviceWorker" in navigator && (location.protocol === "https:" || location.protocol === "http:")) {
@@ -3239,14 +3273,14 @@ function applyUrlDeepLink() {
 }
 
 function copyScriptableWidgetCode() {
-  const tokenStr = _dtk();
+  const creds = getCloudSyncCreds() || { g: "", t: "" };
   const code = `// Variables used by Scriptable.
 // icon-color: deep-purple; icon-glyph: book-open;
 // 考研英语一 5530 · FSRS-6 智能桌面小组件 (iPhone / iPad)
 const APP_URL = "https://xuyihao620-cell.github.io/kaoyan-fsrs/";
 const WORDS_URL = APP_URL + "widget_words.json";
-const SYNC_API = "https://api.github.com/repos/${CLOUD_SYNC_CFG.owner}/${CLOUD_SYNC_CFG.repo}/contents/${CLOUD_SYNC_CFG.path}";
-const GH_TOKEN = "${tokenStr}";
+const GIST_API = "https://api.github.com/gists/${creds.g}";
+const GH_TOKEN = "${creds.t}";
 
 const fm = FileManager.local();
 const cachePath = fm.joinPath(fm.documentsDirectory(), "kaoyan_5530_widget_words.json");
@@ -3264,25 +3298,25 @@ async function loadWords() {
 
 async function loadSyncState() {
   try {
-    const req = new Request(SYNC_API);
+    const req = new Request(GIST_API);
     req.headers = {
-      "Authorization": "Bearer " + GH_TOKEN,
+      "Authorization": "token " + GH_TOKEN,
       "Accept": "application/vnd.github+json",
       "Cache-Control": "no-cache"
     };
     req.timeoutInterval = 8;
-    const meta = await req.loadJSON();
-    if (meta && meta.content) {
-      const raw = Data.fromBase64String(meta.content.replace(/\\s/g, "")).toRawString();
-      return JSON.parse(raw);
+    const gist = await req.loadJSON();
+    const fObj = gist && gist.files && gist.files["kaoyan_201_fsrs_sync.json"];
+    if (fObj && fObj.content) {
+      return JSON.parse(fObj.content);
     }
   } catch (e) {}
-  return { fsrsState: {}, todayCount: 0, date: "" };
+  return { state: {}, todayCount: 0, date: "" };
 }
 
 const words = await loadWords();
 const sync = await loadSyncState();
-const stMap = sync.fsrsState || {};
+const stMap = sync.state || sync.fsrsState || {};
 const now = Date.now();
 const todayStr = new Date().toISOString().slice(0, 10);
 const todayCount = (sync.date === todayStr) ? (sync.todayCount || 0) : 0;
