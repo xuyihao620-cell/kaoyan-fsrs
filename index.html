@@ -3051,15 +3051,30 @@ async function cloudSyncPullAndMerge(showFeedback, skipPushBack) {
   _isSyncing = false;
 }
 
+let _swReg = null;
+let _swReloading = false;
+
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") {
     cloudSyncPullAndMerge(false);
+    if (_swReg && typeof _swReg.update === "function") {
+      _swReg.update().catch(() => {});
+    }
   }
 });
 
 if ("serviceWorker" in navigator && (location.protocol === "https:" || location.protocol === "http:")) {
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (!_swReloading) {
+      _swReloading = true;
+      window.location.reload();
+    }
+  });
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(() => {});
+    navigator.serviceWorker.register("./sw.js").then(reg => {
+      _swReg = reg;
+      reg.update().catch(() => {});
+    }).catch(() => {});
   });
 }
 
