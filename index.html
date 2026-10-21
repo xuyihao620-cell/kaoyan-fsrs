@@ -767,47 +767,134 @@ body {
   color: var(--c1);
   border-color: rgba(184, 84, 80, 0.55);
 }
-.spk-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  color: var(--muted);
-  font-size: 17px;
-  padding: 2px 6px;
+.stage-word.clickable, .word.clickable, .deriv-chip.clickable, .deriv-w.clickable {
   cursor: pointer;
-  transition: all 0.14s ease;
-  vertical-align: middle;
-  line-height: 1;
-}
-.spk-btn:hover, .spk-btn:active {
-  color: var(--text);
-  background: var(--surface-hover);
-  border-color: var(--border-strong);
-  transform: scale(1.06);
-}
-.deriv-chip.clickable, .deriv-w.clickable {
-  cursor: pointer;
-  border-radius: 4px;
+  border-radius: 5px;
   padding: 0 3px;
   margin: 0 -3px;
   transition: background 0.12s ease, color 0.12s ease;
 }
-.deriv-chip.clickable:hover, .deriv-w.clickable:hover {
+.stage-word.clickable:hover, .word.clickable:hover, .deriv-chip.clickable:hover, .deriv-w.clickable:hover {
   background: var(--surface-hover);
   color: var(--c1);
 }
-.spk-mini {
-  font-style: normal;
-  font-size: 0.72em;
-  opacity: 0.55;
-  margin-left: 2px;
-  vertical-align: 1px;
+/* Tightly-attached Floating Pack & Module Popover */
+.pack-picker-btn.has-filter {
+  background: var(--text);
+  color: var(--surface);
+  border-color: var(--text);
+  font-weight: 550;
 }
-.deriv-w.clickable:hover .spk-mini {
-  opacity: 1;
+.pack-popover {
+  position: fixed;
+  z-index: 250;
+  width: min(390px, calc(100vw - 20px));
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  box-shadow: 0 10px 32px rgba(51, 47, 42, 0.16);
+  padding: 10px;
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+}
+.pack-popover.show {
+  display: flex;
+}
+.pp-mod-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  background: var(--surface-alt);
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.pp-mod-btn {
+  background: transparent;
+  color: var(--text-sec);
+  border: none;
+  border-radius: 6px;
+  padding: 5px 4px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  line-height: 1.25;
+}
+.pp-mod-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+.pp-mod-btn.active {
+  background: var(--text);
+  color: var(--surface);
+  font-weight: 600;
+}
+.pp-mod-sub {
+  font-size: 10px;
+  opacity: 0.78;
+  font-weight: 400;
+}
+.pp-pack-list {
+  max-height: 310px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-right: 2px;
+  -webkit-overflow-scrolling: touch;
+}
+.pp-pack-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  padding: 7px 9px;
+  font-size: 12.5px;
+  color: var(--text);
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.pp-pack-item:hover {
+  background: var(--surface-hover);
+}
+.pp-pack-item.active {
+  background: rgba(184, 84, 80, 0.11);
+  color: var(--c1);
+  font-weight: 600;
+}
+.pp-pack-id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px;
+  font-weight: 650;
+  color: var(--c1);
+  background: var(--surface-alt);
+  padding: 1px 5px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.pp-pack-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pp-pack-cnt {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
 }
 @media (max-width: 680px) {
   body {
@@ -833,20 +920,6 @@ body {
   }
   .tb-right::-webkit-scrollbar { display: none; }
   .tb-right > * { flex-shrink: 0; }
-  .modbar {
-    gap: 5px !important;
-    margin-bottom: 8px !important;
-  }
-  .modbar > div {
-    width: 100%;
-    overflow-x: auto;
-    flex-wrap: nowrap !important;
-    padding-bottom: 2px;
-    -webkit-overflow-scrolling: touch;
-  }
-  .modbar > div::-webkit-scrollbar { display: none; }
-  .modbar .mod-btn { flex-shrink: 0; font-size: 11.5px; padding: 3px 9px; }
-  .pack-select { width: 100%; max-width: 100%; font-size: 12px; }
   .stage-wrapper { margin: 6px auto 16px; }
   .stage-front { padding: 24px 16px 20px; }
   .stage-word { font-size: 34px; }
@@ -882,34 +955,45 @@ body {
   </div>
   <div class="tb-right">
     <div class="view-switch">
-      <button class="view-btn active" id="view-stage" onclick="setViewMode('stage')">[抽卡模式]</button>
-      <button class="view-btn" id="view-list" onclick="setViewMode('list')">[列表模式]</button>
+      <button class="view-btn active" id="view-stage" onclick="setViewMode('stage')">抽卡</button>
+      <button class="view-btn" id="view-list" onclick="setViewMode('list')">列表</button>
     </div>
-    <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">[全部词包]</button>
-    <button class="filter-btn" data-filter="due" id="btn-filter-due" onclick="setFilter('due')">[待复习 0]</button>
-    <button class="filter-btn" data-filter="new" onclick="setFilter('new')">[未学新词]</button>
-    <button class="filter-btn" data-filter="high" onclick="setFilter('high')">[高频优先]</button>
-    <button class="filter-btn" data-filter="poly" onclick="setFilter('poly')">[僻义 ✦]</button>
+    <button class="action-btn pack-picker-btn" id="btn-pack-picker" onclick="togglePackPopover(event)" title="选择四大模块或定向跳转到任意词包">词包：全部 (105) ▾</button>
+    <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">全部</button>
+    <button class="filter-btn" data-filter="due" id="btn-filter-due" onclick="setFilter('due')">待复习 0</button>
+    <button class="filter-btn" data-filter="new" onclick="setFilter('new')">未学</button>
+    <button class="filter-btn" data-filter="high" onclick="setFilter('high')">高频</button>
+    <button class="filter-btn" data-filter="poly" onclick="setFilter('poly')">僻义 ✦</button>
     <input type="text" id="search-box" class="search-input" placeholder="搜索单词/词根/释义..." oninput="onSearch(this.value)">
-    <button class="action-btn" id="btn-voice-mode" onclick="cycleVoiceMode()" title="切换翻面自动发音：美音 / 英音 / 静音（快捷键 V 切换，R 重读当前词）">[🔊 美音]</button>
-    <button class="action-btn" id="btn-undo" onclick="undoLastRating()" disabled title="撤销上一次评分 (Ctrl+Z / Cmd+Z)">[↶ 撤销]</button>
-    <button class="action-btn sync-btn" id="btn-cloud-sync" onclick="cloudSyncPullAndMerge(true)" title="点击立即与 GitHub 私密云账本双向无损同步（Mac 与 iPhone 实时互通）">[☁️ 云同步]</button>
-    <button class="action-btn" id="btn-fullscreen" onclick="toggleZenFullscreen()" title="切换全屏无边框沉浸模式 (快捷键 F)">[⛶ 全屏]</button>
-    <button class="action-btn" onclick="openFsrsModal()">[⚙ FSRS 选项]</button>
-    <button class="action-btn" onclick="toggleLegend()">[图例]</button>
+    <button class="action-btn" id="btn-voice-mode" onclick="cycleVoiceMode()" title="切换翻面自动发音：美音 / 英音 / 静音（快捷键 V 切换，R 重读当前词）">美音</button>
+    <button class="action-btn" id="btn-undo" onclick="undoLastRating()" disabled title="撤销上一次评分 (Ctrl+Z / Cmd+Z)">↶ 撤销</button>
+    <button class="action-btn sync-btn" id="btn-cloud-sync" onclick="cloudSyncPullAndMerge(true)" title="点击立即与 GitHub 私密云账本双向无损同步（Mac 与 iPhone 实时互通）">☁️ 云同步</button>
+    <button class="action-btn" id="btn-fullscreen" onclick="toggleZenFullscreen()" title="切换全屏无边框沉浸模式 (快捷键 F)">⛶ 全屏</button>
+    <button class="action-btn" onclick="openFsrsModal()">⚙ 选项</button>
+    <button class="action-btn" onclick="toggleLegend()">图例</button>
   </div>
 </div>
 
-<div class="modbar" style="display:flex;gap:7px;align-items:center;margin-bottom:10px;flex-wrap:wrap;justify-content:space-between;">
-  <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;">
-    <button class="mod-btn active" data-mod="ALL" onclick="setMod('ALL')">全部模块（105包 · 4317卡 / 5076词）</button>
-    <button class="mod-btn" data-mod="A" onclick="setMod('A')">Part I · 真词根家族 A01–A65（1630卡 / 2167词）</button>
-    <button class="mod-btn" data-mod="B" onclick="setMod('B')">Part II · 具象多义与形近 B01–B15（474卡 / 535词）</button>
-    <button class="mod-btn" data-mod="C" onclick="setMod('C')">Part III · 零词根微逻辑链 C01–C25（2213卡 / 2374词）</button>
+<div id="pack-popover" class="pack-popover" onclick="event.stopPropagation()">
+  <div class="pp-mod-grid">
+    <button class="pp-mod-btn active" data-mod="ALL" onclick="setMod('ALL')">
+      <span>全部模块</span>
+      <span class="pp-mod-sub">105包·4317卡</span>
+    </button>
+    <button class="pp-mod-btn" data-mod="A" onclick="setMod('A')">
+      <span>A 真词根</span>
+      <span class="pp-mod-sub">A01–A65</span>
+    </button>
+    <button class="pp-mod-btn" data-mod="B" onclick="setMod('B')">
+      <span>B 多义形近</span>
+      <span class="pp-mod-sub">B01–B15</span>
+    </button>
+    <button class="pp-mod-btn" data-mod="C" onclick="setMod('C')">
+      <span>C 微逻辑链</span>
+      <span class="pp-mod-sub">C01–C25</span>
+    </button>
   </div>
-  <select id="pack-jump-select" class="pack-select" onchange="onSelectPack(this.value)">
-    <option value="ALL">定向词包：全部词包（105包）</option>
-  </select>
+  <div id="pp-pack-list" class="pp-pack-list"></div>
 </div>
 
 <div id="legend-panel" class="legend-box">
@@ -931,7 +1015,7 @@ body {
   <div class="modal-panel">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px;">
       <h3 style="font-size:16px;font-weight:650;">牌组选项 · Anki FSRS-6（21参数）排程引擎设置</h3>
-      <button class="action-btn" onclick="closeFsrsModal()">[✕ 关闭]</button>
+      <button class="action-btn" onclick="closeFsrsModal()">✕ 关闭</button>
     </div>
 
     <div class="opt-sec">
@@ -943,10 +1027,10 @@ body {
       </div>
       <div class="opt-row" style="margin-bottom:0;">
         <span style="font-size:12px;color:var(--muted);">一键预设：</span>
-        <button class="action-btn" onclick="syncRetInputs(90)">[90% · Anki 官方默认]</button>
-        <button class="action-btn" onclick="syncRetInputs(92)">[92% · 考研60天冲刺推荐]</button>
-        <button class="action-btn" onclick="syncRetInputs(94)">[94% · 考前高压密刷]</button>
-        <button class="action-btn" onclick="syncRetInputs(85)">[85% · 减负拉长间隔]</button>
+        <button class="action-btn" onclick="syncRetInputs(90)">90% · Anki 官方默认</button>
+        <button class="action-btn" onclick="syncRetInputs(92)">92% · 考研60天冲刺推荐</button>
+        <button class="action-btn" onclick="syncRetInputs(94)">94% · 考前高压密刷</button>
+        <button class="action-btn" onclick="syncRetInputs(85)">85% · 减负拉长间隔</button>
       </div>
     </div>
 
@@ -968,7 +1052,7 @@ body {
     <div class="opt-sec">
       <h4>
         <span>FSRS-6 模型参数 (21 Parameters)</span>
-        <button class="action-btn" onclick="resetDefaultWeights()">[恢复 Anki FSRS-6 默认参数]</button>
+        <button class="action-btn" onclick="resetDefaultWeights()">恢复 Anki FSRS-6 默认参数</button>
       </h4>
       <div class="opt-sub">开源 Anki <code>rslib/fsrs</code> 标准 21 维权重向量 <i>w</i><sub>0</sub>～<i>w</i><sub>20</sub>（其中 <i>w</i><sub>0</sub>～<i>w</i><sub>3</sub> 为四档初始稳定性 <i>S</i><sub>0</sub>(<i>G</i>)，<i>w</i><sub>17</sub>～<i>w</i><sub>19</sub> 控制同日复习，<i>w</i><sub>20</sub> 控制可训练幂律遗忘曲线指数）。</div>
       <textarea id="opt-weights" class="opt-textarea" oninput="updateSimulatorPreview()"></textarea>
@@ -988,15 +1072,15 @@ body {
 
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:14px;">
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button class="action-btn" onclick="exportBackupJSON()">[导出学习记录 JSON]</button>
-        <button class="action-btn" onclick="triggerImportJSON()">[导入记录 JSON]</button>
-        <button class="action-btn" onclick="toggleJsonPastePanel()">[剪贴板备份/粘贴恢复]</button>
+        <button class="action-btn" onclick="exportBackupJSON()">导出学习记录 JSON</button>
+        <button class="action-btn" onclick="triggerImportJSON()">导入记录 JSON</button>
+        <button class="action-btn" onclick="toggleJsonPastePanel()">剪贴板备份/粘贴恢复</button>
         <input type="file" id="import-json-input" accept=".json" style="display:none;" onchange="importBackupJSON(event)">
-        <button class="action-btn" style="color:var(--c1);border-color:rgba(184,84,80,0.4);" onclick="resetAllProgress()">[清空重置进度]</button>
+        <button class="action-btn" style="color:var(--c1);border-color:rgba(184,84,80,0.4);" onclick="resetAllProgress()">清空重置进度</button>
       </div>
       <div style="display:flex;gap:8px;">
-        <button class="action-btn" onclick="closeFsrsModal()">[取消]</button>
-        <button class="filter-btn active" onclick="saveFsrsOptions()">[保存并应用排程]</button>
+        <button class="action-btn" onclick="closeFsrsModal()">取消</button>
+        <button class="filter-btn active" onclick="saveFsrsOptions()">保存并应用排程</button>
       </div>
     </div>
 
@@ -1004,8 +1088,8 @@ body {
       <h4>
         <span>剪贴板 JSON 备份与粘贴恢复（兼容 Obsidian 内嵌窗口与跨设备同步）</span>
         <div style="display:flex;gap:6px;">
-          <button class="action-btn" onclick="copyBackupJSONToClipboard()">[复制当前备份 JSON]</button>
-          <button class="filter-btn active" onclick="restoreFromJsonTextarea()">[从下方文本框恢复]</button>
+          <button class="action-btn" onclick="copyBackupJSONToClipboard()">复制当前备份 JSON</button>
+          <button class="filter-btn active" onclick="restoreFromJsonTextarea()">从下方文本框恢复</button>
         </div>
       </h4>
       <textarea id="json-paste-area" class="opt-textarea" style="min-height:84px;" placeholder="点击「复制当前备份 JSON」生成备份文本，或在此处粘贴已备份的 JSON 文本后点击「从下方文本框恢复」..."></textarea>
@@ -1694,7 +1778,7 @@ function updateTopStats() {
     ? (Math.round((sumR / reviewedWords) * 100) + "%")
     : "--";
   const dueBtn = document.getElementById("btn-filter-due");
-  if (dueBtn) dueBtn.textContent = `[待复习 ${dueCore}]`;
+  if (dueBtn) dueBtn.textContent = `待复习 ${dueCore}`;
   const undoBtn = document.getElementById("btn-undo");
   if (undoBtn) undoBtn.disabled = (undoStack.length === 0);
 }
@@ -1794,7 +1878,7 @@ function renderLayer1HTML(wObj, isStage) {
         return `<div class="${isStage ? "sb-deriv-line" : "cb-deriv-line"}">
           <span class="deriv-arrow">↳</span>
           <span class="dot ${dotCls}" style="width:${dotSize};height:${dotSize};top:-1px;"></span>
-          <span class="deriv-w clickable" onclick="speakWord('${cObj.w}', event, false)" title="点击朗读 ${cObj.w}">${cObj.w}<span class="spk-mini">🔊</span></span>
+          <span class="deriv-w clickable" onclick="speakWord('${cObj.w}', event, false)" title="点击朗读 ${cObj.w}">${cObj.w}</span>
           <span class="deriv-c">${formatMeaningLineHTML(cObj.c)}</span>
         </div>`;
       }).join("") +
@@ -1835,16 +1919,16 @@ function renderStageView() {
   const flat = window._flatFilteredCoreWords || [];
   if (flat.length === 0) {
     let emptyHint = "当前筛选条件下没有匹配的卡片。";
-    let actionHtml = `<button class="filter-btn active" onclick="setFilter('all')">[查看全部词包]</button>`;
+    let actionHtml = `<button class="filter-btn active" onclick="setFilter('all')">查看全部词包</button>`;
     if (currentFilter === "due") {
       emptyHint = "当前没有到期待复习的已学卡片（未学新词不会伪装成待复习）。";
-      actionHtml = `<button class="filter-btn active" onclick="setFilter('high')">[去刷高频词池 (S3/S2)]</button>
-                    <button class="action-btn" onclick="setFilter('new')">[查看未学新词]</button>
-                    <button class="action-btn" onclick="setFilter('all')">[返回全部词包]</button>`;
+      actionHtml = `<button class="filter-btn active" onclick="setFilter('high')">去刷高频词池 (S3/S2)</button>
+                    <button class="action-btn" onclick="setFilter('new')">查看未学新词</button>
+                    <button class="action-btn" onclick="setFilter('all')">返回全部词包</button>`;
     }
     stageEl.innerHTML = `<div class="stage-card" style="padding:42px 24px;text-align:center;">
       <div style="font-size:17px;font-weight:650;margin-bottom:8px;">${emptyHint}</div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:18px;">提示：你随时可以在右上角 [⚙ FSRS 选项] 中调整期望记忆保留率（90%–94%）并重新排程。</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:18px;">提示：你随时可以在右上角「⚙ 选项」中调整期望记忆保留率（90%–94%）并重新排程。</div>
       <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;">${actionHtml}</div>
     </div>`;
     return;
@@ -1883,16 +1967,15 @@ function renderStageView() {
     <div class="stage-front" onclick="flipStageCard()">
       <div class="stage-word-row">
         <span class="dot ${dotCls}" style="width:12px;height:12px;top:-4px;"></span>
-        <span class="stage-word">${wObj.w}</span>
+        <span class="stage-word clickable" onclick="speakWord('${wObj.w}', event, false)" title="点击朗读 ${wObj.w} (快捷键 R)">${wObj.w}</span>
         ${starStr ? `<span class="stage-star">${starStr}</span>` : ""}
-        <button class="spk-btn" onclick="speakWord('${wObj.w}', event, false)" title="点击朗读 ${wObj.w} (快捷键 R)">🔊</button>
       </div>
       ${renderFrontDerivsHTML(wObj.w, true)}
     </div>
 
     ${!isStageFlipped ? `
       <div class="stage-flip-prompt" onclick="flipStageCard()">
-        点击卡片任意位置或按 <code>Space</code> 键显示释义、词根逻辑链与 FSRS-6 动态四档排程
+        点击卡片空白处或按 <code>Space</code> 键显示释义（直接点击任意英文单词即可朗读）
       </div>
     ` : `
       <div class="stage-back">
@@ -1907,14 +1990,13 @@ function renderStageView() {
   </div>
 
   <div class="stage-nav">
-    <button class="action-btn" onclick="stepStageCard(-1)" ${idx <= 0 ? "disabled" : ""}>[‹ 上一词 (←)]</button>
+    <button class="action-btn" onclick="stepStageCard(-1)" ${idx <= 0 ? "disabled" : ""}>‹ 上一词 (←)</button>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <button class="action-btn" onclick="flipStageCard()">[Space 翻面 / 收起]</button>
-      <button class="action-btn" onclick="speakWord('${wObj.w}', event, false)">[🔊 重读 (R)]</button>
-      <button class="action-btn" onclick="undoLastRating()" ${undoStack.length === 0 ? "disabled" : ""}>[↶ 撤销打分]</button>
-      <button class="action-btn" onclick="jumpToListCard('${wObj.w}')">[在列表模式中定位]</button>
+      <button class="action-btn" onclick="flipStageCard()">Space 翻面 / 收起</button>
+      <button class="action-btn" onclick="undoLastRating()" ${undoStack.length === 0 ? "disabled" : ""}>↶ 撤销打分</button>
+      <button class="action-btn" onclick="jumpToListCard('${wObj.w}')">在列表模式中定位</button>
     </div>
-    <button class="action-btn" onclick="stepStageCard(1)" ${idx + 1 >= flat.length ? "disabled" : ""}>[下一词 (→) ›]</button>
+    <button class="action-btn" onclick="stepStageCard(1)" ${idx + 1 >= flat.length ? "disabled" : ""}>下一词 (→) ›</button>
   </div>`;
 }
 
@@ -1927,9 +2009,8 @@ function renderCardHTML(wObj) {
     <div class="card-front" onclick="toggleCard('${wObj.w}')">
       <div class="cf-left">
         <span class="dot ${dotCls}"></span>
-        <strong class="word">${wObj.w}</strong>
+        <strong class="word clickable" onclick="speakWord('${wObj.w}', event, false)" title="点击朗读 ${wObj.w}">${wObj.w}</strong>
         ${starStr ? `<span class="star">${starStr}</span>` : ""}
-        <button class="spk-btn" style="font-size:13.5px;padding:1px 4px;" onclick="speakWord('${wObj.w}', event, false)" title="点击朗读 ${wObj.w}">🔊</button>
         ${renderFrontDerivsHTML(wObj.w, false)}
       </div>
       <div class="cf-right" id="mem-${wObj.w}">${mem.html}</div>
@@ -1943,24 +2024,92 @@ function renderCardHTML(wObj) {
         ${renderRatingButtonsHTML(wObj.w)}
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
           <span id="meta-${wObj.w}" style="font-size:11.5px;color:var(--muted);font-family:monospace;">${formatCardMetaDiagnostic(wObj.w)}</span>
-          <button class="action-btn" onclick="jumpToStageCard('${wObj.w}', event)">[在抽卡台中打开]</button>
+          <button class="action-btn" onclick="jumpToStageCard('${wObj.w}', event)">在抽卡台中打开</button>
         </div>
       </div>
     </div>
   </div>`;
 }
 
+function updatePackPickerBtnLabel() {
+  const btn = document.getElementById("btn-pack-picker");
+  if (!btn) return;
+  if (currentPackFilter !== "ALL") {
+    const pk = packById[currentPackFilter];
+    if (pk) {
+      const shortName = pk.name.replace(/^词根\s*/, "").replace(/（.*$/, "").slice(0, 12);
+      btn.textContent = `词包：${pk.id} ${shortName} ▾`;
+    } else {
+      btn.textContent = `词包：${currentPackFilter} ▾`;
+    }
+    btn.classList.add("has-filter");
+  } else if (currentMod !== "ALL") {
+    const modNames = { A: "A 真词根 (65包)", B: "B 多义形近 (15包)", C: "C 微逻辑链 (25包)" };
+    btn.textContent = `词包：${modNames[currentMod] || currentMod} ▾`;
+    btn.classList.add("has-filter");
+  } else {
+    btn.textContent = "词包：全部 (105) ▾";
+    btn.classList.remove("has-filter");
+  }
+}
+
 function populatePackDropdown() {
-  const sel = document.getElementById("pack-jump-select");
-  if (!sel) return;
-  let opts = `<option value="ALL">定向词包：全部词包（105包）</option>`;
+  updatePackPickerBtnLabel();
+  const listEl = document.getElementById("pp-pack-list");
+  if (!listEl) return;
+  const modAllLabels = {
+    ALL: "全部 105 个词包（4317 张核心卡 / 5076 词）",
+    A: "当前模块全部：Part I · 真词根家族 A01–A65（1630卡）",
+    B: "当前模块全部：Part II · 具象多义与形近 B01–B15（474卡）",
+    C: "当前模块全部：Part III · 零词根微逻辑链 C01–C25（2213卡）"
+  };
+  let html = `<button class="pp-pack-item${currentPackFilter === "ALL" ? " active" : ""}" onclick="onSelectPack('ALL')">
+    <span class="pp-pack-id">ALL</span>
+    <span class="pp-pack-name">${modAllLabels[currentMod] || modAllLabels.ALL}</span>
+  </button>`;
   RAW_DATA.packs.forEach(pk => {
     if (currentMod !== "ALL" && pk.mod !== currentMod) return;
-    const selAttr = (currentPackFilter === pk.id) ? " selected" : "";
-    opts += `<option value="${pk.id}"${selAttr}>${pk.id} · ${pk.name}（${pk.coreCount}卡）</option>`;
+    const isAct = (currentPackFilter === pk.id) ? " active" : "";
+    html += `<button class="pp-pack-item${isAct}" onclick="onSelectPack('${pk.id}')">
+      <span class="pp-pack-id">${pk.id}</span>
+      <span class="pp-pack-name">${pk.name}</span>
+      <span class="pp-pack-cnt">${pk.coreCount}卡</span>
+    </button>`;
   });
-  sel.innerHTML = opts;
+  listEl.innerHTML = html;
 }
+
+function togglePackPopover(ev) {
+  if (ev) ev.stopPropagation();
+  const pop = document.getElementById("pack-popover");
+  const btn = document.getElementById("btn-pack-picker");
+  if (!pop || !btn) return;
+  const willShow = !pop.classList.contains("show");
+  if (!willShow) {
+    pop.classList.remove("show");
+    return;
+  }
+  populatePackDropdown();
+  pop.classList.add("show");
+  const rect = btn.getBoundingClientRect();
+  const popW = Math.min(390, window.innerWidth - 20);
+  const left = Math.max(10, Math.min(rect.left, window.innerWidth - popW - 10));
+  pop.style.top = (rect.bottom + 6) + "px";
+  pop.style.left = left + "px";
+  setTimeout(() => {
+    const actEl = pop.querySelector(".pp-pack-item.active");
+    if (actEl) actEl.scrollIntoView({ block: "nearest" });
+  }, 10);
+}
+
+function closePackPopover() {
+  const pop = document.getElementById("pack-popover");
+  if (pop) pop.classList.remove("show");
+}
+
+document.addEventListener("click", () => {
+  closePackPopover();
+});
 
 function renderAll() {
   const wordsByPack = {};
@@ -2060,7 +2209,7 @@ function renderAll() {
   if (htmlParts.length === 0) {
     packsContainer.innerHTML = `<div class="stage-card" style="padding:36px;text-align:center;max-width:680px;margin:16px auto;">
       <div style="font-size:16px;font-weight:600;margin-bottom:8px;">当前筛选下暂无卡片</div>
-      <button class="filter-btn active" onclick="setFilter('all')">[返回全部词包]</button>
+      <button class="filter-btn active" onclick="setFilter('all')">返回全部词包</button>
     </div>`;
   } else {
     packsContainer.innerHTML = htmlParts.join("");
@@ -2304,7 +2453,7 @@ function setFilter(f) {
 function setMod(m) {
   currentMod = m;
   currentPackFilter = "ALL";
-  document.querySelectorAll(".mod-btn").forEach(b => {
+  document.querySelectorAll(".pp-mod-btn").forEach(b => {
     b.classList.toggle("active", b.getAttribute("data-mod") === m);
   });
   populatePackDropdown();
@@ -2314,6 +2463,8 @@ function setMod(m) {
 
 function onSelectPack(pid) {
   currentPackFilter = pid || "ALL";
+  populatePackDropdown();
+  closePackPopover();
   isStageFlipped = false;
   renderAll();
 }
@@ -2641,7 +2792,7 @@ function toggleZenFullscreen() {
 document.addEventListener("fullscreenchange", () => {
   const btn = document.getElementById("btn-fullscreen");
   if (btn) {
-    btn.textContent = (document.fullscreenElement || document.webkitFullscreenElement) ? "[⛶ 退出全屏]" : "[⛶ 全屏]";
+    btn.textContent = (document.fullscreenElement || document.webkitFullscreenElement) ? "⛶ 退出全屏" : "⛶ 全屏";
   }
 });
 
@@ -2677,7 +2828,7 @@ function setSyncBtnState(status, text) {
 
 function scheduleCloudSyncPush() {
   if (_cloudPushTimer) clearTimeout(_cloudPushTimer);
-  setSyncBtnState("syncing", "[☁️ 同步中...]");
+  setSyncBtnState("syncing", "☁️ 同步中...");
   _cloudPushTimer = setTimeout(() => {
     cloudSyncPush(false);
   }, 550);
@@ -2687,7 +2838,7 @@ async function cloudSyncPush(forceReset) {
   const creds = getCloudSyncCreds();
   if (!creds || !creds.g || !creds.t) return;
   try {
-    setSyncBtnState("syncing", "[☁️ 同步中...]");
+    setSyncBtnState("syncing", "☁️ 同步中...");
     if (!forceReset) {
       // Pull & merge first so we never overwrite newer reviews from the other device
       await cloudSyncPullAndMerge(false, true);
@@ -2718,12 +2869,12 @@ async function cloudSyncPush(forceReset) {
       })
     });
     if (resp.ok) {
-      setSyncBtnState("ok", "[☁️ 已同步]");
+      setSyncBtnState("ok", "☁️ 已同步");
     } else {
-      setSyncBtnState("err", "[☁️ 离线暂存]");
+      setSyncBtnState("err", "☁️ 离线暂存");
     }
   } catch (e) {
-    setSyncBtnState("err", "[☁️ 离线暂存]");
+    setSyncBtnState("err", "☁️ 离线暂存");
   }
 }
 
@@ -2732,7 +2883,7 @@ async function cloudSyncPullAndMerge(showFeedback, skipPushBack) {
   const creds = getCloudSyncCreds();
   if (!creds || !creds.g || !creds.t) return;
   _isSyncing = true;
-  if (showFeedback) setSyncBtnState("syncing", "[☁️ 拉取中...]");
+  if (showFeedback) setSyncBtnState("syncing", "☁️ 拉取中...");
   try {
     const resp = await fetch(`https://api.github.com/gists/${creds.g}?_t=${Date.now()}`, {
       headers: {
@@ -2791,7 +2942,7 @@ async function cloudSyncPullAndMerge(showFeedback, skipPushBack) {
       saveState(true);
       renderAll();
     }
-    setSyncBtnState("ok", "[☁️ 已同步]");
+    setSyncBtnState("ok", "☁️ 已同步");
     if (showFeedback) {
       const learnedCount = Object.keys(fsrsState).length;
       showToast(`☁️ 云端同步完成（当前共已学 ${learnedCount} 词 · 今日 ${todayCount} 卡）`);
@@ -2802,7 +2953,7 @@ async function cloudSyncPullAndMerge(showFeedback, skipPushBack) {
       return;
     }
   } catch (e) {
-    setSyncBtnState("err", "[☁️ 离线暂存]");
+    setSyncBtnState("err", "☁️ 离线暂存");
     if (showFeedback) showToast("当前处于离线状态，进度已安全保存在本机，联网后自动同步");
   }
   _isSyncing = false;
@@ -2841,13 +2992,13 @@ function updateVoiceBtnUI() {
   const btn = document.getElementById("btn-voice-mode");
   if (!btn) return;
   if (voiceMode === "us") {
-    btn.textContent = "[🔊 美音]";
+    btn.textContent = "美音";
     btn.style.color = "";
   } else if (voiceMode === "uk") {
-    btn.textContent = "[🔊 英音]";
+    btn.textContent = "英音";
     btn.style.color = "";
   } else {
-    btn.textContent = "[🔇 静音]";
+    btn.textContent = "静音";
     btn.style.color = "var(--muted)";
   }
 }
@@ -2856,14 +3007,14 @@ function cycleVoiceMode() {
   if (voiceMode === "us") {
     voiceMode = "uk";
     lastActiveAccent = "uk";
-    showToast("🔊 已切换为：英式真人发音（翻面自动朗读）");
+    showToast("已切换为：英式真人发音（翻面自动朗读）");
   } else if (voiceMode === "uk") {
     voiceMode = "off";
-    showToast("🔇 已关闭翻面自动发音（点击 🔊 或按 R 键仍可手动点读）");
+    showToast("已关闭翻面自动发音（点击任意英文单词或按 R 键仍可点读）");
   } else {
     voiceMode = "us";
     lastActiveAccent = "us";
-    showToast("🔊 已切换为：美式真人发音（翻面自动朗读）");
+    showToast("已切换为：美式真人发音（翻面自动朗读）");
   }
   try { localStorage.setItem(VOICE_MODE_KEY, voiceMode); } catch (e) {}
   updateVoiceBtnUI();
@@ -2952,6 +3103,7 @@ function speakWord(wStr, ev, isAuto) {
 document.addEventListener("keydown", e => {
   if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT")) return;
   if (e.key === "Escape") {
+    closePackPopover();
     closeFsrsModal();
     return;
   }
