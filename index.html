@@ -959,11 +959,8 @@ body {
       <button class="view-btn" id="view-list" onclick="setViewMode('list')">列表</button>
     </div>
     <button class="action-btn pack-picker-btn" id="btn-pack-picker" onclick="togglePackPopover(event)" title="选择四大模块或定向跳转到任意词包">词包：全部 (105) ▾</button>
-    <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">全部</button>
-    <button class="filter-btn" data-filter="due" id="btn-filter-due" onclick="setFilter('due')">待复习 0</button>
-    <button class="filter-btn" data-filter="new" onclick="setFilter('new')">未学</button>
-    <button class="filter-btn" data-filter="high" onclick="setFilter('high')">高频</button>
-    <button class="filter-btn" data-filter="poly" onclick="setFilter('poly')">僻义 ✦</button>
+    <button class="filter-btn" data-filter="high" onclick="setFilter('high')" title="开启/关闭：仅抽查 S3/S2 高频核心词">高频</button>
+    <button class="filter-btn" data-filter="poly" onclick="setFilter('poly')" title="开启/关闭：仅抽查含必考熟词僻义 ✦ 的核心词">僻义 ✦</button>
     <input type="text" id="search-box" class="search-input" placeholder="搜索单词/词根/释义..." oninput="onSearch(this.value)">
     <button class="action-btn" id="btn-voice-mode" onclick="cycleVoiceMode()" title="切换翻面自动发音：美音 / 英音 / 静音（快捷键 V 切换，R 重读当前词）">美音</button>
     <button class="action-btn" id="btn-undo" onclick="undoLastRating()" disabled title="撤销上一次评分 (Ctrl+Z / Cmd+Z)">↶ 撤销</button>
@@ -1777,13 +1774,13 @@ function updateTopStats() {
   document.getElementById("st-ret").textContent = reviewedWords > 0
     ? (Math.round((sumR / reviewedWords) * 100) + "%")
     : "--";
-  const dueBtn = document.getElementById("btn-filter-due");
-  if (dueBtn) dueBtn.textContent = `待复习 ${dueCore}`;
   const undoBtn = document.getElementById("btn-undo");
   if (undoBtn) undoBtn.disabled = (undoStack.length === 0);
 }
 
-function matchesFilter(wObj) {
+let forcedStageWord = null;
+
+function matchesScopeFilter(wObj) {
   if (!wObj.isCore) return false;
   if (currentPackFilter !== "ALL" && wObj.p !== currentPackFilter) return false;
   if (searchQuery) {
@@ -1798,13 +1795,6 @@ function matchesFilter(wObj) {
       return cObj && (cObj.c || "").toLowerCase().includes(q);
     });
     if (!hitW && !hitD && !hitC && !hitPo && !hitL2 && !hitChildC) return false;
-  }
-  if (currentFilter === "due") {
-    return isWordDue(wObj.w);
-  }
-  if (currentFilter === "new") {
-    const st = fsrsState[wObj.w];
-    return !st || !st.reps || st.reps <= 0;
   }
   if (currentFilter === "high") {
     const ct = wObj.cardT || wObj.t;
@@ -1918,17 +1908,24 @@ function renderStageView() {
   if (!stageEl) return;
   const flat = window._flatFilteredCoreWords || [];
   if (flat.length === 0) {
-    let emptyHint = "当前筛选条件下没有匹配的卡片。";
-    let actionHtml = `<button class="filter-btn active" onclick="setFilter('all')">查看全部词包</button>`;
-    if (currentFilter === "due") {
-      emptyHint = "当前没有到期待复习的已学卡片（未学新词不会伪装成待复习）。";
-      actionHtml = `<button class="filter-btn active" onclick="setFilter('high')">去刷高频词池 (S3/S2)</button>
-                    <button class="action-btn" onclick="setFilter('new')">查看未学新词</button>
-                    <button class="action-btn" onclick="setFilter('all')">返回全部词包</button>`;
+    let emptyHint = "当前范围的今日学习队列已全部刷完！";
+    let subHint = "所有到期复习卡与未学新卡均已排入未来复习日程，无需手动切换「待复习 / 未学」。";
+    let actionHtml = "";
+    if (searchQuery) {
+      emptyHint = `未找到匹配「${searchQuery}」的词汇卡片`;
+      subHint = "请尝试缩短关键词或清空搜索框。";
+    } else {
+      if (currentFilter !== "all") {
+        actionHtml += `<button class="filter-btn active" onclick="setFilter('all')">关闭「${currentFilter === 'high' ? '高频' : '僻义'}」过滤</button>`;
+      }
+      if (currentPackFilter !== "ALL" || currentMod !== "ALL") {
+        actionHtml += `<button class="action-btn" onclick="setMod('ALL')">返回全部 105 个词包</button>`;
+      }
+      actionHtml += `<button class="action-btn" onclick="setViewMode('list')">在列表模式中浏览全部卡片</button>`;
     }
     stageEl.innerHTML = `<div class="stage-card" style="padding:42px 24px;text-align:center;">
       <div style="font-size:17px;font-weight:650;margin-bottom:8px;">${emptyHint}</div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:18px;">提示：你随时可以在右上角「⚙ 选项」中调整期望记忆保留率（90%–94%）并重新排程。</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:18px;">${subHint}</div>
       <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;">${actionHtml}</div>
     </div>`;
     return;
@@ -1950,6 +1947,15 @@ function renderStageView() {
   const starStr = wObj.star === 2 ? "✦✦" : (wObj.star === 1 ? "✦" : "");
   const mem = formatMemBar(wObj.w);
   const l2Html = (wObj.l2 || "").replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  const st = fsrsState[wObj.w];
+  let qTypeBadge = "";
+  if (!st || !st.reps || st.reps <= 0) {
+    qTypeBadge = `<span class="pack-id" style="color:var(--accent);border-color:rgba(99,102,241,0.35);background:rgba(99,102,241,0.08);">新词待学</span>`;
+  } else if (st.state === "learning" || st.state === "relearning") {
+    qTypeBadge = `<span class="pack-id" style="color:var(--c2);border-color:rgba(249,115,22,0.35);background:rgba(249,115,22,0.08);">步长巩固</span>`;
+  } else if (isWordDue(wObj.w)) {
+    qTypeBadge = `<span class="pack-id" style="color:var(--c1);border-color:rgba(239,68,68,0.35);background:rgba(239,68,68,0.08);">到期复习</span>`;
+  }
 
   stageEl.innerHTML = `<div class="stage-card">
     <div class="stage-header">
@@ -1959,8 +1965,9 @@ function renderStageView() {
         <span class="tier-badge"><span class="dot ${dotCls}"></span> ${badgeLabel}</span>
       </div>
       <div class="sh-right">
+        ${qTypeBadge}
         <span id="stage-mem-${wObj.w}">${mem.html}</span>
-        <span class="pack-id">${idx + 1} / ${flat.length}</span>
+        <span class="pack-id">待刷 ${idx + 1} / ${flat.length}</span>
       </div>
     </div>
 
@@ -2114,28 +2121,67 @@ document.addEventListener("click", () => {
 function renderAll() {
   const wordsByPack = {};
   RAW_DATA.words.forEach(w => {
-    if (matchesFilter(w)) {
+    if (matchesScopeFilter(w)) {
       if (!wordsByPack[w.p]) wordsByPack[w.p] = [];
       wordsByPack[w.p].push(w);
     }
   });
 
-  const flatWords = [];
+  const allScopeWords = [];
+  const tierOrder = { "S3": 0, "S2": 1, "S1": 2, "S0": 3 };
   RAW_DATA.packs.forEach(pk => {
     if (currentMod !== "ALL" && pk.mod !== currentMod) return;
     if (currentPackFilter !== "ALL" && pk.id !== currentPackFilter) return;
     let pWords = wordsByPack[pk.id] || [];
     if (pWords.length === 0) return;
     if (currentFilter === "high") {
-      const order = { "S3": 0, "S2": 1, "S1": 2, "S0": 3 };
-      pWords = pWords.slice().sort((a, b) => (order[a.cardT || a.t] - order[b.cardT || b.t]));
-      wordsByPack[pk.id] = pWords;
-    } else if (currentFilter === "due") {
-      pWords = pWords.slice().sort((a, b) => ((getWordR(a.w) || 0) - (getWordR(b.w) || 0)));
+      pWords = pWords.slice().sort((a, b) => (tierOrder[a.cardT || a.t] - tierOrder[b.cardT || b.t]));
       wordsByPack[pk.id] = pWords;
     }
-    pWords.forEach(w => flatWords.push(w));
+    pWords.forEach(w => allScopeWords.push(w));
   });
+
+  let flatWords = allScopeWords;
+  if (viewMode === "stage") {
+    if (searchQuery) {
+      flatWords = allScopeWords;
+    } else {
+      const dueLearning = [];
+      const dueReview = [];
+      const newCards = [];
+      const pendingLearningAhead = [];
+      allScopeWords.forEach(w => {
+        const st = fsrsState[w.w];
+        if (!st || !st.reps || st.reps <= 0) {
+          newCards.push(w);
+        } else if (isWordDue(w.w)) {
+          if (st.state === "learning" || st.state === "relearning") {
+            dueLearning.push(w);
+          } else {
+            dueReview.push(w);
+          }
+        } else if (st.state === "learning" || st.state === "relearning") {
+          pendingLearningAhead.push(w);
+        }
+      });
+      dueLearning.sort((a, b) => ((fsrsState[a.w]?.due || 0) - (fsrsState[b.w]?.due || 0)));
+      dueReview.sort((a, b) => ((getWordR(a.w) ?? 0) - (getWordR(b.w) ?? 0)));
+      if (currentFilter === "high") {
+        newCards.sort((a, b) => (tierOrder[a.cardT || a.t] - tierOrder[b.cardT || b.t]));
+      }
+      flatWords = [...dueLearning, ...dueReview, ...newCards];
+      if (flatWords.length === 0 && pendingLearningAhead.length > 0) {
+        pendingLearningAhead.sort((a, b) => ((fsrsState[a.w]?.due || 0) - (fsrsState[b.w]?.due || 0)));
+        flatWords = pendingLearningAhead;
+      }
+      if (forcedStageWord && !flatWords.some(x => x.w === forcedStageWord)) {
+        const forcedObj = allScopeWords.find(x => x.w === forcedStageWord) || wordByName[forcedStageWord];
+        if (forcedObj && forcedObj.isCore) {
+          flatWords = [forcedObj, ...flatWords];
+        }
+      }
+    }
+  }
 
   window._flatFilteredCoreWords = flatWords;
   window._currentPackWords = wordsByPack;
@@ -2267,6 +2313,7 @@ function jumpToListCard(wStr) {
 
 function jumpToStageCard(wStr, ev) {
   if (ev) ev.stopPropagation();
+  forcedStageWord = wStr;
   activeWord = wStr;
   isStageFlipped = true;
   setViewMode("stage");
@@ -2344,20 +2391,24 @@ function rateWord(wStr, grade, ev) {
   showToast(`已评分「${wStr}」: ${grade}·${gradeLabels[grade]} → 下次复习 ${ivlStr}`);
 
   if (viewMode === "stage") {
-    const flat = window._flatFilteredCoreWords || [];
-    const idx = flat.findIndex(x => x.w === wStr);
-    if (currentFilter === "due" || currentFilter === "new") {
-      const nextCand = (idx >= 0 && idx + 1 < flat.length) ? flat[idx + 1].w : (flat[0] ? flat[0].w : wStr);
-      activeWord = nextCand;
-      isStageFlipped = false;
-      renderAll();
-    } else {
-      if (idx >= 0 && idx + 1 < flat.length) {
-        activeWord = flat[idx + 1].w;
+    forcedStageWord = null;
+    const oldFlat = window._flatFilteredCoreWords || [];
+    const oldIdx = oldFlat.findIndex(x => x.w === wStr);
+    const nextAfterCurrent = (oldIdx >= 0 && oldIdx + 1 < oldFlat.length) ? oldFlat[oldIdx + 1].w : null;
+    isStageFlipped = false;
+    renderAll();
+    const newFlat = window._flatFilteredCoreWords || [];
+    if (newFlat.length > 0) {
+      const firstSt = fsrsState[newFlat[0].w];
+      const firstIsDue = firstSt && firstSt.reps > 0 && isWordDue(newFlat[0].w);
+      if (firstIsDue) {
+        activeWord = newFlat[0].w;
+      } else if (nextAfterCurrent && newFlat.some(x => x.w === nextAfterCurrent)) {
+        activeWord = nextAfterCurrent;
+      } else {
+        activeWord = newFlat[0].w;
       }
-      isStageFlipped = false;
       renderStageView();
-      updateTopStats();
     }
     return;
   }
@@ -2389,6 +2440,7 @@ function undoLastRating() {
     else delete fsrsState[ch];
   });
   todayCount = snap.prevTodayCount;
+  forcedStageWord = snap.word;
   activeWord = snap.word;
   isStageFlipped = true;
   saveState();
@@ -2436,16 +2488,19 @@ function advanceToNextCard(wStr) {
       nextEl.classList.add("active");
       nextEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
-  } else if (currentFilter === "due" || currentFilter === "new") {
-    renderAll();
   }
 }
 
 function setFilter(f) {
-  currentFilter = f;
+  if (f !== "all" && currentFilter === f) {
+    currentFilter = "all";
+  } else {
+    currentFilter = f;
+  }
   document.querySelectorAll(".filter-btn[data-filter]").forEach(b => {
-    b.classList.toggle("active", b.getAttribute("data-filter") === f);
+    b.classList.toggle("active", b.getAttribute("data-filter") === currentFilter);
   });
+  forcedStageWord = null;
   isStageFlipped = false;
   renderAll();
 }
@@ -2457,6 +2512,7 @@ function setMod(m) {
     b.classList.toggle("active", b.getAttribute("data-mod") === m);
   });
   populatePackDropdown();
+  forcedStageWord = null;
   isStageFlipped = false;
   renderAll();
 }
@@ -2465,12 +2521,14 @@ function onSelectPack(pid) {
   currentPackFilter = pid || "ALL";
   populatePackDropdown();
   closePackPopover();
+  forcedStageWord = null;
   isStageFlipped = false;
   renderAll();
 }
 
 function onSearch(val) {
   searchQuery = (val || "").trim();
+  forcedStageWord = null;
   isStageFlipped = false;
   renderAll();
 }
