@@ -1651,6 +1651,7 @@ function sanitizeConfigObject(rawCfg) {
   merged.relearningSteps = (typeof merged.relearningSteps === "string" && merged.relearningSteps.trim()) ? merged.relearningSteps.trim() : "10m";
   merged.directGood = (merged.directGood !== undefined) ? !!merged.directGood : true;
   merged.rescheduleOnChange = (merged.rescheduleOnChange !== undefined) ? !!merged.rescheduleOnChange : true;
+  merged.updatedAt = parseInt(merged.updatedAt, 10) || (Math.abs(merged.requestRetention - 0.90) > 0.001 ? 1 : 0);
   if (!Array.isArray(merged.w) || merged.w.length !== 21 ||
       merged.w.some(n => typeof n !== "number" || isNaN(n) || !isFinite(n) || n < 0 || n > 100) ||
       merged.w[0] <= 0 || merged.w[1] <= 0 || merged.w[2] <= 0 || merged.w[3] <= 0 ||
@@ -2732,13 +2733,15 @@ function saveFsrsOptions() {
     relearningSteps: temp.relearningSteps,
     directGood: temp.directGood,
     rescheduleOnChange: temp.rescheduleOnChange,
-    w: temp.w
+    w: temp.w,
+    updatedAt: Date.now()
   };
   let reschedCount = 0;
   if (fsrsConfig.rescheduleOnChange) {
     reschedCount = rescheduleAllReviewedCards(fsrsConfig);
   }
-  saveState();
+  saveState(true);
+  cloudSyncPush(false);
   closeFsrsModal();
   renderAll();
   showToast(fsrsConfig.rescheduleOnChange
@@ -3021,12 +3024,24 @@ async function cloudSyncPullAndMerge(showFeedback, skipPushBack) {
       return;
     }
     const remote = JSON.parse(fileObj.content);
+    let localHasNewer = false;
+    let remoteHasNewer = false;
+
+    if (remote && remote.config && typeof remote.config === "object") {
+      const remCfg = sanitizeConfigObject(remote.config);
+      const locCfgTs = fsrsConfig.updatedAt || 0;
+      const remCfgTs = remCfg.updatedAt || 0;
+      if (remCfgTs > locCfgTs) {
+        fsrsConfig = remCfg;
+        remoteHasNewer = true;
+      } else if (locCfgTs > remCfgTs) {
+        localHasNewer = true;
+      }
+    }
+
     const remoteState = (remote && remote.state && typeof remote.state === "object")
       ? sanitizeAndMigrateStateMap(remote.state, fsrsConfig)
       : {};
-
-    let localHasNewer = false;
-    let remoteHasNewer = false;
 
     const allWords = new Set([...Object.keys(fsrsState), ...Object.keys(remoteState)]);
     allWords.forEach(w => {
@@ -3047,9 +3062,22 @@ async function cloudSyncPullAndMerge(showFeedback, skipPushBack) {
           remoteHasNewer = true;
         } else if (locTs > remTs || (locTs === remTs && locReps > remReps)) {
           localHasNewer = true;
+        } else if (loc.due !== rem.due || loc.ivl !== rem.ivl) {
+          const remCfgTs = (remote && remote.config && remote.config.updatedAt) || 0;
+          const locCfgTs = fsrsConfig.updatedAt || 0;
+          if (remCfgTs >= locCfgTs) {
+            fsrsState[w] = rem;
+            remoteHasNewer = true;
+          } else {
+            localHasNewer = true;
+          }
         }
       }
     });
+
+    if (remoteHasNewer && fsrsConfig.rescheduleOnChange) {
+      rescheduleAllReviewedCards(fsrsConfig);
+    }
 
     const todayStr = new Date().toISOString().slice(0, 10);
     if (remote.date === todayStr && (remote.todayCount || 0) > todayCount) {
