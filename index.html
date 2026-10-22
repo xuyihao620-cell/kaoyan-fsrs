@@ -2877,16 +2877,62 @@ function flipStageCard() {
   }
 }
 
+let stageHistory = [];
+
 function stepStageCard(delta) {
   const flat = window._flatFilteredCoreWords || [];
   if (flat.length === 0) return;
   let idx = flat.findIndex(x => x.w === activeWord);
   if (idx < 0) idx = 0;
-  const nextIdx = Math.max(0, Math.min(flat.length - 1, idx + delta));
-  if (nextIdx !== idx) {
-    activeWord = flat[nextIdx].w;
-    isStageFlipped = false;
-    renderStageView();
+
+  if (delta < 0) {
+    while (stageHistory.length > 0) {
+      const prevW = stageHistory.pop();
+      if (prevW && prevW !== activeWord && wordByName[prevW]) {
+        forcedStageWord = prevW;
+        activeWord = prevW;
+        isStageFlipped = false;
+        renderAll();
+        return;
+      }
+    }
+    if (idx > 0) {
+      activeWord = flat[idx - 1].w;
+      isStageFlipped = false;
+      renderStageView();
+      return;
+    }
+    showToast("当前已是第 1 个词");
+    return;
+  }
+
+  if (delta > 0) {
+    if (activeWord && stageHistory[stageHistory.length - 1] !== activeWord) {
+      stageHistory.push(activeWord);
+      if (stageHistory.length > 100) stageHistory.shift();
+    }
+    if (forcedStageWord) {
+      const nextAfterForced = (idx + 1 < flat.length) ? flat[idx + 1].w : null;
+      forcedStageWord = null;
+      isStageFlipped = false;
+      renderAll();
+      const newFlat = window._flatFilteredCoreWords || [];
+      if (nextAfterForced && newFlat.some(x => x.w === nextAfterForced)) {
+        activeWord = nextAfterForced;
+      } else if (newFlat.length > 0) {
+        activeWord = newFlat[0].w;
+      }
+      renderStageView();
+      return;
+    }
+    const nextIdx = Math.min(flat.length - 1, idx + delta);
+    if (nextIdx !== idx) {
+      activeWord = flat[nextIdx].w;
+      isStageFlipped = false;
+      renderStageView();
+    } else {
+      showToast("已到达当前队列末尾");
+    }
   }
 }
 
@@ -2975,6 +3021,10 @@ function rateWord(wStr, grade, ev) {
   showToast(`已评分「${wStr}」: ${grade}·${gradeLabels[grade]} → 下次复习 ${ivlStr}`);
 
   if (viewMode === "stage") {
+    if (wStr && stageHistory[stageHistory.length - 1] !== wStr) {
+      stageHistory.push(wStr);
+      if (stageHistory.length > 100) stageHistory.shift();
+    }
     forcedStageWord = null;
     const oldFlat = window._flatFilteredCoreWords || [];
     const oldIdx = oldFlat.findIndex(x => x.w === wStr);
@@ -4305,9 +4355,9 @@ function setNavMode(mode) {
       return;
     }
     const t = e.target;
-    const cardEl = t && t.closest ? t.closest(".stage-card") : null;
-    const inDockOrBtn = t && t.closest ? t.closest(".stage-dock, .stage-flip-prompt, button") : null;
-    if (cardEl && !inDockOrBtn) {
+    const stageArea = t && t.closest ? t.closest("#stage-container") : null;
+    const inDockOrModal = t && t.closest ? t.closest(".stage-dock, .fsrs-btn, .modal-backdrop, .pack-popover") : null;
+    if (stageArea && !inDockOrModal) {
       swipeEligible = true;
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
@@ -4324,7 +4374,7 @@ function setNavMode(mode) {
     const dx = e.changedTouches[0].clientX - touchStartX;
     const dy = e.changedTouches[0].clientY - touchStartY;
     const dt = Date.now() - touchStartTime;
-    if (dt < 600 && Math.abs(dx) > 52 && Math.abs(dx) > Math.abs(dy) * 1.6) {
+    if (dt < 700 && Math.abs(dx) > 36 && Math.abs(dx) > Math.abs(dy) * 1.35) {
       if (dx < 0) stepStageCard(1);
       else stepStageCard(-1);
     }
