@@ -608,7 +608,7 @@ button.subj:hover { background: var(--hover); }
   color: var(--ink-2);
 }
 .legend-box.show { display: block; }
-.lg-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 28px; }
+.lg-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 28px; }
 .lg-grid h5 { margin-bottom: 10px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; color: var(--ink-3); }
 .lg-list { display: flex; flex-direction: column; gap: 8px; padding: 0; list-style: none; }
 .lg-list li { display: grid; grid-template-columns: 14px auto minmax(0, 1fr); align-items: baseline; gap: 8px; }
@@ -1029,6 +1029,71 @@ button.subj:hover { background: var(--hover); }
 .modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--line); background: var(--surface); }
 .opt-sec { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 14px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
 .opt-sec h4 { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 14px; font-weight: 650; color: var(--ink); }
+.opt-acc { padding: 0; gap: 0; overflow: hidden; }
+.opt-acc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 15px 16px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: 650 14.5px/1.3 var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: background 0.15s ease;
+}
+.opt-acc-head:hover { background: var(--hover); }
+.opt-acc-title { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); font-weight: 650; }
+.opt-acc-right { display: inline-flex; align-items: center; gap: 8px; flex: none; min-width: 0; }
+.opt-acc-meta { font: 500 12px/1.2 var(--font-mono); color: var(--ink-3); white-space: nowrap; }
+.opt-acc-chev {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  background: var(--ink-3);
+  -webkit-mask: var(--i-chevron) center / contain no-repeat;
+  mask: var(--i-chevron) center / contain no-repeat;
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.opt-acc.open > .opt-acc-head .opt-acc-chev { transform: rotate(180deg); background: var(--ink); }
+.opt-acc-body {
+  display: none;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 16px 16px;
+  border-top: 1px solid var(--line);
+}
+.opt-acc.open > .opt-acc-body { display: flex; }
+.opt-subsec {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.opt-subsec:first-child { padding-top: 0; border-top: 0; }
+.opt-subsec h5 {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 650;
+  color: var(--ink);
+}
+.opt-acc-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
 .opt-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
 .opt-sub { margin-top: 4px; font-size: 12.5px; line-height: 1.65; color: var(--ink-3); }
 .opt-tag { padding: 2px 6px; border-radius: 5px; background: var(--sunken); color: var(--ink-3); font: 500 10.5px/1.3 var(--font-mono); }
@@ -1287,8 +1352,9 @@ body.mini-widget-mode .stage-word { font-size: clamp(32px, 6vw, 46px); }
   .modal-backdrop { align-items: flex-end; padding: 0; }
   .modal-panel { max-width: none; max-height: 92vh; border-radius: 22px 22px 0 0; }
   .modal-head, .modal-body { padding-left: 16px; padding-right: 16px; }
+  .modal-body { padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
   .modal-foot { padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); }
-  .modal-foot .action-btn { flex: 1; height: 44px; }
+  .modal-foot .action-btn, .opt-acc-foot .action-btn { flex: 1; height: 42px; }
   .field-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .field-grid .field:last-child { grid-column: 1 / -1; }
   .opt-input, .opt-textarea { font-size: 16px; }
@@ -1421,173 +1487,196 @@ body.mini-widget-mode .stage-word { font-size: clamp(32px, 6vw, 46px); }
   <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="fsrs-modal-title">
     <div class="modal-head">
       <div>
-        <h3 id="fsrs-modal-title">牌组选项</h3>
-        <p>Anki FSRS-6 · 21 参数排程引擎</p>
+        <h3 id="fsrs-modal-title">设置与选项</h3>
+        <p>FSRS-6 排程 · 外观手势 · 备份与图例</p>
       </div>
       <button class="tool-btn icon-only" data-ico="close" onclick="closeFsrsModal()" aria-label="关闭">关闭</button>
     </div>
 
     <div class="modal-body">
-      <section class="opt-sec">
-        <h4>外观、发音与手势操控 <span class="opt-tag">Appearance &amp; Gestures</span></h4>
-        <div class="theme-grid" id="theme-picker-grid">
-          <button type="button" class="theme-btn" data-theme-opt="auto" onclick="setAppTheme('auto')">
-            <span class="theme-swatch" style="background:linear-gradient(135deg, #f3f4f6 50%, #0f1114 50%);"></span>跟随系统
-          </button>
-          <button type="button" class="theme-btn" data-theme-opt="sage" onclick="setAppTheme('sage')">
-            <span class="theme-swatch" style="background:#e8efe9;"></span>竹青护眼
-          </button>
-          <button type="button" class="theme-btn" data-theme-opt="sepia" onclick="setAppTheme('sepia')">
-            <span class="theme-swatch" style="background:#f5f1e8;"></span>暖调书页
-          </button>
-          <button type="button" class="theme-btn" data-theme-opt="dark" onclick="setAppTheme('dark')">
-            <span class="theme-swatch" style="background:#0f1114;"></span>深海暗夜
-          </button>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding-top:4px;" id="voice-picker-grid">
-          <button type="button" class="theme-btn" data-voice-opt="us" onclick="setVoiceModeDirect('us')">美式发音</button>
-          <button type="button" class="theme-btn" data-voice-opt="uk" onclick="setVoiceModeDirect('uk')">英式发音</button>
-          <button type="button" class="theme-btn" data-voice-opt="off" onclick="setVoiceModeDirect('off')">静音（仅点读）</button>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding-top:4px;" id="navmode-picker-grid">
-          <button type="button" class="theme-btn" data-nav-opt="gesture" onclick="setNavMode('gesture')">极简手势（隐藏底栏）</button>
-          <button type="button" class="theme-btn" data-nav-opt="buttons" onclick="setNavMode('buttons')">显示底部按钮栏</button>
-        </div>
-        <p class="opt-sub" style="margin-top:2px;">手势说明：在卡片上 <b>左滑</b> 下一词 · <b>右滑</b> 上一词 · <b>双击卡片下方空白处</b> 撤销上一次评分（电脑端按 <code>←/→</code> 切词，<code>⌘Z</code> 撤销）。</p>
-      </section>
-
-      <section class="opt-sec">
-        <div class="opt-head">
-          <div>
-            <h4>期望记忆保留率 <span class="opt-tag">Desired Retention</span></h4>
-            <p class="opt-sub">卡片触发复习的提取概率阈值 r ∈ [70%, 97%]。数值越高，卡片出现越频繁；数值越低，单次间隔越长。</p>
-          </div>
-          <strong id="opt-ret-display" class="opt-big">90%</strong>
-        </div>
-        <div class="opt-row">
-          <input type="range" id="opt-ret-slider" min="70" max="97" step="1" value="90" oninput="syncRetInputs(this.value)">
-          <label class="num-field"><input type="number" id="opt-ret-num" class="opt-input" min="70" max="97" step="1" value="90" oninput="syncRetInputs(this.value)">%</label>
-        </div>
-      </section>
-
-      <section class="opt-sec">
-        <h4>日内学习步长与间隔上限 <span class="opt-tag">Learning Steps</span></h4>
-        <div class="field-grid">
-          <label class="field">学习步长<input type="text" id="opt-learn-steps" class="opt-input" value="1m, 10m" oninput="updateSimulatorPreview()"></label>
-          <label class="field">重学步长<input type="text" id="opt-relearn-steps" class="opt-input" value="10m" oninput="updateSimulatorPreview()"></label>
-          <label class="field">最大间隔（天）<input type="number" id="opt-max-ivl" class="opt-input" value="30" min="7" max="36500" oninput="updateSimulatorPreview()"></label>
-        </div>
-        <label class="check-row">
-          <input type="checkbox" id="opt-direct-good" checked onchange="updateSimulatorPreview()">
-          <span>新卡首次「良好」直接按 FSRS-6 毕业<small>推荐。新卡四档为 <code>1m / 6m / 2d / 8d</code>；取消勾选则先走完 <code>10m</code> 步长再毕业。</small></span>
-        </label>
-      </section>
-
-      <section class="opt-sec">
-        <div class="opt-head">
-          <div>
-            <h4>FSRS-6 模型参数 <span class="opt-tag">w₀ – w₂₀</span></h4>
-            <p class="opt-sub">开源 Anki <code>rslib/fsrs</code> 标准 21 维权重：w₀–w₃ 为四档初始稳定性 S₀(G)，w₁₇–w₁₉ 控制同日复习，w₂₀ 控制可训练幂律遗忘曲线指数。</p>
-          </div>
-          <button class="action-btn btn-small" onclick="resetDefaultWeights()">恢复默认</button>
-        </div>
-        <textarea id="opt-weights" class="opt-textarea" spellcheck="false" oninput="updateSimulatorPreview()"></textarea>
-        <div id="opt-weights-status" class="opt-status"></div>
-        <label class="check-row">
-          <input type="checkbox" id="opt-reschedule" checked>
-          <span>更改时将卡片重新排程<small>保存时基于每张已学卡片的 <code>revlog</code> 历史无损重算 S、D 与到期日。</small></span>
-        </label>
-      </section>
-
-      <section class="opt-sec">
-        <h4>FSRS 模拟器 <span class="opt-tag">实验性</span></h4>
-        <p class="opt-sub">当前参数下连续 5 次复习的动态间隔与稳定性 S 推演。</p>
-        <div id="sim-preview-box" class="sim-scroll"></div>
-      </section>
-
-      <section class="opt-sec">
-        <h4>桌面小组件</h4>
-        <ol class="steps">
-          <li><b>iPhone / iPad</b>：下载 Scriptable → 复制小组件代码 → 在 Scriptable 右上角 <code>+</code> 粘贴保存 → 桌面长按添加 Scriptable（中号）小组件并选中该脚本。</li>
-          <li><b>Mac</b>：切换迷你挂件模式，再把浏览器窗口缩到屏幕角落，即成无顶栏的极简背词贴纸。</li>
-        </ol>
-        <div class="btn-row">
-          <a href="https://apps.apple.com/app/scriptable/id1405459188" target="_blank" rel="noopener" class="action-btn">直达商店下载 Scriptable</a>
-          <button class="action-btn btn-primary" onclick="copyScriptableWidgetCode()">复制小组件代码</button>
-          <button class="action-btn" onclick="closeFsrsModal(); toggleMiniWidgetMode();">切换迷你挂件<kbd>W</kbd></button>
-        </div>
-      </section>
-
-      <section class="opt-sec">
-        <h4>数据与备份</h4>
-        <div class="btn-row">
-          <button class="action-btn" onclick="exportBackupJSON()">导出学习记录 JSON</button>
-          <button class="action-btn" onclick="triggerImportJSON()">导入记录 JSON</button>
-          <button class="action-btn" onclick="toggleJsonPastePanel()">剪贴板备份 / 粘贴恢复</button>
-          <input type="file" id="import-json-input" accept=".json" style="display:none;" onchange="importBackupJSON(event)">
-          <button class="action-btn btn-danger" onclick="resetAllProgress()">清空重置进度</button>
-        </div>
-        <div id="json-paste-panel" class="paste-panel" style="display:none;">
-          <div class="paste-head">
-            <span>剪贴板 JSON 备份与粘贴恢复（兼容 Obsidian 内嵌窗口与跨设备同步）</span>
-            <div class="btn-row">
-              <button class="action-btn btn-small" onclick="copyBackupJSONToClipboard()">复制当前备份</button>
-              <button class="action-btn btn-small btn-primary" onclick="restoreFromJsonTextarea()">从文本框恢复</button>
+      <section class="opt-sec opt-acc" id="acc-fsrs">
+        <button type="button" class="opt-acc-head" onclick="toggleOptAcc('acc-fsrs')">
+          <span class="opt-acc-title">FSRS-6 排程设置</span>
+          <span class="opt-acc-right">
+            <span class="opt-acc-meta" id="acc-sum-fsrs">保留率 90% · 上限 30d</span>
+            <span class="opt-acc-chev" aria-hidden="true"></span>
+          </span>
+        </button>
+        <div class="opt-acc-body">
+          <div class="opt-subsec">
+            <div class="opt-head">
+              <div>
+                <h5>期望记忆保留率 <span class="opt-tag">Desired Retention</span></h5>
+                <p class="opt-sub">卡片触发复习的提取概率阈值 r ∈ [70%, 97%]。数值越高，卡片出现越频繁；数值越低，单次间隔越长。</p>
+              </div>
+              <strong id="opt-ret-display" class="opt-big">90%</strong>
+            </div>
+            <div class="opt-row">
+              <input type="range" id="opt-ret-slider" min="70" max="97" step="1" value="90" oninput="syncRetInputs(this.value)">
+              <label class="num-field"><input type="number" id="opt-ret-num" class="opt-input" min="70" max="97" step="1" value="90" oninput="syncRetInputs(this.value)">%</label>
             </div>
           </div>
-          <textarea id="json-paste-area" class="opt-textarea" placeholder="点击「复制当前备份」生成备份文本，或在此粘贴已备份的 JSON 后点击「从文本框恢复」"></textarea>
+
+          <div class="opt-subsec">
+            <h5>日内学习步长与间隔上限 <span class="opt-tag">Learning Steps</span></h5>
+            <div class="field-grid">
+              <label class="field">学习步长<input type="text" id="opt-learn-steps" class="opt-input" value="1m, 10m" oninput="updateSimulatorPreview()"></label>
+              <label class="field">重学步长<input type="text" id="opt-relearn-steps" class="opt-input" value="10m" oninput="updateSimulatorPreview()"></label>
+              <label class="field">最大间隔（天）<input type="number" id="opt-max-ivl" class="opt-input" value="30" min="7" max="36500" oninput="updateSimulatorPreview()"></label>
+            </div>
+            <label class="check-row">
+              <input type="checkbox" id="opt-direct-good" checked onchange="updateSimulatorPreview()">
+              <span>新卡首次「良好」直接按 FSRS-6 毕业<small>推荐。新卡四档按当前保留率直接毕业；取消勾选则先走完 <code>10m</code> 步长再毕业。</small></span>
+            </label>
+          </div>
+
+          <div class="opt-subsec">
+            <div class="opt-head">
+              <div>
+                <h5>FSRS-6 模型参数 <span class="opt-tag">w₀ – w₂₀</span></h5>
+                <p class="opt-sub">开源 Anki <code>rslib/fsrs</code> 标准 21 维权重：w₀–w₃ 为四档初始稳定性 S₀(G)，w₁₇–w₁₉ 控制同日复习，w₂₀ 控制可训练幂律遗忘曲线指数。</p>
+              </div>
+              <button type="button" class="action-btn btn-small" onclick="resetDefaultWeights()">恢复默认</button>
+            </div>
+            <textarea id="opt-weights" class="opt-textarea" spellcheck="false" oninput="updateSimulatorPreview()"></textarea>
+            <div id="opt-weights-status" class="opt-status"></div>
+            <label class="check-row">
+              <input type="checkbox" id="opt-reschedule" checked>
+              <span>更改时将卡片重新排程<small>保存时基于每张已学卡片的 <code>revlog</code> 历史无损重算 S、D 与到期日。</small></span>
+            </label>
+          </div>
+
+          <div class="opt-subsec">
+            <h5>FSRS 模拟器 <span class="opt-tag">实验性</span></h5>
+            <p class="opt-sub">当前参数下连续 5 次复习的动态间隔与稳定性 S 推演。</p>
+            <div id="sim-preview-box" class="sim-scroll"></div>
+          </div>
+
+          <div class="opt-acc-foot">
+            <button type="button" class="action-btn" onclick="closeFsrsModal()">取消</button>
+            <button type="button" class="action-btn btn-primary" onclick="saveFsrsOptions()">保存并应用排程</button>
+          </div>
         </div>
       </section>
 
-      <section class="opt-sec" id="legend-panel">
-        <h4>图例与快捷键说明 <span class="opt-tag">Legend &amp; Shortcuts</span></h4>
-        <div class="lg-grid">
-          <section>
-            <h5>真题考频 · 近 11 年单卷均值</h5>
-            <ul class="lg-list">
-              <li><span class="dot c1"></span><b>54%</b><span>≥4 考 · 890 词 · 盲测均值 54.0%</span></li>
-              <li><span class="dot c2"></span><b>19%</b><span>2–3 考 · 881 词 · 盲测均值 19.1%</span></li>
-              <li><span class="dot c3"></span><b>10%</b><span>1 考 + 远期高频 · 1425 词 · 盲测均值 9.9%</span></li>
-              <li><span class="dot c4"></span><b>3%</b><span>0 考基础词 · 1880 词 · 盲测均值 2.7%</span></li>
-            </ul>
-          </section>
-          <section>
-            <h5>评分 · FSRS-6 四档</h5>
-            <ul class="lg-list">
-              <li><span class="sw sw-1"></span><b>1 重来</b><span>新卡 1m · 遗忘重学 10m</span></li>
-              <li><span class="sw sw-2"></span><b>2 困难</b><span>新卡 6m · 复习卡动态间隔</span></li>
-              <li><span class="sw sw-3"></span><b>3 良好</b><span>新卡毕业 2d · 随稳定性增长</span></li>
-              <li><span class="sw sw-4"></span><b>4 简单</b><span>新卡免检 8d · 长周期巩固</span></li>
-            </ul>
-          </section>
-          <section>
-            <h5>记忆留存 R · 进度条颜色</h5>
-            <ul class="lg-list">
-              <li><span class="sw sw-1"></span><b>R &lt; 50%</b><span>与「重来」同色</span></li>
-              <li><span class="sw sw-2"></span><b>50% – 85%</b><span>与「困难」同色</span></li>
-              <li><span class="sw sw-3"></span><b>85% – 95%</b><span>与「良好」同色</span></li>
-              <li><span class="sw sw-4"></span><b>R ≥ 95%</b><span>与「简单」同色</span></li>
-            </ul>
-            <p class="lg-note"><span class="lg-mark">熟词僻义</span> 用暖黄高亮标出。词条旁 ✦ 表示 1 个必考僻义，✦✦ 表示 2 个及以上。</p>
-          </section>
-        </div>
-        <div class="lg-keys">
-          <span><kbd>Space</kbd>翻面</span>
-          <span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd>评分并下一词</span>
-          <span><kbd>←</kbd><kbd>→</kbd>切换卡片</span>
-          <span><kbd>R</kbd>重读</span>
-          <span><kbd>V</kbd>发音模式</span>
-          <span><kbd>/</kbd>搜索</span>
-          <span><kbd>W</kbd>迷你挂件</span>
-          <span><kbd>F</kbd>全屏</span>
-          <span><kbd>⌘</kbd><kbd>Z</kbd>撤销</span>
+      <section class="opt-sec opt-acc" id="acc-appear">
+        <button type="button" class="opt-acc-head" onclick="toggleOptAcc('acc-appear')">
+          <span class="opt-acc-title">外观、发音与手势</span>
+          <span class="opt-acc-right">
+            <span class="opt-acc-meta" id="acc-sum-appear">跟随系统 · 美音 · 手势</span>
+            <span class="opt-acc-chev" aria-hidden="true"></span>
+          </span>
+        </button>
+        <div class="opt-acc-body">
+          <div class="theme-grid" id="theme-picker-grid">
+            <button type="button" class="theme-btn" data-theme-opt="auto" onclick="setAppTheme('auto')">
+              <span class="theme-swatch" style="background:linear-gradient(135deg, #f3f4f6 50%, #0f1114 50%);"></span>跟随系统
+            </button>
+            <button type="button" class="theme-btn" data-theme-opt="sage" onclick="setAppTheme('sage')">
+              <span class="theme-swatch" style="background:#e8efe9;"></span>竹青护眼
+            </button>
+            <button type="button" class="theme-btn" data-theme-opt="sepia" onclick="setAppTheme('sepia')">
+              <span class="theme-swatch" style="background:#f5f1e8;"></span>暖调书页
+            </button>
+            <button type="button" class="theme-btn" data-theme-opt="dark" onclick="setAppTheme('dark')">
+              <span class="theme-swatch" style="background:#0f1114;"></span>深海暗夜
+            </button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;" id="voice-picker-grid">
+            <button type="button" class="theme-btn" data-voice-opt="us" onclick="setVoiceModeDirect('us')">美式发音</button>
+            <button type="button" class="theme-btn" data-voice-opt="uk" onclick="setVoiceModeDirect('uk')">英式发音</button>
+            <button type="button" class="theme-btn" data-voice-opt="off" onclick="setVoiceModeDirect('off')">静音（仅点读）</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;" id="navmode-picker-grid">
+            <button type="button" class="theme-btn" data-nav-opt="gesture" onclick="setNavMode('gesture')">极简手势（隐藏底栏）</button>
+            <button type="button" class="theme-btn" data-nav-opt="buttons" onclick="setNavMode('buttons')">显示底部按钮栏</button>
+          </div>
+          <p class="opt-sub" style="margin-top:0;">手势说明：在卡片上 <b>左滑</b> 下一词 · <b>右滑</b> 上一词 · <b>双击卡片下方空白处</b> 撤销上一次评分（电脑端按 <code>←/→</code> 切词，<code>⌘Z</code> 撤销）。</p>
         </div>
       </section>
-    </div>
 
-    <div class="modal-foot">
-      <button class="action-btn" onclick="closeFsrsModal()">取消</button>
-      <button class="action-btn btn-primary" onclick="saveFsrsOptions()">保存并应用排程</button>
+      <section class="opt-sec opt-acc" id="acc-widget">
+        <button type="button" class="opt-acc-head" onclick="toggleOptAcc('acc-widget')">
+          <span class="opt-acc-title">桌面小组件与挂件</span>
+          <span class="opt-acc-right">
+            <span class="opt-acc-meta" id="acc-sum-widget">iOS / Mac</span>
+            <span class="opt-acc-chev" aria-hidden="true"></span>
+          </span>
+        </button>
+        <div class="opt-acc-body">
+          <ol class="steps">
+            <li><b>iPhone / iPad</b>：下载 Scriptable → 复制小组件代码 → 在 Scriptable 右上角 <code>+</code> 粘贴保存 → 桌面长按添加 Scriptable（中号）小组件并选中该脚本。</li>
+            <li><b>Mac</b>：切换迷你挂件模式，再把浏览器窗口缩到屏幕角落，即成无顶栏的极简背词贴纸。</li>
+          </ol>
+          <div class="btn-row">
+            <a href="https://apps.apple.com/app/scriptable/id1405459188" target="_blank" rel="noopener" class="action-btn">直达商店下载 Scriptable</a>
+            <button type="button" class="action-btn btn-primary" onclick="copyScriptableWidgetCode()">复制小组件代码</button>
+            <button type="button" class="action-btn" onclick="closeFsrsModal(); toggleMiniWidgetMode();">切换迷你挂件<kbd>W</kbd></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="opt-sec opt-acc" id="acc-backup">
+        <button type="button" class="opt-acc-head" onclick="toggleOptAcc('acc-backup')">
+          <span class="opt-acc-title">数据与备份</span>
+          <span class="opt-acc-right">
+            <span class="opt-acc-meta" id="acc-sum-backup">导出 / 恢复</span>
+            <span class="opt-acc-chev" aria-hidden="true"></span>
+          </span>
+        </button>
+        <div class="opt-acc-body">
+          <div class="btn-row">
+            <button type="button" class="action-btn" onclick="exportBackupJSON()">导出学习记录 JSON</button>
+            <button type="button" class="action-btn" onclick="triggerImportJSON()">导入记录 JSON</button>
+            <button type="button" class="action-btn" onclick="toggleJsonPastePanel()">剪贴板备份 / 粘贴恢复</button>
+            <input type="file" id="import-json-input" accept=".json" style="display:none;" onchange="importBackupJSON(event)">
+            <button type="button" class="action-btn btn-danger" onclick="resetAllProgress()">清空重置进度</button>
+          </div>
+          <div id="json-paste-panel" class="paste-panel" style="display:none;">
+            <div class="paste-head">
+              <span>剪贴板 JSON 备份与粘贴恢复（兼容 Obsidian 内嵌窗口与跨设备同步）</span>
+              <div class="btn-row">
+                <button type="button" class="action-btn btn-small" onclick="copyBackupJSONToClipboard()">复制当前备份</button>
+                <button type="button" class="action-btn btn-small btn-primary" onclick="restoreFromJsonTextarea()">从文本框恢复</button>
+              </div>
+            </div>
+            <textarea id="json-paste-area" class="opt-textarea" placeholder="点击「复制当前备份」生成备份文本，或在此粘贴已备份的 JSON 后点击「从文本框恢复」"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="opt-sec opt-acc" id="legend-panel">
+        <button type="button" class="opt-acc-head" onclick="toggleOptAcc('legend-panel')">
+          <span class="opt-acc-title">图例说明</span>
+          <span class="opt-acc-right">
+            <span class="opt-acc-meta" id="acc-sum-legend">考频 · 留存率</span>
+            <span class="opt-acc-chev" aria-hidden="true"></span>
+          </span>
+        </button>
+        <div class="opt-acc-body">
+          <div class="lg-grid">
+            <section>
+              <h5>真题考频 · 近 11 年单卷均值</h5>
+              <ul class="lg-list">
+                <li><span class="dot c1"></span><b>54%</b><span>≥4 考 · 890 词 · 盲测均值 54.0%</span></li>
+                <li><span class="dot c2"></span><b>19%</b><span>2–3 考 · 881 词 · 盲测均值 19.1%</span></li>
+                <li><span class="dot c3"></span><b>10%</b><span>1 考 + 远期高频 · 1425 词 · 盲测均值 9.9%</span></li>
+                <li><span class="dot c4"></span><b>3%</b><span>0 考基础词 · 1880 词 · 盲测均值 2.7%</span></li>
+              </ul>
+            </section>
+            <section>
+              <h5>记忆留存 R · 进度条颜色</h5>
+              <ul class="lg-list">
+                <li><span class="sw sw-1"></span><b>R &lt; 50%</b><span>与「重来」同色</span></li>
+                <li><span class="sw sw-2"></span><b>50% – 85%</b><span>与「困难」同色</span></li>
+                <li><span class="sw sw-3"></span><b>85% – 95%</b><span>与「良好」同色</span></li>
+                <li><span class="sw sw-4"></span><b>R ≥ 95%</b><span>与「简单」同色</span></li>
+              </ul>
+              <p class="lg-note"><span class="lg-mark">熟词僻义</span> 用暖黄高亮标出。词条旁 ✦ 表示 1 个必考僻义，✦✦ 表示 2 个及以上。</p>
+            </section>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 </div>
@@ -3076,8 +3165,38 @@ function onSearch(val) {
   renderAll();
 }
 
+function toggleOptAcc(secId) {
+  const el = document.getElementById(secId);
+  if (!el) return;
+  el.classList.toggle("open");
+}
+
+function updateModalAccSummaries() {
+  const fsrsSum = document.getElementById("acc-sum-fsrs");
+  if (fsrsSum) {
+    const retInput = document.getElementById("opt-ret-num");
+    const ivlInput = document.getElementById("opt-max-ivl");
+    const modalOpen = document.getElementById("fsrs-modal") && document.getElementById("fsrs-modal").classList.contains("show");
+    const retVal = (modalOpen && retInput && retInput.value) ? retInput.value : Math.round((fsrsConfig.requestRetention || 0.90) * 100);
+    const ivlVal = (modalOpen && ivlInput && ivlInput.value) ? ivlInput.value : (fsrsConfig.maximumInterval || 30);
+    fsrsSum.textContent = `保留率 ${retVal}% · 上限 ${ivlVal}d`;
+  }
+  const appSum = document.getElementById("acc-sum-appear");
+  if (appSum) {
+    let th = "auto";
+    try { th = localStorage.getItem("kaoyan_201_theme") || "auto"; } catch (e) {}
+    if (th === "light") th = "auto";
+    const thNames = { auto: "跟随系统", sage: "竹青护眼", sepia: "暖调书页", dark: "深海暗夜" };
+    const vmNames = { us: "美音", uk: "英音", off: "静音" };
+    let nm = "gesture";
+    try { nm = localStorage.getItem("kaoyan_201_navmode") || "gesture"; } catch (e) {}
+    const nmName = (nm === "buttons") ? "按钮栏" : "手势";
+    appSum.textContent = `${thNames[th] || "跟随系统"} · ${vmNames[voiceMode] || "美音"} · ${nmName}`;
+  }
+}
+
 function toggleLegend() {
-  document.getElementById("legend-panel").classList.toggle("show");
+  toggleOptAcc("legend-panel");
 }
 
 // ============================================================================
@@ -3106,7 +3225,9 @@ function openFsrsModal() {
   document.getElementById("opt-direct-good").checked = (fsrsConfig.directGood !== false);
   document.getElementById("opt-reschedule").checked = (fsrsConfig.rescheduleOnChange !== false);
   document.getElementById("opt-weights").value = (fsrsConfig.w || DEFAULT_FSRS6_WEIGHTS).map(n => Number(n).toFixed(4)).join(", ");
+  document.querySelectorAll("#fsrs-modal .opt-acc.open").forEach(el => el.classList.remove("open"));
   updateSimulatorPreview();
+  updateModalAccSummaries();
   document.getElementById("fsrs-modal").classList.add("show");
 }
 
@@ -3199,6 +3320,7 @@ function updateSimulatorPreview() {
     </thead>
     <tbody>${rows}</tbody>
   </table>`;
+  if (typeof updateModalAccSummaries === "function") updateModalAccSummaries();
 }
 
 function rescheduleAllReviewedCards(newCfg) {
@@ -3672,6 +3794,7 @@ function updateVoiceBtnUI() {
   document.querySelectorAll("#voice-picker-grid .theme-btn").forEach(b => {
     b.classList.toggle("active", b.getAttribute("data-voice-opt") === voiceMode);
   });
+  if (typeof updateModalAccSummaries === "function") updateModalAccSummaries();
 }
 
 function setVoiceModeDirect(mode) {
@@ -3972,6 +4095,8 @@ Script.complete();`;
     } catch (e) {}
     const area = document.getElementById("json-paste-area");
     const panel = document.getElementById("json-paste-panel");
+    const backupAcc = document.getElementById("acc-backup");
+    if (backupAcc) backupAcc.classList.add("open");
     if (area && panel) {
       panel.style.display = "block";
       area.value = txt;
@@ -4121,6 +4246,7 @@ function applyThemeAttr(mode) {
   document.querySelectorAll("#theme-picker-grid .theme-btn").forEach(btn => {
     btn.classList.toggle("active", btn.getAttribute("data-theme-opt") === m);
   });
+  if (typeof updateModalAccSummaries === "function") updateModalAccSummaries();
 }
 if (window.matchMedia) {
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
@@ -4143,6 +4269,7 @@ function applyNavMode(mode) {
   document.querySelectorAll("#navmode-picker-grid .theme-btn").forEach(btn => {
     btn.classList.toggle("active", btn.getAttribute("data-nav-opt") === m);
   });
+  if (typeof updateModalAccSummaries === "function") updateModalAccSummaries();
 }
 function setNavMode(mode) {
   const m = (mode === "buttons") ? "buttons" : "gesture";
