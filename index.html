@@ -170,7 +170,7 @@
 body:not(.show-classic-nav) .stage-nav { display: none !important; }
 .stage-blank-zone {
   width: 100%;
-  min-height: max(130px, 24vh);
+  min-height: max(280px, 46vh);
   cursor: default;
   -webkit-user-select: none;
   user-select: none;
@@ -4354,10 +4354,18 @@ function setNavMode(mode) {
       swipeEligible = false;
       return;
     }
+    if (document.body.classList.contains("nav-open")) {
+      swipeEligible = false;
+      return;
+    }
+    const modal = document.getElementById("fsrs-modal");
+    if (modal && modal.classList.contains("show")) {
+      swipeEligible = false;
+      return;
+    }
     const t = e.target;
-    const stageArea = t && t.closest ? t.closest("#stage-container") : null;
-    const inDockOrModal = t && t.closest ? t.closest(".stage-dock, .fsrs-btn, .modal-backdrop, .pack-popover") : null;
-    if (stageArea && !inDockOrModal) {
+    const inExcluded = t && t.closest ? t.closest(".topbar, .today-strip, .app-side, .stage-dock, .stage-flip-prompt, .stage-nav, .modal-backdrop, .pack-popover, button, input, textarea, select, a") : null;
+    if (!inExcluded) {
       swipeEligible = true;
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
