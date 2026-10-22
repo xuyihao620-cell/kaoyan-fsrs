@@ -14,10 +14,10 @@
   var m = "auto";
   try { m = localStorage.getItem("kaoyan_201_theme") || "auto"; } catch (e) {}
   var isDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  var eff = (m === "light" || m === "sepia" || m === "dark") ? m : (isDark ? "dark" : "light");
-  var hex = eff === "dark" ? "#0f1114" : (eff === "sepia" ? "#f5f1e8" : "#f3f4f6");
+  var eff = (m === "sage" || m === "sepia" || m === "dark" || m === "light") ? m : (isDark ? "dark" : "light");
+  var hex = eff === "dark" ? "#0f1114" : (eff === "sepia" ? "#f5f1e8" : (eff === "sage" ? "#e8efe9" : "#f3f4f6"));
   var root = document.documentElement;
-  if (m === "light" || m === "sepia" || m === "dark") root.setAttribute("data-theme", m);
+  if (m === "sage" || m === "sepia" || m === "dark" || m === "light") root.setAttribute("data-theme", m);
   root.style.backgroundColor = hex;
   root.style.colorScheme = (eff === "dark") ? "dark" : "light";
   var tc = document.getElementById("meta-theme-color");
@@ -148,6 +148,34 @@
   --shadow-seg: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 1px 2px rgba(0, 0, 0, 0.4);
   color-scheme: dark;
 }
+:root[data-theme="sage"] {
+  --bg: #e8efe9;
+  --side: #dfe8e1;
+  --surface: #f6faf6;
+  --sunken: #e1eae2;
+  --raised: #fbfdfb;
+  --hover: rgba(24, 38, 28, 0.05);
+  --line: rgba(24, 38, 28, 0.09);
+  --line-strong: rgba(24, 38, 28, 0.17);
+  --ink: #18221b;
+  --ink-2: #435448;
+  --ink-3: #6a7d70;
+  --ink-4: #b8c7bc;
+  --scrim: rgba(18, 28, 21, 0.36);
+  --glass: rgba(232, 239, 233, 0.85);
+  --accent: #2b6e52;
+  --on-accent: #ffffff;
+}
+body:not(.show-classic-nav) .stage-nav { display: none !important; }
+.stage-blank-zone {
+  width: 100%;
+  min-height: max(130px, 24vh);
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+body.show-classic-nav .stage-blank-zone { min-height: 40px; }
 :root[data-theme="sepia"] {
   --bg: #f5f1e8;
   --side: #ece6d9;
@@ -1401,13 +1429,13 @@ body.mini-widget-mode .stage-word { font-size: clamp(32px, 6vw, 46px); }
 
     <div class="modal-body">
       <section class="opt-sec">
-        <h4>外观与朗读偏好 <span class="opt-tag">Appearance &amp; Audio</span></h4>
+        <h4>外观、发音与手势操控 <span class="opt-tag">Appearance &amp; Gestures</span></h4>
         <div class="theme-grid" id="theme-picker-grid">
           <button type="button" class="theme-btn" data-theme-opt="auto" onclick="setAppTheme('auto')">
             <span class="theme-swatch" style="background:linear-gradient(135deg, #f3f4f6 50%, #0f1114 50%);"></span>跟随系统
           </button>
-          <button type="button" class="theme-btn" data-theme-opt="light" onclick="setAppTheme('light')">
-            <span class="theme-swatch" style="background:#f3f4f6;"></span>冷调纸白
+          <button type="button" class="theme-btn" data-theme-opt="sage" onclick="setAppTheme('sage')">
+            <span class="theme-swatch" style="background:#e8efe9;"></span>竹青护眼
           </button>
           <button type="button" class="theme-btn" data-theme-opt="sepia" onclick="setAppTheme('sepia')">
             <span class="theme-swatch" style="background:#f5f1e8;"></span>暖调书页
@@ -1421,6 +1449,11 @@ body.mini-widget-mode .stage-word { font-size: clamp(32px, 6vw, 46px); }
           <button type="button" class="theme-btn" data-voice-opt="uk" onclick="setVoiceModeDirect('uk')">英式发音</button>
           <button type="button" class="theme-btn" data-voice-opt="off" onclick="setVoiceModeDirect('off')">静音（仅点读）</button>
         </div>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding-top:4px;" id="navmode-picker-grid">
+          <button type="button" class="theme-btn" data-nav-opt="gesture" onclick="setNavMode('gesture')">极简手势（隐藏底栏）</button>
+          <button type="button" class="theme-btn" data-nav-opt="buttons" onclick="setNavMode('buttons')">显示底部按钮栏</button>
+        </div>
+        <p class="opt-sub" style="margin-top:2px;">手势说明：在卡片上 <b>左滑</b> 下一词 · <b>右滑</b> 上一词 · <b>双击卡片下方空白处</b> 撤销上一次评分（电脑端按 <code>←/→</code> 切词，<code>⌘Z</code> 撤销）。</p>
       </section>
 
       <section class="opt-sec">
@@ -2461,10 +2494,10 @@ function renderStageView() {
     <div class="nav-mid">
       <button class="action-btn btn-ghost nav-flip" onclick="flipStageCard()">${isStageFlipped ? "收起释义" : "翻面"}<kbd>Space</kbd></button>
       <button class="action-btn btn-ghost" onclick="undoLastRating()" ${undoStack.length === 0 ? "disabled" : ""}>↶ 撤销<kbd>⌘Z</kbd></button>
-      <button class="action-btn btn-ghost" onclick="jumpToListCard('${wObj.w}')">在列表中定位</button>
     </div>
     <button class="action-btn nav-step" onclick="stepStageCard(1)" ${idx + 1 >= flat.length ? "disabled" : ""}>下一词<kbd>→</kbd> ›</button>
-  </div>`;
+  </div>
+  <div id="stage-blank-undo-zone" class="stage-blank-zone" title="双击此处空白区域可撤销上一次评分"></div>`;
 }
 
 function renderCardHTML(wObj) {
@@ -4051,14 +4084,17 @@ function pickSubject(name) {
 }
 
 const THEME_STORAGE_KEY = "kaoyan_201_theme";
+const NAVMODE_STORAGE_KEY = "kaoyan_201_navmode";
+
 function syncMetaThemeColor(mode) {
   let m = mode;
   if (!m) {
     try { m = localStorage.getItem(THEME_STORAGE_KEY) || "auto"; } catch (e) { m = "auto"; }
   }
+  if (m === "light") m = "auto";
   const isSysDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const eff = (m === "light" || m === "sepia" || m === "dark") ? m : (isSysDark ? "dark" : "light");
-  const colorMap = { light: "#f3f4f6", sepia: "#f5f1e8", dark: "#0f1114" };
+  const eff = (m === "sage" || m === "sepia" || m === "dark") ? m : (isSysDark ? "dark" : "light");
+  const colorMap = { light: "#f3f4f6", sage: "#e8efe9", sepia: "#f5f1e8", dark: "#0f1114" };
   const hex = colorMap[eff] || "#f3f4f6";
   const scheme = (eff === "dark") ? "dark" : "light";
   document.documentElement.style.backgroundColor = hex;
@@ -4074,35 +4110,152 @@ function syncMetaThemeColor(mode) {
   }
 }
 function applyThemeAttr(mode) {
+  const m = (mode === "light") ? "auto" : mode;
   const root = document.documentElement;
-  if (mode === "light" || mode === "sepia" || mode === "dark") {
-    root.setAttribute("data-theme", mode);
+  if (m === "sage" || m === "sepia" || m === "dark") {
+    root.setAttribute("data-theme", m);
   } else {
     root.removeAttribute("data-theme");
   }
-  syncMetaThemeColor(mode);
+  syncMetaThemeColor(m);
   document.querySelectorAll("#theme-picker-grid .theme-btn").forEach(btn => {
-    btn.classList.toggle("active", btn.getAttribute("data-theme-opt") === mode);
+    btn.classList.toggle("active", btn.getAttribute("data-theme-opt") === m);
   });
 }
 if (window.matchMedia) {
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
     let cur = "auto";
     try { cur = localStorage.getItem(THEME_STORAGE_KEY) || "auto"; } catch (e) {}
-    if (cur === "auto") syncMetaThemeColor("auto");
+    if (cur === "auto" || cur === "light") syncMetaThemeColor("auto");
   });
 }
 function setAppTheme(mode) {
-  const m = (mode === "light" || mode === "sepia" || mode === "dark") ? mode : "auto";
+  const m = (mode === "sage" || mode === "sepia" || mode === "dark") ? mode : "auto";
   try { localStorage.setItem(THEME_STORAGE_KEY, m); } catch (e) {}
   applyThemeAttr(m);
-  const names = { auto: "跟随系统", light: "冷调纸白", sepia: "暖调书页", dark: "深海暗夜" };
+  const names = { auto: "跟随系统", sage: "竹青护眼", sepia: "暖调书页", dark: "深海暗夜" };
   showToast(`已切换外观主题：${names[m]}`);
 }
-(function initTheme() {
-  let saved = "auto";
-  try { saved = localStorage.getItem(THEME_STORAGE_KEY) || "auto"; } catch (e) {}
-  applyThemeAttr(saved);
+
+function applyNavMode(mode) {
+  const m = (mode === "buttons") ? "buttons" : "gesture";
+  document.body.classList.toggle("show-classic-nav", m === "buttons");
+  document.querySelectorAll("#navmode-picker-grid .theme-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.getAttribute("data-nav-opt") === m);
+  });
+}
+function setNavMode(mode) {
+  const m = (mode === "buttons") ? "buttons" : "gesture";
+  try { localStorage.setItem(NAVMODE_STORAGE_KEY, m); } catch (e) {}
+  applyNavMode(m);
+  showToast(m === "gesture" ? "已开启极简手势模式（左/右滑卡片切词，双击卡片下方空白撤销）" : "已恢复底部经典按钮栏");
+}
+
+(function initThemeAndNav() {
+  let savedTheme = "auto";
+  try { savedTheme = localStorage.getItem(THEME_STORAGE_KEY) || "auto"; } catch (e) {}
+  applyThemeAttr(savedTheme);
+  let savedNav = "gesture";
+  try { savedNav = localStorage.getItem(NAVMODE_STORAGE_KEY) || "gesture"; } catch (e) {}
+  applyNavMode(savedNav);
+})();
+
+// ============================================================================
+// Stage Card Swipe (Left/Right) & Below-Card Blank Zone Double-Tap Undo
+// ============================================================================
+(function initStageGestures() {
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchStartTime = 0;
+  let swipeEligible = false;
+
+  document.addEventListener("touchstart", e => {
+    if (viewMode !== "stage") return;
+    if (!e.touches || e.touches.length !== 1) {
+      swipeEligible = false;
+      return;
+    }
+    const t = e.target;
+    const cardEl = t && t.closest ? t.closest(".stage-card") : null;
+    const inDockOrBtn = t && t.closest ? t.closest(".stage-dock, .stage-flip-prompt, button") : null;
+    if (cardEl && !inDockOrBtn) {
+      swipeEligible = true;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchStartTime = Date.now();
+    } else {
+      swipeEligible = false;
+    }
+  }, { passive: true });
+
+  document.addEventListener("touchend", e => {
+    if (!swipeEligible || viewMode !== "stage") return;
+    swipeEligible = false;
+    if (!e.changedTouches || e.changedTouches.length !== 1) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    const dt = Date.now() - touchStartTime;
+    if (dt < 600 && Math.abs(dx) > 52 && Math.abs(dx) > Math.abs(dy) * 1.6) {
+      if (dx < 0) stepStageCard(1);
+      else stepStageCard(-1);
+    }
+  }, { passive: true });
+
+  // Double-tap / double-click strictly in the blank space BELOW .stage-card
+  let lastBlankTapTs = 0;
+  let lastBlankTapX = 0;
+  let lastBlankTapY = 0;
+
+  function isBelowCardBlankArea(target, clientY) {
+    if (viewMode !== "stage") return false;
+    if (document.body.classList.contains("nav-open")) return false;
+    const modal = document.getElementById("fsrs-modal");
+    if (modal && modal.classList.contains("show")) return false;
+    if (!target || !target.closest) return false;
+    if (target.closest(".stage-dock, .stage-flip-prompt, .stage-nav, .pack-popover, .topbar, .app-side, button, a, input")) {
+      return false;
+    }
+    if (target.id === "stage-blank-undo-zone") return true;
+    const cardEl = document.querySelector("#stage-container .stage-card");
+    if (!cardEl) return false;
+    const rect = cardEl.getBoundingClientRect();
+    return clientY > rect.bottom + 4;
+  }
+
+  function triggerBlankUndo() {
+    if (undoStack.length === 0) {
+      showToast("当前暂无可撤销的打分记录");
+      return;
+    }
+    undoLastRating();
+  }
+
+  document.addEventListener("touchend", e => {
+    if (!e.changedTouches || e.changedTouches.length !== 1) return;
+    const touch = e.changedTouches[0];
+    if (!isBelowCardBlankArea(e.target, touch.clientY)) {
+      lastBlankTapTs = 0;
+      return;
+    }
+    const now = Date.now();
+    const dist = Math.hypot(touch.clientX - lastBlankTapX, touch.clientY - lastBlankTapY);
+    if (now - lastBlankTapTs < 340 && dist < 48) {
+      lastBlankTapTs = 0;
+      if (e.cancelable) e.preventDefault();
+      triggerBlankUndo();
+    } else {
+      lastBlankTapTs = now;
+      lastBlankTapX = touch.clientX;
+      lastBlankTapY = touch.clientY;
+    }
+  }, { passive: false });
+
+  document.addEventListener("dblclick", e => {
+    if (isBelowCardBlankArea(e.target, e.clientY)) {
+      e.preventDefault();
+      triggerBlankUndo();
+    }
+  });
 })();
 
 document.addEventListener("click", e => {
