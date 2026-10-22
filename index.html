@@ -61,8 +61,7 @@
   --good: #2c8256;
   --easy: #2f6db0;
   /* 熟词僻义 = highlighter */
-  --mark: rgba(255, 204, 41, 0.46);
-  --mark-top: 55%;
+  --mark: rgba(255, 204, 41, 0.28);
   --mark-ink: #8a5c00;
   --shadow-card: 0 0 0 1px rgba(24, 30, 44, 0.06), 0 1px 2px rgba(24, 30, 44, 0.04), 0 14px 34px -16px rgba(24, 30, 44, 0.18);
   --shadow-pop: 0 0 0 1px rgba(24, 30, 44, 0.08), 0 18px 44px -12px rgba(24, 30, 44, 0.28);
@@ -113,8 +112,7 @@
     --hard: #dfab4f;
     --good: #5cc28c;
     --easy: #70a8ec;
-    --mark: rgba(250, 196, 30, 0.2);
-    --mark-top: 14%;
+    --mark: rgba(250, 196, 30, 0.18);
     --mark-ink: #e9c463;
     --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 18px 40px -20px rgba(0, 0, 0, 0.8);
     --shadow-pop: 0 0 0 1px rgba(255, 255, 255, 0.09), 0 20px 48px -12px rgba(0, 0, 0, 0.7);
@@ -143,8 +141,7 @@
   --hard: #dfab4f;
   --good: #5cc28c;
   --easy: #70a8ec;
-  --mark: rgba(250, 196, 30, 0.2);
-  --mark-top: 14%;
+  --mark: rgba(250, 196, 30, 0.18);
   --mark-ink: #e9c463;
   --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 18px 40px -20px rgba(0, 0, 0, 0.8);
   --shadow-pop: 0 0 0 1px rgba(255, 255, 255, 0.09), 0 20px 48px -12px rgba(0, 0, 0, 0.7);
@@ -669,10 +666,10 @@ button.subj:hover { background: var(--hover); }
 .pol-neg { color: var(--again); background: color-mix(in srgb, var(--again) 13%, transparent); }
 .po-star { display: inline-block; width: 1.4em; text-indent: 0; color: var(--mark-ink); }
 .po-text, .lg-mark {
-  padding: 0 3px;
-  margin: 0 -3px;
-  border-radius: 3px;
-  background-image: linear-gradient(transparent 0 var(--mark-top), var(--mark) var(--mark-top) 92%, transparent 92%);
+  padding: 2px 6px;
+  margin: 0 -2px;
+  border-radius: 5px;
+  background: var(--mark);
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
@@ -1320,18 +1317,15 @@ body.mini-widget-mode .stage-word { font-size: clamp(32px, 6vw, 46px); }
             <button class="view-btn" id="view-list" onclick="setViewMode('list')">列表</button>
           </div>
           <button class="action-btn pack-picker-btn" id="btn-pack-picker" onclick="togglePackPopover(event)" title="选择四大模块或定向跳转到任意词包">词包：全部 (105)</button>
-          <button class="filter-btn" data-filter="high" onclick="setFilter('high')" title="开启/关闭：仅抽查 54% / 19% 高频核心词">高频</button>
-          <button class="filter-btn" data-filter="poly" onclick="setFilter('poly')" title="开启/关闭：仅抽查含必考熟词僻义 ✦ 的核心词">僻义 <span class="chip-star">✦</span></button>
+          <button class="action-btn pack-picker-btn" id="btn-filter-picker" onclick="toggleFilterPopover(event)" title="按真题考频（54% / 19% / 10% / 3%）或熟词僻义筛选">筛选：全部</button>
           <label class="search-field">
             <input type="text" id="search-box" class="search-input" placeholder="搜索单词、词根、释义" oninput="onSearch(this.value)" autocomplete="off" autocapitalize="off" spellcheck="false">
             <kbd>/</kbd>
           </label>
         </div>
         <div class="tb-tools">
-          <button class="tool-btn" data-ico="speaker" id="btn-voice-mode" onclick="cycleVoiceMode()" title="切换翻面自动发音：美音 / 英音 / 静音（快捷键 V 切换，R 重读当前词）">美音</button>
           <button class="tool-btn sync-btn" data-ico="cloud" id="btn-cloud-sync" onclick="cloudSyncPullAndMerge(true)" title="点击立即与 GitHub 私密云账本双向无损同步（Mac 与 iPhone 实时互通）">云同步</button>
           <button class="tool-btn icon-only" data-ico="sliders" onclick="openFsrsModal()" title="牌组选项 · FSRS-6 参数" aria-label="牌组选项">选项</button>
-          <button class="tool-btn icon-only" data-ico="info" onclick="toggleLegend()" title="图例与快捷键" aria-label="图例与快捷键">图例</button>
         </div>
       </div>
     </header>
@@ -1343,50 +1337,6 @@ body.mini-widget-mode .stage-word { font-size: clamp(32px, 6vw, 46px); }
         <div class="ts-item"><span class="ts-label">已学 · 已掌握</span><span class="ts-val"><strong id="st-learned">0</strong><small>·</small><strong id="st-mastered">0</strong><small>/ 5076</small></span></div>
         <div class="ts-item" title="仅统计已学卡片（reps > 0）的实时 FSRS-6 平均提取概率 R(t,S)"><span class="ts-label">记忆留存</span><span class="ts-val"><strong id="st-ret">--</strong></span></div>
       </section>
-
-      <div id="legend-panel" class="legend-box">
-        <div class="lg-grid">
-          <section>
-            <h5>真题考频 · 近 11 年单卷均值</h5>
-            <ul class="lg-list">
-              <li><span class="dot c1"></span><b>54%</b><span>≥4 考 · 890 词 · 盲测均值 54.0%</span></li>
-              <li><span class="dot c2"></span><b>19%</b><span>2–3 考 · 881 词 · 盲测均值 19.1%</span></li>
-              <li><span class="dot c3"></span><b>10%</b><span>1 考 + 远期高频 · 1425 词 · 盲测均值 9.9%</span></li>
-              <li><span class="dot c4"></span><b>3%</b><span>0 考基础词 · 1880 词 · 盲测均值 2.7%</span></li>
-            </ul>
-          </section>
-          <section>
-            <h5>评分 · FSRS-6 四档</h5>
-            <ul class="lg-list">
-              <li><span class="sw sw-1"></span><b>1 重来</b><span>新卡 1m · 遗忘重学 10m</span></li>
-              <li><span class="sw sw-2"></span><b>2 困难</b><span>新卡 6m · 复习卡动态间隔</span></li>
-              <li><span class="sw sw-3"></span><b>3 良好</b><span>新卡毕业 2d · 随稳定性增长</span></li>
-              <li><span class="sw sw-4"></span><b>4 简单</b><span>新卡免检 8d · 长周期巩固</span></li>
-            </ul>
-          </section>
-          <section>
-            <h5>记忆留存 R · 进度条颜色</h5>
-            <ul class="lg-list">
-              <li><span class="sw sw-1"></span><b>R &lt; 50%</b><span>与「重来」同色</span></li>
-              <li><span class="sw sw-2"></span><b>50% – 85%</b><span>与「困难」同色</span></li>
-              <li><span class="sw sw-3"></span><b>85% – 95%</b><span>与「良好」同色</span></li>
-              <li><span class="sw sw-4"></span><b>R ≥ 95%</b><span>与「简单」同色</span></li>
-            </ul>
-            <p class="lg-note"><span class="lg-mark">✦ 熟词僻义</span> 用荧光笔标出。词条旁 ✦ 表示 1 个必考僻义，✦✦ 表示 2 个及以上。</p>
-          </section>
-        </div>
-        <div class="lg-keys">
-          <span><kbd>Space</kbd>翻面</span>
-          <span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd>评分并下一词</span>
-          <span><kbd>←</kbd><kbd>→</kbd>切换卡片</span>
-          <span><kbd>R</kbd>重读</span>
-          <span><kbd>V</kbd>发音模式</span>
-          <span><kbd>/</kbd>搜索</span>
-          <span><kbd>W</kbd>迷你挂件</span>
-          <span><kbd>F</kbd>全屏</span>
-          <span><kbd>⌘</kbd><kbd>Z</kbd>撤销</span>
-        </div>
-      </div>
 
       <div id="stage-container" class="stage-wrapper"></div>
       <div id="packs-container" style="display:none;"></div>
@@ -1404,6 +1354,41 @@ body.mini-widget-mode .stage-word { font-size: clamp(32px, 6vw, 46px); }
   <div id="pp-pack-list" class="pp-pack-list"></div>
 </div>
 
+<div id="filter-popover" class="pack-popover" onclick="event.stopPropagation()">
+  <div class="pp-pack-list" style="max-height:none;">
+    <button class="pp-pack-item active" data-fopt="all" onclick="selectFilterOption('all')">
+      <span class="pp-pack-id">ALL</span>
+      <span class="pp-pack-name">全部卡片（不限考频与僻义）</span>
+      <span class="pp-pack-cnt">4317卡</span>
+    </button>
+    <button class="pp-pack-item" data-fopt="S3" onclick="selectFilterOption('S3')">
+      <span class="pp-pack-id"><span class="dot c1"></span></span>
+      <span class="pp-pack-name">54%（近 11 年 ≥4 考）</span>
+      <span class="pp-pack-cnt">890词</span>
+    </button>
+    <button class="pp-pack-item" data-fopt="S2" onclick="selectFilterOption('S2')">
+      <span class="pp-pack-id"><span class="dot c2"></span></span>
+      <span class="pp-pack-name">19%（近 11 年 2–3 考）</span>
+      <span class="pp-pack-cnt">881词</span>
+    </button>
+    <button class="pp-pack-item" data-fopt="S1" onclick="selectFilterOption('S1')">
+      <span class="pp-pack-id"><span class="dot c3"></span></span>
+      <span class="pp-pack-name">10%（近 11 年 1 考 / 远期高频）</span>
+      <span class="pp-pack-cnt">1425词</span>
+    </button>
+    <button class="pp-pack-item" data-fopt="S0" onclick="selectFilterOption('S0')">
+      <span class="pp-pack-id"><span class="dot c4"></span></span>
+      <span class="pp-pack-name">3%（近 11 年 0 考基础词）</span>
+      <span class="pp-pack-cnt">1880词</span>
+    </button>
+    <button class="pp-pack-item" data-fopt="poly" onclick="selectFilterOption('poly')">
+      <span class="pp-pack-id">僻义</span>
+      <span class="pp-pack-name">僻义（仅抽查含必考熟词僻义的核心词）</span>
+      <span class="pp-pack-cnt">必考</span>
+    </button>
+  </div>
+</div>
+
 <div id="fsrs-modal" class="modal-backdrop" onclick="if(event.target===this)closeFsrsModal()">
   <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="fsrs-modal-title">
     <div class="modal-head">
@@ -1416,7 +1401,7 @@ body.mini-widget-mode .stage-word { font-size: clamp(32px, 6vw, 46px); }
 
     <div class="modal-body">
       <section class="opt-sec">
-        <h4>外观与背景色调 <span class="opt-tag">Theme</span></h4>
+        <h4>外观与朗读偏好 <span class="opt-tag">Appearance &amp; Audio</span></h4>
         <div class="theme-grid" id="theme-picker-grid">
           <button type="button" class="theme-btn" data-theme-opt="auto" onclick="setAppTheme('auto')">
             <span class="theme-swatch" style="background:linear-gradient(135deg, #f3f4f6 50%, #0f1114 50%);"></span>跟随系统
@@ -1430,6 +1415,11 @@ body.mini-widget-mode .stage-word { font-size: clamp(32px, 6vw, 46px); }
           <button type="button" class="theme-btn" data-theme-opt="dark" onclick="setAppTheme('dark')">
             <span class="theme-swatch" style="background:#0f1114;"></span>深海暗夜
           </button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding-top:4px;" id="voice-picker-grid">
+          <button type="button" class="theme-btn" data-voice-opt="us" onclick="setVoiceModeDirect('us')">美式发音</button>
+          <button type="button" class="theme-btn" data-voice-opt="uk" onclick="setVoiceModeDirect('uk')">英式发音</button>
+          <button type="button" class="theme-btn" data-voice-opt="off" onclick="setVoiceModeDirect('off')">静音（仅点读）</button>
         </div>
       </section>
 
@@ -1513,6 +1503,51 @@ body.mini-widget-mode .stage-word { font-size: clamp(32px, 6vw, 46px); }
             </div>
           </div>
           <textarea id="json-paste-area" class="opt-textarea" placeholder="点击「复制当前备份」生成备份文本，或在此粘贴已备份的 JSON 后点击「从文本框恢复」"></textarea>
+        </div>
+      </section>
+
+      <section class="opt-sec" id="legend-panel">
+        <h4>图例与快捷键说明 <span class="opt-tag">Legend &amp; Shortcuts</span></h4>
+        <div class="lg-grid">
+          <section>
+            <h5>真题考频 · 近 11 年单卷均值</h5>
+            <ul class="lg-list">
+              <li><span class="dot c1"></span><b>54%</b><span>≥4 考 · 890 词 · 盲测均值 54.0%</span></li>
+              <li><span class="dot c2"></span><b>19%</b><span>2–3 考 · 881 词 · 盲测均值 19.1%</span></li>
+              <li><span class="dot c3"></span><b>10%</b><span>1 考 + 远期高频 · 1425 词 · 盲测均值 9.9%</span></li>
+              <li><span class="dot c4"></span><b>3%</b><span>0 考基础词 · 1880 词 · 盲测均值 2.7%</span></li>
+            </ul>
+          </section>
+          <section>
+            <h5>评分 · FSRS-6 四档</h5>
+            <ul class="lg-list">
+              <li><span class="sw sw-1"></span><b>1 重来</b><span>新卡 1m · 遗忘重学 10m</span></li>
+              <li><span class="sw sw-2"></span><b>2 困难</b><span>新卡 6m · 复习卡动态间隔</span></li>
+              <li><span class="sw sw-3"></span><b>3 良好</b><span>新卡毕业 2d · 随稳定性增长</span></li>
+              <li><span class="sw sw-4"></span><b>4 简单</b><span>新卡免检 8d · 长周期巩固</span></li>
+            </ul>
+          </section>
+          <section>
+            <h5>记忆留存 R · 进度条颜色</h5>
+            <ul class="lg-list">
+              <li><span class="sw sw-1"></span><b>R &lt; 50%</b><span>与「重来」同色</span></li>
+              <li><span class="sw sw-2"></span><b>50% – 85%</b><span>与「困难」同色</span></li>
+              <li><span class="sw sw-3"></span><b>85% – 95%</b><span>与「良好」同色</span></li>
+              <li><span class="sw sw-4"></span><b>R ≥ 95%</b><span>与「简单」同色</span></li>
+            </ul>
+            <p class="lg-note"><span class="lg-mark">熟词僻义</span> 用暖黄高亮标出。词条旁 ✦ 表示 1 个必考僻义，✦✦ 表示 2 个及以上。</p>
+          </section>
+        </div>
+        <div class="lg-keys">
+          <span><kbd>Space</kbd>翻面</span>
+          <span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd>评分并下一词</span>
+          <span><kbd>←</kbd><kbd>→</kbd>切换卡片</span>
+          <span><kbd>R</kbd>重读</span>
+          <span><kbd>V</kbd>发音模式</span>
+          <span><kbd>/</kbd>搜索</span>
+          <span><kbd>W</kbd>迷你挂件</span>
+          <span><kbd>F</kbd>全屏</span>
+          <span><kbd>⌘</kbd><kbd>Z</kbd>撤销</span>
         </div>
       </section>
     </div>
@@ -2222,6 +2257,10 @@ function matchesScopeFilter(wObj) {
     });
     if (!hitW && !hitD && !hitC && !hitPo && !hitL2 && !hitChildC) return false;
   }
+  if (currentFilter === "S3" || currentFilter === "S2" || currentFilter === "S1" || currentFilter === "S0") {
+    const ct = wObj.cardT || wObj.t;
+    return ct === currentFilter;
+  }
   if (currentFilter === "high") {
     const ct = wObj.cardT || wObj.t;
     return ct === "S3" || ct === "S2";
@@ -2343,7 +2382,7 @@ function renderStageView() {
       subHint = "请尝试缩短关键词或清空搜索框。";
     } else {
       if (currentFilter !== "all") {
-        actionHtml += `<button class="action-btn btn-primary" onclick="setFilter('all')">关闭「${currentFilter === 'high' ? '高频' : '僻义'}」过滤</button>`;
+        actionHtml += `<button class="action-btn btn-primary" onclick="setFilter('all')">返回全部卡片</button>`;
       }
       if (currentPackFilter !== "ALL" || currentMod !== "ALL") {
         actionHtml += `<button class="action-btn" onclick="setMod('ALL')">返回全部 105 个词包</button>`;
@@ -2506,6 +2545,7 @@ function populatePackDropdown() {
 
 function togglePackPopover(ev) {
   if (ev) ev.stopPropagation();
+  if (typeof closeFilterPopover === 'function') closeFilterPopover();
   const pop = document.getElementById("pack-popover");
   const btn = document.getElementById("btn-pack-picker");
   if (!pop || !btn) return;
@@ -2534,6 +2574,7 @@ function closePackPopover() {
 
 document.addEventListener("click", () => {
   closePackPopover();
+  if (typeof closeFilterPopover === 'function') closeFilterPopover();
 });
 
 function renderAll() {
@@ -2910,18 +2951,68 @@ function advanceToNextCard(wStr) {
   }
 }
 
+function updateFilterPickerBtnLabel() {
+  const btn = document.getElementById("btn-filter-picker");
+  if (!btn) return;
+  const labelMap = {
+    all: "筛选：全部",
+    S3: "筛选：54%",
+    S2: "筛选：19%",
+    S1: "筛选：10%",
+    S0: "筛选：3%",
+    poly: "筛选：僻义"
+  };
+  btn.textContent = labelMap[currentFilter] || "筛选：全部";
+  btn.classList.toggle("has-filter", currentFilter !== "all");
+  document.querySelectorAll("#filter-popover .pp-pack-item").forEach(el => {
+    el.classList.toggle("active", el.getAttribute("data-fopt") === currentFilter);
+  });
+}
+
 function setFilter(f) {
   if (f !== "all" && currentFilter === f) {
     currentFilter = "all";
   } else {
     currentFilter = f;
   }
-  document.querySelectorAll(".filter-btn[data-filter]").forEach(b => {
-    b.classList.toggle("active", b.getAttribute("data-filter") === currentFilter);
-  });
+  updateFilterPickerBtnLabel();
   forcedStageWord = null;
   isStageFlipped = false;
   renderAll();
+}
+
+function selectFilterOption(f) {
+  currentFilter = f || "all";
+  updateFilterPickerBtnLabel();
+  closeFilterPopover();
+  forcedStageWord = null;
+  isStageFlipped = false;
+  renderAll();
+}
+
+function toggleFilterPopover(ev) {
+  if (ev) ev.stopPropagation();
+  closePackPopover();
+  const pop = document.getElementById("filter-popover");
+  const btn = document.getElementById("btn-filter-picker");
+  if (!pop || !btn) return;
+  const willShow = !pop.classList.contains("show");
+  if (!willShow) {
+    pop.classList.remove("show");
+    return;
+  }
+  updateFilterPickerBtnLabel();
+  pop.classList.add("show");
+  const rect = btn.getBoundingClientRect();
+  const popW = Math.min(390, window.innerWidth - 20);
+  const left = Math.max(10, Math.min(rect.left, window.innerWidth - popW - 10));
+  pop.style.top = (rect.bottom + 6) + "px";
+  pop.style.left = left + "px";
+}
+
+function closeFilterPopover() {
+  const pop = document.getElementById("filter-popover");
+  if (pop) pop.classList.remove("show");
 }
 
 function setMod(m) {
@@ -3545,17 +3636,20 @@ try {
 } catch (e) {}
 
 function updateVoiceBtnUI() {
-  const btn = document.getElementById("btn-voice-mode");
-  if (!btn) return;
-  if (voiceMode === "us") {
-    btn.textContent = "美音";
-    btn.style.color = "";
-  } else if (voiceMode === "uk") {
-    btn.textContent = "英音";
-    btn.style.color = "";
-  } else {
-    btn.textContent = "静音";
-    btn.style.color = "var(--muted)";
+  document.querySelectorAll("#voice-picker-grid .theme-btn").forEach(b => {
+    b.classList.toggle("active", b.getAttribute("data-voice-opt") === voiceMode);
+  });
+}
+
+function setVoiceModeDirect(mode) {
+  voiceMode = (mode === "uk" || mode === "off") ? mode : "us";
+  if (voiceMode === "us" || voiceMode === "uk") lastActiveAccent = voiceMode;
+  try { localStorage.setItem(VOICE_MODE_KEY, voiceMode); } catch (e) {}
+  updateVoiceBtnUI();
+  const names = { us: "美式真人发音", uk: "英式真人发音", off: "静音（仅点击单词时朗读）" };
+  showToast(`已设置翻面发音：${names[voiceMode]}`);
+  if (voiceMode !== "off" && activeWord) {
+    speakWord(activeWord, null, false);
   }
 }
 
@@ -3870,6 +3964,7 @@ document.addEventListener("keydown", e => {
   if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT")) return;
   if (e.key === "Escape") {
     closePackPopover();
+    if (typeof closeFilterPopover === 'function') closeFilterPopover();
     closeFsrsModal();
     return;
   }
