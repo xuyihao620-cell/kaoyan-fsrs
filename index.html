@@ -27,7 +27,7 @@
   if (cs) cs.setAttribute("content", (eff === "dark") ? "dark" : "light");
 })();
 (function() {
-  // 首帧就确定当前科目，避免四个模块的界面闪烁
+  // 首帧就确定当前科目，避免三个模块的界面闪烁
   var s = "hub";
   try { s = localStorage.getItem("fsrs_hub_subject") || "hub"; } catch (e) {}
   var q = location.search;
@@ -2316,6 +2316,67 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
   .slot-kv { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .mx-grid, .mx-legend { grid-template-columns: minmax(0, 1fr); }
   .pool { grid-template-columns: 7em minmax(0, 1fr) auto; }
+  .fin-strip .ts-item { min-width: 0; overflow: hidden; padding-left: 8px; padding-right: 8px; }
+  .fin-strip .ts-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 10.5px; }
+  .fin-strip .ts-val strong { font-size: clamp(14px, 3.8vw, 18px); letter-spacing: -0.02em; }
+  .fin-table th, .fin-table td { padding: 7px 5px; font-size: 11px; }
+  .fin-table .h-mini-btn { height: 22px; padding: 0 6px; font-size: 11px; }
+}
+
+/* ---------- 独立财务：可展开「我的卡包盒」与账单流 ---------- */
+.f-stack, .f-bills-wrap { display: flex; flex-direction: column; gap: 18px; }
+.wbox { overflow: hidden; border: 1px solid var(--line); }
+.wbox-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px 20px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+.wbox-head:hover { background: var(--hover); }
+.wbox-head-left { flex: 1; min-width: 0; }
+.wbox-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.wbox-title-row h3 { margin: 0; font-size: 16px; font-weight: 700; color: var(--ink); }
+.wbox-badge { display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: 999px; background: var(--sunken); color: var(--ink-2); font: 600 11px/1 var(--font-mono); }
+.wbox-sub { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; font-size: 12px; line-height: 1.5; color: var(--ink-3); }
+.wbox-pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 6px; background: var(--sunken); color: var(--ink-2); font: 500 11.5px/1.3 var(--font-mono); }
+.wbox-pill b { font-family: var(--font-ui); color: var(--ink); font-weight: 600; }
+.wbox-head-right { display: flex; align-items: center; gap: 14px; flex: none; }
+.wbox-total { text-align: right; }
+.wbox-total span { display: block; font-size: 11px; color: var(--ink-3); }
+.wbox-total strong { display: block; margin-top: 2px; font: 700 22px/1.1 var(--font-num); font-variant-numeric: tabular-nums; color: var(--ink); }
+.wbox-toggle-btn { display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border-radius: 8px; background: var(--sunken); color: var(--ink-2); font: 600 11.5px/1 var(--font-ui); }
+.wbox-body { padding: 14px 20px 18px; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--sunken) 40%, var(--surface)); }
+.wbox-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.wbox-item {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1.15fr) minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--line);
+}
+.wbox-idx { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; background: var(--sunken); color: var(--ink-3); font: 600 11.5px/1 var(--font-mono); }
+.wbox-name { width: 100%; height: 34px; padding: 0 10px; font-weight: 600; font-size: 13.5px; }
+.wbox-amt-wrap { position: relative; display: flex; align-items: center; }
+.wbox-yen { position: absolute; left: 9px; font: 600 13px/1 var(--font-mono); color: var(--ink-3); pointer-events: none; }
+.wbox-amt { width: 100%; height: 34px; padding: 0 8px 0 22px; font: 600 14px/1 var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; }
+.wbox-del { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--ink-3); font-size: 17px; line-height: 1; cursor: pointer; }
+.wbox-del:hover { background: color-mix(in srgb, var(--again) 12%, transparent); color: var(--again); }
+.wbox-foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.wbox-presets { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 12px; color: var(--ink-3); }
+@media (max-width: 760px) {
+  .f-stack, .f-bills-wrap { gap: 14px; }
+  .wbox-head { padding: 14px 16px; gap: 10px; }
+  .wbox-total strong { font-size: 18px; }
+  .wbox-body { padding: 12px 14px 16px; }
+  .wbox-list { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .wbox-item { grid-template-columns: 20px minmax(0, 1.1fr) minmax(0, 1fr) 26px; gap: 6px; padding: 7px 8px; }
 }
 @media (max-width: 420px) {
   .hm-grid { gap: 5px; }
@@ -2408,7 +2469,7 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
           <span class="tb-note" id="f-note">确定性账单与余额管理（不含任何不确定流入或借条额度）</span>
         </div>
         <div class="tb-tools">
-          <button class="tool-btn sync-btn" data-ico="cloud" id="btn-cloud-sync" onclick="Core.syncAll(true)" title="立即与 GitHub 私密云账本双向同步（英语 · 数学 · 综合 · 财务）">云同步</button>
+          <button class="tool-btn sync-btn" data-ico="cloud" id="btn-cloud-sync" onclick="Core.syncAll(true)" title="立即与 GitHub 私密云账本双向同步（英语 · 数学 · 综合各占一个文件）">云同步</button>
           <button class="tool-btn icon-only" data-ico="sliders" onclick="Core.openOptions()" title="选项（随当前科目切换）" aria-label="选项">选项</button>
         </div>
       </div>
@@ -2442,9 +2503,9 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
       <div id="h-today" class="hub-view hub-only"></div>
       <div id="h-sandbox" class="hub-view hub-only" hidden></div>
 
-      <section class="today-strip hub-strip fin-only" aria-label="财务今日概览">
-        <div class="ts-item" title="当前已核准的确定可用余额"><span class="ts-label">当前确定余额</span><span class="ts-val"><strong id="f-st-bal">--</strong></span></div>
-        <div class="ts-item" title="距离最近一笔未还确定账单"><span class="ts-label">最近一期还款</span><span class="ts-val"><strong id="f-st-next">--</strong><small id="f-st-next-sub"></small></span></div>
+      <section class="today-strip hub-strip fin-strip fin-only" aria-label="财务今日概览">
+        <div class="ts-item" title="由下方各卡包余额自动相加得出"><span class="ts-label">当前确定余额</span><span class="ts-val"><strong id="f-st-bal">--</strong></span></div>
+        <div class="ts-item" title="距离最近一笔未还确定账单"><span class="ts-label" id="f-st-next-lbl">最近一期还款</span><span class="ts-val"><strong id="f-st-next">--</strong></span></div>
         <div class="ts-item" title="本月尚未标记已还的确定账单总额"><span class="ts-label">本月剩余待还</span><span class="ts-val"><strong id="f-st-curm">--</strong></span></div>
         <div class="ts-item" title="下月确定账单总额"><span class="ts-label">下月确定待还</span><span class="ts-val"><strong id="f-st-nextm">--</strong></span></div>
       </section>
@@ -5319,7 +5380,7 @@ function closeSubjectNav() {
 }
 
 function pickSubject(name) {
-  const map = { "综合": "hub", "英语": "en", "数学": "math", "财务": "fin", "政治": "pol", "健康": "health" };
+  const map = { "综合": "hub", "英语": "en", "数学": "math", "政治": "pol", "财务": "fin", "健康": "health" };
   if (typeof Core !== "undefined") Core.go(map[name] || "hub");
 }
 
@@ -5536,7 +5597,7 @@ document.addEventListener("keydown", e => {
 });
 
 // ============================================================================
-// 卡片盒 v3 · 数学、综合与独立财务模块（以下为增量代码，英语模块保持原样）
+// 卡片盒 v3 · 数学与综合模块（以下为增量代码，英语模块保持原样）
 // ============================================================================
 
 // ---- tex-macros.js ----
@@ -7926,7 +7987,12 @@ const HubEngine = (() => {
     polEstimate: 60,
     alertDays: 5,
     finance: {
-      balance: 2930, balanceAsOf: "2026-10-16",
+      balance: 2930,
+      wallets: [
+        { id: "w_wx", name: "微信钱包", amount: 2930 },
+        { id: "w_ali", name: "支付宝", amount: 0 },
+        { id: "w_bank", name: "银行卡", amount: 0 }
+      ],
       inflows: [],
       debts: DEFAULT_DEBTS
     },
@@ -7944,14 +8010,35 @@ const HubEngine = (() => {
     updatedAt: 0
   };
 
+  function calcWalletTotal(wallets) {
+    if (!Array.isArray(wallets)) return 0;
+    return Math.round(wallets.reduce((s, w) => s + (parseFloat(w && w.amount) || 0), 0) * 100) / 100;
+  }
+
   function sanitizeFinance(fin) {
     if (!fin || typeof fin !== "object") return;
     delete fin.reserves;
+    delete fin.balanceAsOf;
     if (Array.isArray(fin.inflows)) {
       fin.inflows = fin.inflows.filter(x => x && !String(x.name || "").includes("生活支持"));
     } else {
       fin.inflows = [];
     }
+    if (!Array.isArray(fin.wallets)) {
+      const initBal = typeof fin.balance === "number" && isFinite(fin.balance) ? fin.balance : 2930;
+      fin.wallets = [
+        { id: "w_wx", name: "微信钱包", amount: initBal },
+        { id: "w_ali", name: "支付宝", amount: 0 },
+        { id: "w_bank", name: "银行卡", amount: 0 }
+      ];
+    } else {
+      fin.wallets = fin.wallets.map((w, i) => ({
+        id: (w && w.id) ? String(w.id) : `w_${i}_${Date.now()}`,
+        name: (w && w.name != null) ? String(w.name) : `卡包 ${i + 1}`,
+        amount: Math.round((parseFloat(w && w.amount) || 0) * 100) / 100
+      }));
+    }
+    fin.balance = calcWalletTotal(fin.wallets);
   }
 
   function load() {
@@ -8274,13 +8361,32 @@ const HubEngine = (() => {
     (f.inflows || []).forEach((x, i) => { if (x.date >= fromKey && x.date <= toKey) out.push({ type: "in", id: `in:${i}`, name: x.name, date: x.date, amount: x.amount }); });
     return out.sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.type === "in" ? -1 : 1));
   }
+  function wallets() {
+    const f = state.settings.finance;
+    sanitizeFinance(f);
+    return f.wallets;
+  }
+  function setWallets(list, immediate) {
+    const f = state.settings.finance;
+    f.wallets = Array.isArray(list) ? list : [];
+    sanitizeFinance(f);
+    state.settings.updatedAt = Date.now();
+    persist(!!immediate);
+  }
   function projection(days, now) {
     const f = state.settings.finance;
+    sanitizeFinance(f);
     const t = today(now);
     const end = Core.addDays(t, days);
-    const evs = events(Core.addDays(f.balanceAsOf, 1), end);
-    let bal = f.balance, min = bal, minDate = f.balanceAsOf, firstNeg = null;
-    const rows = evs.map(e => { bal += e.type === "in" ? e.amount : -e.amount; return Object.assign({}, e, { bal }); });
+    const startFrom = Core.addDays(t, -7);
+    const evs = events(startFrom, end);
+    let bal = f.balance, min = bal, minDate = t, firstNeg = null;
+    const rows = evs.map(e => {
+      if (!e.paid) {
+        bal = Math.round((bal + (e.type === "in" ? e.amount : -e.amount)) * 100) / 100;
+      }
+      return Object.assign({}, e, { bal });
+    });
     // 按日结算：同一天多笔扣款合并后再判断是否跌破 0
     rows.forEach((r, i) => {
       const last = i === rows.length - 1 || rows[i + 1].date !== r.date;
@@ -8288,7 +8394,7 @@ const HubEngine = (() => {
       if (r.bal < min) { min = r.bal; minDate = r.date; }
       if (r.bal < 0 && !firstNeg) firstNeg = { date: r.date, bal: r.bal };
     });
-    return { rows, min, minDate, firstNeg, reserves: f.reserves || [], start: f.balance, asOf: f.balanceAsOf };
+    return { rows, min, minDate, firstNeg, reserves: [], start: f.balance };
   }
   function alerts(now) {
     const t = today(now);
@@ -8337,7 +8443,11 @@ const HubEngine = (() => {
   // ---------------------------------------------------------------- sync
   function merge(remote) {
     let localNewer = false, remoteNewer = false;
-    if ((remote.settings && remote.settings.updatedAt || 0) > (state.settings.updatedAt || 0)) { state.settings = Object.assign(state.settings, remote.settings); remoteNewer = true; }
+    if ((remote.settings && remote.settings.updatedAt || 0) > (state.settings.updatedAt || 0)) {
+      state.settings = Object.assign(state.settings, remote.settings);
+      if (state.settings.finance) sanitizeFinance(state.settings.finance);
+      remoteNewer = true;
+    }
     else if ((state.settings.updatedAt || 0) > ((remote.settings && remote.settings.updatedAt) || 0)) localNewer = true;
     Object.entries(remote.daily || {}).forEach(([k, d]) => {
       const l = state.daily[k];
@@ -8377,10 +8487,14 @@ const HubEngine = (() => {
         if (!r) return;
         if (r.missing) { await sync.push(true); return; }
         const m = merge(r);
-        if (m.remoteNewer) { Core.save(KEY, state); if (typeof HubUI !== "undefined") HubUI.refresh(); }
+        if (m.remoteNewer) {
+          Core.save(KEY, state);
+          if (typeof HubUI !== "undefined") HubUI.refresh();
+          if (typeof FinUI !== "undefined") FinUI.refresh();
+        }
         if (m.localNewer) await sync.push(true);
-        if (feedback) showToast("综合面板已同步");
-      } catch (e) { if (feedback) showToast("离线：综合面板数据已保存在本机"); }
+        if (feedback) showToast("综合与财务数据已同步");
+      } catch (e) { if (feedback) showToast("离线：数据已保存在本机"); }
     },
     async push(skipPull, keepalive) {
       if (!Core.hasCreds() || sync.pushing) return;
@@ -8397,12 +8511,12 @@ const HubEngine = (() => {
   Core.registerSync(sync);
 
   function exportJSON() { return JSON.stringify(Object.assign({ exportedAt: new Date().toISOString(), module: "hub" }, state), null, 2); }
-  function importJSON(str) { const p = JSON.parse(str); if (!p || !p.settings) throw new Error("缺少 settings"); state = Object.assign(state, p); persist(true); }
+  function importJSON(str) { const p = JSON.parse(str); if (!p || !p.settings) throw new Error("缺少 settings"); state = Object.assign(state, p); if (state.settings && state.settings.finance) sanitizeFinance(state.settings.finance); persist(true); }
 
   load();
 
   return { KEY, SYNC_FILE, EN_SETS, settings, setSettings, get, today, countdownToExam, daysToExam, logistic, englishVocab, englishScore, scores, snap, history,
-    phase, plan, toggleDone, allocateNew, nextEnSet, simulate, events, projection, alerts, markPaid, isPaid, togglePaid, focusMinutes, setEnergy, energy, streak,
+    phase, plan, toggleDone, allocateNew, nextEnSet, simulate, wallets, setWallets, events, projection, alerts, markPaid, isPaid, togglePaid, focusMinutes, setEnergy, energy, streak,
     setEnSet, setEnWriting, addMock, sync, merge, exportJSON, importJSON, DEFAULT_SETTINGS, persist };
 })();
 
@@ -10413,15 +10527,18 @@ const HubUI = (() => {
 Core.register("hub", HubUI);
 
 // ============================================================================
-// FinUI —— 独立「财 · 财务」模块：仅记录已确定的余额与确定性还款账单（零虚构流入/零借条）
+// FinUI —— 独立「财 · 财务」模块：可展开卡包盒（自动汇总余额）+ 确定性还款账单
 // ============================================================================
 const FinUI = (() => {
   const H = HubEngine;
   const esc = Core.esc;
+  const WBOX_KEY = "kaoyan_fin_wbox_open";
+  let walletOpen = (() => { try { return localStorage.getItem(WBOX_KEY) !== "0"; } catch (e) { return true; } })();
   let editJsonOpen = false;
   const money = x => (x < 0 ? "−" : "") + "¥" + Math.abs(x).toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   function updateStrip() {
+    H.wallets(); // 确保汇总余额最新
     const fin = H.settings().finance;
     const t = H.today();
     const ymCur = t.slice(0, 7);
@@ -10438,10 +10555,10 @@ const FinUI = (() => {
     if (nextEv) {
       set("f-st-next", money(nextEv.amount));
       const d = Core.daysBetween(t, nextEv.date);
-      set("f-st-next-sub", `${Core.fmtShortMD(nextEv.date)} · ${d === 0 ? "今天" : d < 0 ? `逾期${-d}d` : `${d}天后`}`);
+      set("f-st-next-lbl", `最近待还 · ${Core.fmtShortMD(nextEv.date)} (${d === 0 ? "今" : d < 0 ? `逾${-d}d` : `${d}d`})`);
     } else {
       set("f-st-next", "¥0.00");
-      set("f-st-next-sub", "无待还");
+      set("f-st-next-lbl", "最近一期还款");
     }
     set("f-st-curm", money(curMonthUnpaid));
     set("f-st-nextm", money(nextMonthTotal));
@@ -10459,10 +10576,7 @@ const FinUI = (() => {
     }
   }
 
-  function render() {
-    updateStrip();
-    const host = document.getElementById("f-view");
-    if (!host) return;
+  function billsHTML() {
     const fin = H.settings().finance;
     const t = H.today();
     const proj = H.projection(120);
@@ -10485,7 +10599,7 @@ const FinUI = (() => {
     // 确定账单时间轴明细表（未来 120 天）
     const tableRows = outRows.map(r => {
       const d = Core.daysBetween(t, r.date);
-      const when = d < 0 ? `${-d}天前` : d === 0 ? "今天" : `${d}天后`;
+      const when = d < 0 ? `${-d}d前` : d === 0 ? "今天" : `${d}d后`;
       return `<tr style="${r.paid ? "opacity:0.52" : ""}">
         <td>${Core.fmtMD(r.date)} <small style="color:var(--ink-3)">(${when})</small></td>
         <td style="text-align:left"><b>${esc(r.name)}</b>${r.range ? ` <small style="color:var(--ink-3)">(¥${r.range[0]}–${r.range[1]})</small>` : ""}</td>
@@ -10497,53 +10611,132 @@ const FinUI = (() => {
 
     const debtsJSON = JSON.stringify(fin.debts || [], null, 2);
 
-    host.innerHTML = `<div class="h-grid">
-      <div class="h-col">
-        <section class="h-panel h-pad" aria-label="近期确定待还">
-          <div class="h-sec-title" style="margin:0 0 8px"><h3>近期确定待还（15 天内）</h3><span>仅统计已确定账单</span></div>
-          <div class="q-list">${soonHTML}</div>
-        </section>
-        <section class="h-panel h-pad" aria-label="确定性还款日程表">
-          <div class="h-sec-title" style="margin:0 0 10px"><h3>确定性账单日程明细（近 4 个月）</h3><span>起点：${Core.fmtMD(fin.balanceAsOf)} 余额 ${money(fin.balance)}</span></div>
-          <div class="h-tablewrap" style="margin:0"><table class="h-table">
-            <thead><tr><th>还款日期</th><th style="text-align:left">确定项目</th><th>本期金额</th><th>扣款后余额</th><th>状态</th></tr></thead>
-            <tbody>${tableRows || `<tr><td colspan="5">暂无确定账单记录</td></tr>`}</tbody>
-          </table></div>
-        </section>
-      </div>
-      <div class="h-col">
-        <section class="h-panel h-pad" aria-label="当前确定余额核准">
-          <div class="h-sec-title" style="margin:0 0 10px"><h3>当前确定余额</h3><span>随时校准手头真实可用资金</span></div>
-          <div class="mx-grid">
-            <label class="field">当前确定可用余额（元）<input class="opt-input" type="number" step="0.01" id="f-bal-input" value="${fin.balance}"></label>
-            <label class="field">余额核准日期<input class="opt-input" type="date" id="f-asof-input" value="${esc(fin.balanceAsOf)}"></label>
+    return `<section class="h-panel h-pad" aria-label="近期确定待还">
+        <div class="h-sec-title" style="margin:0 0 8px"><h3>近期确定待还（15 天内）</h3><span>仅统计已确定账单</span></div>
+        <div class="q-list">${soonHTML}</div>
+      </section>
+      <section class="h-panel h-pad" aria-label="确定性还款日程表">
+        <div class="h-sec-title" style="margin:0 0 10px">
+          <h3>确定性账单日程明细（近 4 个月）</h3>
+          <span style="display:inline-flex;align-items:center;gap:8px"><span>实时起点：卡包总计 ${money(fin.balance)}</span><button type="button" class="h-mini-btn${editJsonOpen ? " is-on" : ""}" onclick="FinUI.toggleEditJson()">${editJsonOpen ? "收起配置" : "编辑账单"}</button></span>
+        </div>
+        ${editJsonOpen ? `<div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--line)">
+          <label class="field" style="font-size:12px;color:var(--ink-3)">已确定分期项目配置（JSON）<textarea class="opt-textarea" id="f-debts-json" spellcheck="false" style="min-height:200px;margin-top:6px">${esc(debtsJSON)}</textarea></label>
+          <div class="btn-row" style="margin-top:10px"><button type="button" class="action-btn btn-primary" onclick="FinUI.saveDebtsJson()">保存账单项目</button></div>
+        </div>` : ""}
+        <div class="h-tablewrap fin-tablewrap" style="margin:0"><table class="h-table fin-table">
+          <thead><tr><th>还款日期</th><th style="text-align:left">确定项目</th><th>本期金额</th><th>扣款后余额</th><th>状态</th></tr></thead>
+          <tbody>${tableRows || `<tr><td colspan="5">暂无确定账单记录</td></tr>`}</tbody>
+        </table></div>
+      </section>`;
+  }
+
+  function pillsSummaryHTML(wallets) {
+    if (!wallets.length) return "尚未添加卡包，点击展开添加";
+    return wallets.map(w => `<span class="wbox-pill"><b>${esc(w.name || "未命名")}</b> ${money(parseFloat(w.amount) || 0)}</span>`).join("");
+  }
+
+  function render() {
+    updateStrip();
+    const host = document.getElementById("f-view");
+    if (!host) return;
+    const wallets = H.wallets();
+    const fin = H.settings().finance;
+
+    const walletRows = wallets.map((w, idx) => `
+      <div class="wbox-item" data-wid="${esc(w.id)}">
+        <span class="wbox-idx">${idx + 1}</span>
+        <input type="text" class="opt-input wbox-name" id="f-wname-${idx}" value="${esc(w.name)}" placeholder="卡包名称（如：微信、浦发卡）" aria-label="卡包名称" oninput="FinUI.onWalletInput(${idx}, 'name', this.value)" onchange="FinUI.onWalletCommit()">
+        <div class="wbox-amt-wrap">
+          <span class="wbox-yen">¥</span>
+          <input type="number" step="0.01" inputmode="decimal" class="opt-input wbox-amt" id="f-wamt-${idx}" value="${w.amount}" placeholder="0.00" aria-label="卡包余额" oninput="FinUI.onWalletInput(${idx}, 'amount', this.value)" onchange="FinUI.onWalletCommit()">
+        </div>
+        <button type="button" class="wbox-del" onclick="FinUI.removeWallet(${idx})" title="删除此卡包" aria-label="删除此卡包">×</button>
+      </div>`).join("");
+
+    host.innerHTML = `<div class="f-stack">
+      <section class="h-panel wbox${walletOpen ? " is-open" : ""}" aria-label="我的卡包盒">
+        <div class="wbox-head" onclick="FinUI.toggleWalletBox()" role="button" tabindex="0" aria-expanded="${walletOpen}">
+          <div class="wbox-head-left">
+            <div class="wbox-title-row">
+              <h3>我的卡包盒</h3>
+              <span class="wbox-badge">${wallets.length} 个卡包</span>
+            </div>
+            <div class="wbox-sub" id="f-wbox-pills">${walletOpen ? "填入各卡包金额后自动相加为「当前确定余额」，无需手动求和或填日期" : pillsSummaryHTML(wallets)}</div>
           </div>
-          <div class="btn-row" style="margin-top:12px">
-            <button type="button" class="action-btn btn-primary" onclick="FinUI.saveBalance()">更新确定余额</button>
-            <button type="button" class="action-btn" onclick="FinUI.toggleEditJson()">${editJsonOpen ? "收起项目明细编辑" : "编辑确定账单项目"}</button>
+          <div class="wbox-head-right">
+            <div class="wbox-total">
+              <span>当前确定总余额</span>
+              <strong id="f-wbox-total">${money(fin.balance)}</strong>
+            </div>
+            <span class="wbox-toggle-btn">${walletOpen ? "收起 ▲" : "展开 ▼"}</span>
           </div>
-          ${editJsonOpen ? `<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line)">
-            <label class="field" style="font-size:12px;color:var(--ink-3)">已确定分期项目配置（JSON）<textarea class="opt-textarea" id="f-debts-json" spellcheck="false" style="min-height:220px;margin-top:6px">${esc(debtsJSON)}</textarea></label>
-            <div class="btn-row" style="margin-top:10px"><button type="button" class="action-btn btn-primary" onclick="FinUI.saveDebtsJson()">保存账单项目</button></div>
-          </div>` : ""}
-        </section>
-      </div>
+        </div>
+        ${walletOpen ? `<div class="wbox-body">
+          <div class="wbox-list">${walletRows || `<p class="pool-note" style="padding:4px 0">暂无卡包，请点击下方按钮添加。</p>`}</div>
+          <div class="wbox-foot">
+            <button type="button" class="action-btn btn-primary btn-small" onclick="FinUI.addWallet('')">+ 添加卡包</button>
+            <div class="wbox-presets">
+              <span>快添：</span>
+              <button type="button" class="h-mini-btn" onclick="FinUI.addWallet('微信钱包')">+ 微信</button>
+              <button type="button" class="h-mini-btn" onclick="FinUI.addWallet('支付宝')">+ 支付宝</button>
+              <button type="button" class="h-mini-btn" onclick="FinUI.addWallet('银行卡')">+ 银行卡</button>
+              <button type="button" class="h-mini-btn" onclick="FinUI.addWallet('校园卡/现金')">+ 校园卡/现金</button>
+            </div>
+          </div>
+        </div>` : ""}
+      </section>
+      <div class="f-bills-wrap" id="f-bills-wrap">${billsHTML()}</div>
     </div>`;
   }
 
-  function saveBalance() {
-    const balEl = document.getElementById("f-bal-input");
-    const asofEl = document.getElementById("f-asof-input");
-    if (!balEl || !asofEl) return;
-    const st = H.settings();
-    const finance = Object.assign({}, st.finance, {
-      balance: parseFloat(balEl.value) || 0,
-      balanceAsOf: asofEl.value || H.today(),
-      inflows: []
-    });
-    delete finance.reserves;
-    H.setSettings({ finance });
-    showToast("已更新当前确定余额");
+  function toggleWalletBox() {
+    walletOpen = !walletOpen;
+    try { localStorage.setItem(WBOX_KEY, walletOpen ? "1" : "0"); } catch (e) {}
+    render();
+  }
+
+  function onWalletInput(idx, field, val) {
+    const list = H.wallets().slice();
+    if (!list[idx]) return;
+    if (field === "name") {
+      list[idx] = Object.assign({}, list[idx], { name: val });
+    } else {
+      const num = parseFloat(val);
+      list[idx] = Object.assign({}, list[idx], { amount: isFinite(num) ? Math.round(num * 100) / 100 : 0 });
+    }
+    H.setWallets(list, false);
+    updateStrip();
+    const totEl = document.getElementById("f-wbox-total");
+    if (totEl) totEl.textContent = money(H.settings().finance.balance);
+    const billsEl = document.getElementById("f-bills-wrap");
+    if (billsEl && !editJsonOpen) billsEl.innerHTML = billsHTML();
+  }
+
+  function onWalletCommit() {
+    H.setWallets(H.wallets(), true);
+  }
+
+  function addWallet(presetName) {
+    const list = H.wallets().slice();
+    const idx = list.length;
+    list.push({ id: `w_${Date.now()}_${idx}`, name: presetName || "", amount: 0 });
+    H.setWallets(list, true);
+    walletOpen = true;
+    try { localStorage.setItem(WBOX_KEY, "1"); } catch (e) {}
+    render();
+    setTimeout(() => {
+      const target = document.getElementById(presetName ? `f-wamt-${idx}` : `f-wname-${idx}`);
+      if (target) { target.focus(); if (presetName) target.select(); }
+    }, 20);
+  }
+
+  function removeWallet(idx) {
+    const list = H.wallets().slice();
+    if (!list[idx]) return;
+    const removed = list.splice(idx, 1)[0];
+    H.setWallets(list, true);
+    showToast(`已移除卡包「${removed.name || "未命名"}」`);
     render();
   }
 
@@ -10575,7 +10768,11 @@ const FinUI = (() => {
   function show() { render(); }
   function refresh() { if (Core.subject() === "fin") render(); else updateStrip(); }
 
-  return { show, refresh, render, updateStrip, saveBalance, toggleEditJson, saveDebtsJson, togglePaid, openOptions: () => { editJsonOpen = true; render(); } };
+  return {
+    show, refresh, render, updateStrip, toggleWalletBox, onWalletInput, onWalletCommit,
+    addWallet, removeWallet, toggleEditJson, saveDebtsJson, togglePaid,
+    openOptions: () => { walletOpen = true; editJsonOpen = true; render(); }
+  };
 })();
 Core.register("fin", FinUI);
 
