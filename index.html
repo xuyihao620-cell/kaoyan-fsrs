@@ -2370,6 +2370,31 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
 .wbox-del:hover { background: color-mix(in srgb, var(--again) 12%, transparent); color: var(--again); }
 .wbox-foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); }
 .wbox-presets { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 12px; color: var(--ink-3); }
+.f-cdate-input { height: 28px; width: 136px; padding: 0 8px; font-size: 12px; font-family: var(--font-mono); }
+
+/* 流水记录表单与列表 */
+.tx-form {
+  display: grid;
+  grid-template-columns: auto minmax(120px, 0.9fr) minmax(100px, 0.7fr) minmax(130px, 1.2fr) 136px auto;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--sunken);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.tx-type-switch { display: inline-flex; padding: 2px; border-radius: 8px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
+.tx-tbtn { height: 30px; padding: 0 10px; border: 0; border-radius: 6px; background: transparent; color: var(--ink-3); font: 600 12px/1 var(--font-ui); cursor: pointer; }
+.tx-tbtn.is-out { background: color-mix(in srgb, var(--again) 14%, var(--surface)); color: var(--again); }
+.tx-tbtn.is-in { background: color-mix(in srgb, var(--good) 14%, var(--surface)); color: var(--good); }
+.tx-sel, .tx-note, .tx-date { height: 34px; width: 100%; font-size: 13px; }
+.tx-submit { height: 34px; white-space: nowrap; }
+.tx-row { align-items: center; }
+.tx-right { display: inline-flex; align-items: center; gap: 10px; flex: none; }
+.tx-in { color: var(--good); }
+.tx-out { color: var(--ink); }
+.tx-wtag { display: inline-block; padding: 1px 6px; border-radius: 5px; background: var(--sunken); color: var(--ink-2); font-weight: 500; }
+
 @media (max-width: 760px) {
   .f-stack, .f-bills-wrap { gap: 14px; }
   .wbox-head { padding: 14px 16px; gap: 10px; }
@@ -2377,6 +2402,10 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
   .wbox-body { padding: 12px 14px 16px; }
   .wbox-list { grid-template-columns: minmax(0, 1fr); gap: 8px; }
   .wbox-item { grid-template-columns: 20px minmax(0, 1.1fr) minmax(0, 1fr) 26px; gap: 6px; padding: 7px 8px; }
+  .tx-form { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .tx-type-switch { justify-content: stretch; }
+  .tx-tbtn { flex: 1; }
+  .tx-note { grid-column: 1 / -1; }
 }
 @media (max-width: 420px) {
   .hm-grid { gap: 5px; }
@@ -2466,7 +2495,11 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
           <span class="tb-note" id="h-note"></span>
         </div>
         <div class="tb-scope fin-only" aria-label="财务视图">
-          <span class="tb-note" id="f-note">确定性账单与余额管理（不含任何不确定流入或借条额度）</span>
+          <div class="view-switch" aria-label="视图">
+            <button class="view-btn active" id="f-view-wallet" type="button" onclick="FinUI.setTab('wallet')">卡包</button>
+            <button class="view-btn" id="f-view-debt" type="button" onclick="FinUI.setTab('debt')">待还</button>
+          </div>
+          <span class="tb-note" id="f-note"></span>
         </div>
         <div class="tb-tools">
           <button class="tool-btn sync-btn" data-ico="cloud" id="btn-cloud-sync" onclick="Core.syncAll(true)" title="立即与 GitHub 私密云账本双向同步（英语 · 数学 · 综合各占一个文件）">云同步</button>
@@ -7993,6 +8026,8 @@ const HubEngine = (() => {
         { id: "w_ali", name: "支付宝", amount: 0 },
         { id: "w_bank", name: "银行卡", amount: 0 }
       ],
+      ledger: [],
+      customDueDate: "2026-12-20",
       inflows: [],
       debts: DEFAULT_DEBTS
     },
@@ -8038,6 +8073,8 @@ const HubEngine = (() => {
         amount: Math.round((parseFloat(w && w.amount) || 0) * 100) / 100
       }));
     }
+    if (!Array.isArray(fin.ledger)) fin.ledger = [];
+    if (!fin.customDueDate || !/^\d{4}-\d{2}-\d{2}$/.test(fin.customDueDate)) fin.customDueDate = "2026-12-20";
     fin.balance = calcWalletTotal(fin.wallets);
   }
 
@@ -8345,6 +8382,7 @@ const HubEngine = (() => {
   }
 
   // ---------------------------------------------------------------- finance
+  function isPaid(id) { return (state.paid[id] || 0) > 0; }
   function events(fromKey, toKey) {
     const f = state.settings.finance;
     const out = [];
@@ -8355,7 +8393,8 @@ const HubEngine = (() => {
         if (date < fromKey || date > toKey) return;
         const amt = d.range ? d.range[1] : d.amounts[ym];
         if (!amt) return;
-        out.push({ type: "out", id: `${d.id}:${ym}`, debt: d.id, name: d.name, date, amount: amt, range: d.range || null, approx: (d.approx || []).includes(ym), paid: !!state.paid[`${d.id}:${ym}`] });
+        const id = `${d.id}:${ym}`;
+        out.push({ type: "out", id, debt: d.id, name: d.name, date, amount: amt, range: d.range || null, approx: (d.approx || []).includes(ym), paid: isPaid(id), paidAt: isPaid(id) ? state.paid[id] : 0 });
       });
     });
     (f.inflows || []).forEach((x, i) => { if (x.date >= fromKey && x.date <= toKey) out.push({ type: "in", id: `in:${i}`, name: x.name, date: x.date, amount: x.amount }); });
@@ -8373,12 +8412,71 @@ const HubEngine = (() => {
     state.settings.updatedAt = Date.now();
     persist(!!immediate);
   }
+  function ledger() {
+    const f = state.settings.finance;
+    sanitizeFinance(f);
+    return f.ledger;
+  }
+  function addLedgerTx(tx) {
+    const f = state.settings.finance;
+    sanitizeFinance(f);
+    const amt = Math.round((Math.abs(parseFloat(tx.amount)) || 0) * 100) / 100;
+    if (amt <= 0) return null;
+    const w = tx.walletId ? f.wallets.find(x => x.id === tx.walletId) : null;
+    if (w) {
+      w.amount = Math.round((w.amount + (tx.type === "in" ? amt : -amt)) * 100) / 100;
+    }
+    const item = {
+      id: `tx_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      date: tx.date || today(),
+      type: tx.type === "in" ? "in" : "out",
+      amount: amt,
+      note: String(tx.note || "").trim() || (tx.type === "in" ? "收入" : "支出"),
+      walletId: w ? w.id : "",
+      walletName: w ? w.name : "",
+      ts: Date.now()
+    };
+    f.ledger.unshift(item);
+    sanitizeFinance(f);
+    state.settings.updatedAt = Date.now();
+    persist(true);
+    return item;
+  }
+  function removeLedgerTx(txId) {
+    const f = state.settings.finance;
+    sanitizeFinance(f);
+    const idx = f.ledger.findIndex(x => x && x.id === txId);
+    if (idx < 0) return null;
+    const tx = f.ledger.splice(idx, 1)[0];
+    if (tx.walletId) {
+      const w = f.wallets.find(x => x.id === tx.walletId);
+      if (w) {
+        w.amount = Math.round((w.amount + (tx.type === "in" ? -tx.amount : tx.amount)) * 100) / 100;
+      }
+    }
+    sanitizeFinance(f);
+    state.settings.updatedAt = Date.now();
+    persist(true);
+    return tx;
+  }
+  function customDueDate() {
+    const f = state.settings.finance;
+    sanitizeFinance(f);
+    return f.customDueDate;
+  }
+  function setCustomDueDate(d) {
+    if (!d || !/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
+    const f = state.settings.finance;
+    f.customDueDate = d;
+    state.settings.updatedAt = Date.now();
+    persist(true);
+  }
   function projection(days, now) {
     const f = state.settings.finance;
     sanitizeFinance(f);
     const t = today(now);
-    const end = Core.addDays(t, days);
-    const startFrom = Core.addDays(t, -7);
+    const end = Core.addDays(t, days == null ? 550 : days);
+    const startFrom = Core.addDays(t, -30);
     const evs = events(startFrom, end);
     let bal = f.balance, min = bal, minDate = t, firstNeg = null;
     const rows = evs.map(e => {
@@ -8409,9 +8507,19 @@ const HubEngine = (() => {
       return { date, days: Core.daysBetween(t, date), list, total: list.reduce((s, e) => s + e.amount, 0), balAfter: row ? row.bal : null, ranged: list.some(e => e.range) };
     });
   }
-  function markPaid(ids, on) { ids.forEach(id => { if (on) state.paid[id] = Date.now(); else delete state.paid[id]; }); persist(true); }
-  function isPaid(id) { return !!state.paid[id]; }
-  function togglePaid(id) { if (state.paid[id]) delete state.paid[id]; else state.paid[id] = Date.now(); persist(true); }
+  function markPaid(ids, on) {
+    const ts = Date.now();
+    ids.forEach(id => { state.paid[id] = on ? ts : -ts; });
+    persist(true);
+  }
+  function togglePaid(id) {
+    const ts = Date.now();
+    state.paid[id] = isPaid(id) ? -ts : ts;
+    persist(true);
+  }
+  function paidEvents() {
+    return events("2026-01-01", "2028-12-31").filter(e => e.type === "out" && e.paid).sort((a, b) => (b.paidAt || 0) - (a.paidAt || 0) || (a.date < b.date ? 1 : -1));
+  }
 
   // ---------------------------------------------------------------- focus (由复习时间戳推算专注时长)
   function focusMinutes(key) {
@@ -8460,7 +8568,11 @@ const HubEngine = (() => {
       if (d.energy && !l.energy) l.energy = d.energy;
     });
     Object.entries(remote.enSets || {}).forEach(([y, v]) => { const l = state.enSets[y]; if (!l || (v.updatedAt || 0) > (l.updatedAt || 0)) { state.enSets[y] = v; remoteNewer = true; } });
-    Object.entries(remote.paid || {}).forEach(([k, v]) => { if (!state.paid[k]) { state.paid[k] = v; remoteNewer = true; } });
+    Object.entries(remote.paid || {}).forEach(([k, v]) => {
+      const rTs = Math.abs(Number(v) || 0), lTs = Math.abs(Number(state.paid[k]) || 0);
+      if (rTs > lTs) { state.paid[k] = v; remoteNewer = true; }
+      else if (lTs > rTs) { localNewer = true; }
+    });
     const mocks = new Map((state.mocks.en || []).map(x => [x.date, x]));
     (remote.mocks && remote.mocks.en || []).forEach(x => { if (!mocks.has(x.date)) { mocks.set(x.date, x); remoteNewer = true; } });
     state.mocks.en = Array.from(mocks.values());
@@ -8516,7 +8628,8 @@ const HubEngine = (() => {
   load();
 
   return { KEY, SYNC_FILE, EN_SETS, settings, setSettings, get, today, countdownToExam, daysToExam, logistic, englishVocab, englishScore, scores, snap, history,
-    phase, plan, toggleDone, allocateNew, nextEnSet, simulate, wallets, setWallets, events, projection, alerts, markPaid, isPaid, togglePaid, focusMinutes, setEnergy, energy, streak,
+    phase, plan, toggleDone, allocateNew, nextEnSet, simulate, wallets, setWallets, ledger, addLedgerTx, removeLedgerTx, customDueDate, setCustomDueDate,
+    events, projection, alerts, markPaid, isPaid, togglePaid, paidEvents, focusMinutes, setEnergy, energy, streak,
     setEnSet, setEnWriting, addMock, sync, merge, exportJSON, importJSON, DEFAULT_SETTINGS, persist };
 })();
 
@@ -10527,25 +10640,31 @@ const HubUI = (() => {
 Core.register("hub", HubUI);
 
 // ============================================================================
-// FinUI —— 独立「财 · 财务」模块：可展开卡包盒（自动汇总余额）+ 确定性还款账单
+// FinUI —— 独立「财 · 财务」模块：双视图「卡包（卡包盒+流水记录）」/「待还（多周期统计+自定义日期+已还复原）」
 // ============================================================================
 const FinUI = (() => {
   const H = HubEngine;
   const esc = Core.esc;
+  const TAB_KEY = "kaoyan_fin_tab";
   const WBOX_KEY = "kaoyan_fin_wbox_open";
+  let tab = (() => { try { return localStorage.getItem(TAB_KEY) === "debt" ? "debt" : "wallet"; } catch (e) { return "wallet"; } })();
   let walletOpen = (() => { try { return localStorage.getItem(WBOX_KEY) !== "0"; } catch (e) { return true; } })();
+  let txType = "out";
+  let txWalletId = "";
+  let txDate = "";
+  let openPeriods = { p7: true, p30: false, p90: false, p180: false, p365: false, custom: false, paid: true };
   let editJsonOpen = false;
   const money = x => (x < 0 ? "−" : "") + "¥" + Math.abs(x).toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   function updateStrip() {
-    H.wallets(); // 确保汇总余额最新
+    H.wallets();
     const fin = H.settings().finance;
     const t = H.today();
     const ymCur = t.slice(0, 7);
     const [cy, cm] = ymCur.split("-").map(Number);
     const ymNext = `${cm === 12 ? cy + 1 : cy}-${String(cm === 12 ? 1 : cm + 1).padStart(2, "0")}`;
-    const allEvs = H.events("2026-10-01", "2027-12-31").filter(e => e.type === "out");
-    const unpaidUpcoming = allEvs.filter(e => e.date >= Core.addDays(t, -3) && !e.paid);
+    const allEvs = H.events("2026-10-01", "2028-12-31").filter(e => e.type === "out");
+    const unpaidUpcoming = allEvs.filter(e => e.date >= Core.addDays(t, -30) && !e.paid);
     const nextEv = unpaidUpcoming[0] || null;
     const curMonthUnpaid = allEvs.filter(e => e.date.startsWith(ymCur) && !e.paid).reduce((s, e) => s + e.amount, 0);
     const nextMonthTotal = allEvs.filter(e => e.date.startsWith(ymNext) && !e.paid).reduce((s, e) => s + e.amount, 0);
@@ -10562,6 +10681,13 @@ const FinUI = (() => {
     set("f-st-curm", money(curMonthUnpaid));
     set("f-st-nextm", money(nextMonthTotal));
 
+    const bw = document.getElementById("f-view-wallet");
+    const bd = document.getElementById("f-view-debt");
+    if (bw) bw.classList.toggle("active", tab === "wallet");
+    if (bd) bd.classList.toggle("active", tab === "debt");
+    const note = document.getElementById("f-note");
+    if (note) note.textContent = tab === "wallet" ? "卡包盒与日常收支流水" : "多跨度待还统计 · 自定义日期测算 · 已还复原";
+
     const sm = document.getElementById("side-meta-fin");
     if (sm) {
       if (nextEv) {
@@ -10575,72 +10701,25 @@ const FinUI = (() => {
     }
   }
 
-  function billsHTML() {
-    const fin = H.settings().finance;
-    const t = H.today();
-    const proj = H.projection(120);
-    const outRows = proj.rows.filter(r => r.type === "out");
-
-    // 近期 15 天内待还项目
-    const soon = outRows.filter(r => !r.paid && Core.daysBetween(t, r.date) <= 15);
-    const soonHTML = soon.length ? soon.map(r => {
-      const d = Core.daysBetween(t, r.date);
-      const when = d < 0 ? `已过 ${-d} 天` : d === 0 ? "今天到期" : `${d} 天后`;
-      return `<div class="q-row" style="align-items:center">
-        <div class="q-k"><b>${Core.fmtMD(r.date)} · ${esc(r.name)}</b><small>${when}${r.range ? ` · 区间估算 ¥${r.range[0]}–${r.range[1]}` : ""} · 扣款后预计余额 <span class="${r.bal < 0 ? "fin-neg" : ""}">${money(r.bal)}</span></small></div>
-        <div style="display:flex;align-items:center;gap:10px">
-          <span class="q-v">${money(r.amount)}</span>
-          <button type="button" class="action-btn btn-small" onclick="FinUI.togglePaid('${esc(r.id)}')">标记已还</button>
-        </div>
-      </div>`;
-    }).join("") : `<p class="pool-note" style="padding:6px 0">未来 15 天内暂无未还账单。</p>`;
-
-    // 确定账单时间轴明细表（未来 120 天）
-    const tableRows = outRows.map(r => {
-      const d = Core.daysBetween(t, r.date);
-      const when = d < 0 ? `${-d}d前` : d === 0 ? "今天" : `${d}d后`;
-      return `<tr style="${r.paid ? "opacity:0.52" : ""}">
-        <td>${Core.fmtMD(r.date)} <small style="color:var(--ink-3)">(${when})</small></td>
-        <td style="text-align:left"><b>${esc(r.name)}</b>${r.range ? ` <small style="color:var(--ink-3)">(¥${r.range[0]}–${r.range[1]})</small>` : ""}</td>
-        <td>−${money(r.amount).replace("¥", "")}</td>
-        <td class="${r.bal < 0 ? "fin-neg" : ""}">${money(r.bal)}</td>
-        <td><button type="button" class="h-mini-btn${r.paid ? " is-on" : ""}" onclick="FinUI.togglePaid('${esc(r.id)}')">${r.paid ? "已还 ✓" : "待还"}</button></td>
-      </tr>`;
-    }).join("");
-
-    const debtsJSON = JSON.stringify(fin.debts || [], null, 2);
-
-    return `<section class="h-panel h-pad" aria-label="近期确定待还">
-        <div class="h-sec-title" style="margin:0 0 8px"><h3>近期确定待还（15 天内）</h3><span>仅统计已确定账单</span></div>
-        <div class="q-list">${soonHTML}</div>
-      </section>
-      <section class="h-panel h-pad" aria-label="确定性还款日程表">
-        <div class="h-sec-title" style="margin:0 0 10px">
-          <h3>确定性账单日程明细（近 4 个月）</h3>
-          <span style="display:inline-flex;align-items:center;gap:8px"><span>起点：总财产 ${money(fin.balance)}</span><button type="button" class="h-mini-btn${editJsonOpen ? " is-on" : ""}" onclick="FinUI.toggleEditJson()">${editJsonOpen ? "收起配置" : "编辑账单"}</button></span>
-        </div>
-        ${editJsonOpen ? `<div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--line)">
-          <label class="field" style="font-size:12px;color:var(--ink-3)">已确定分期项目配置（JSON）<textarea class="opt-textarea" id="f-debts-json" spellcheck="false" style="min-height:200px;margin-top:6px">${esc(debtsJSON)}</textarea></label>
-          <div class="btn-row" style="margin-top:10px"><button type="button" class="action-btn btn-primary" onclick="FinUI.saveDebtsJson()">保存账单项目</button></div>
-        </div>` : ""}
-        <div class="h-tablewrap fin-tablewrap" style="margin:0"><table class="h-table fin-table">
-          <thead><tr><th>还款日期</th><th style="text-align:left">确定项目</th><th>本期金额</th><th>扣款后余额</th><th>状态</th></tr></thead>
-          <tbody>${tableRows || `<tr><td colspan="5">暂无确定账单记录</td></tr>`}</tbody>
-        </table></div>
-      </section>`;
+  function renderBillRow(r, t) {
+    const d = Core.daysBetween(t, r.date);
+    const when = d < 0 ? `已过 ${-d} 天` : d === 0 ? "今天到期" : `${d} 天后`;
+    return `<div class="q-row" style="align-items:center">
+      <div class="q-k"><b>${Core.fmtMD(r.date)} · ${esc(r.name)}</b><small>${when}${r.range ? ` · 区间估算 ¥${r.range[0]}–${r.range[1]}` : ""} · 扣款后预计 <span class="${r.bal < 0 ? "fin-neg" : ""}">${money(r.bal)}</span></small></div>
+      <div style="display:flex;align-items:center;gap:10px;flex:none">
+        <span class="q-v">${money(r.amount)}</span>
+        <button type="button" class="action-btn btn-small" onclick="FinUI.markBillPaid('${esc(r.id)}', '${esc(r.name)}', '${esc(r.date)}')">标记已还</button>
+      </div>
+    </div>`;
   }
 
-  function pillsSummaryHTML(wallets) {
-    if (!wallets.length) return "";
-    return wallets.map(w => `<span class="wbox-pill"><b>${esc(w.name || "未命名")}</b> ${money(parseFloat(w.amount) || 0)}</span>`).join("");
-  }
-
-  function render() {
-    updateStrip();
-    const host = document.getElementById("f-view");
-    if (!host) return;
+  function renderWalletTab() {
     const wallets = H.wallets();
     const fin = H.settings().finance;
+    const ledger = H.ledger();
+    if (!txDate) txDate = H.today();
+    if (txWalletId && !wallets.some(w => w.id === txWalletId)) txWalletId = wallets[0] ? wallets[0].id : "";
+    if (!txWalletId && wallets[0]) txWalletId = wallets[0].id;
 
     const walletRows = wallets.map((w, idx) => `
       <div class="wbox-item" data-wid="${esc(w.id)}">
@@ -10653,7 +10732,26 @@ const FinUI = (() => {
         <button type="button" class="wbox-del" onclick="FinUI.removeWallet(${idx})" title="删除此卡包" aria-label="删除此卡包">×</button>
       </div>`).join("");
 
-    host.innerHTML = `<div class="f-stack">
+    const sumIn = ledger.filter(x => x.type === "in").reduce((s, x) => s + (x.amount || 0), 0);
+    const sumOut = ledger.filter(x => x.type !== "in").reduce((s, x) => s + (x.amount || 0), 0);
+    const walletOpts = wallets.map(w => `<option value="${esc(w.id)}"${w.id === txWalletId ? " selected" : ""}>联动：${esc(w.name || "未命名卡包")}</option>`).join("") +
+      `<option value="__none__"${txWalletId === "__none__" ? " selected" : ""}>不联动卡包（仅记账）</option>`;
+
+    const txRows = ledger.length ? ledger.map(x => {
+      const isIn = x.type === "in";
+      return `<div class="q-row tx-row">
+        <div class="q-k">
+          <b>${esc(x.note)}</b>
+          <small>${Core.fmtMD(x.date)}${x.walletName ? ` · <span class="tx-wtag">${esc(x.walletName)}</span>` : " · 仅记账"}</small>
+        </div>
+        <div class="tx-right">
+          <span class="q-v ${isIn ? "tx-in" : "tx-out"}">${isIn ? "+" : "−"}${money(x.amount)}</span>
+          <button type="button" class="h-mini-btn" onclick="FinUI.removeTx('${esc(x.id)}')" title="删除此条流水并自动还原关联卡包余额">撤回</button>
+        </div>
+      </div>`;
+    }).join("") : `<p class="pool-note" style="padding:8px 0">暂无流水记录。在上方记一笔收支，可自动同步加减对应卡包余额。</p>`;
+
+    return `<div class="f-stack">
       <section class="h-panel wbox${walletOpen ? " is-open" : ""}" aria-label="卡包盒">
         <div class="wbox-head" onclick="FinUI.toggleWalletBox()" role="button" tabindex="0" aria-expanded="${walletOpen}">
           <div class="wbox-head-left">
@@ -10678,8 +10776,175 @@ const FinUI = (() => {
           </div>
         </div>` : ""}
       </section>
-      <div class="f-bills-wrap" id="f-bills-wrap">${billsHTML()}</div>
+
+      <section class="h-panel h-pad" aria-label="流水记录">
+        <div class="h-sec-title" style="margin:0 0 12px">
+          <h3>流水记录</h3>
+          <span>共 ${ledger.length} 笔 · 收入 +${money(sumIn)} · 支出 −${money(sumOut)}</span>
+        </div>
+        <div class="tx-form">
+          <div class="tx-type-switch" role="group" aria-label="收支类型">
+            <button type="button" class="tx-tbtn${txType === "out" ? " is-out" : ""}" onclick="FinUI.setTxType('out')">支出 −</button>
+            <button type="button" class="tx-tbtn${txType === "in" ? " is-in" : ""}" onclick="FinUI.setTxType('in')">收入 +</button>
+          </div>
+          <select class="opt-input tx-sel" id="f-tx-wallet" aria-label="选择关联卡包" onchange="FinUI.setTxWallet(this.value)">${walletOpts}</select>
+          <div class="wbox-amt-wrap tx-amt-wrap">
+            <span class="wbox-yen">¥</span>
+            <input type="number" step="0.01" inputmode="decimal" class="opt-input wbox-amt" id="f-tx-amt" placeholder="金额" aria-label="流水金额">
+          </div>
+          <input type="text" class="opt-input tx-note" id="f-tx-note" placeholder="备注（如：午饭、买书）" aria-label="流水备注" onkeydown="if(event.key==='Enter')FinUI.addTx()">
+          <input type="date" class="opt-input tx-date" id="f-tx-date" value="${esc(txDate)}" aria-label="流水日期" onchange="FinUI.setTxDate(this.value)">
+          <button type="button" class="action-btn btn-primary btn-small tx-submit" onclick="FinUI.addTx()">记一笔</button>
+        </div>
+        <div class="q-list" style="margin-top:10px">${txRows}</div>
+      </section>
     </div>`;
+  }
+
+  function renderDebtTab() {
+    const fin = H.settings().finance;
+    const t = H.today();
+    const proj = H.projection(600);
+    const unpaidRows = proj.rows.filter(r => r.type === "out" && !r.paid);
+    const paidList = H.paidEvents();
+    const customDate = H.customDueDate();
+    const customDays = Core.daysBetween(t, customDate);
+    const customList = unpaidRows.filter(r => r.date <= customDate);
+    const customSum = customList.reduce((s, r) => s + r.amount, 0);
+    const customBalAfter = Math.round((fin.balance - customSum) * 100) / 100;
+
+    const periods = [
+      { key: "p7", label: "近一周内待还", days: 7 },
+      { key: "p30", label: "近一个月内待还", days: 30 },
+      { key: "p90", label: "近三个月内待还", days: 90 },
+      { key: "p180", label: "近半年内待还", days: 180 },
+      { key: "p365", label: "近一年内待还", days: 365 }
+    ];
+
+    const periodCards = periods.map(p => {
+      const list = unpaidRows.filter(r => Core.daysBetween(t, r.date) <= p.days);
+      const sum = list.reduce((s, r) => s + r.amount, 0);
+      const isOpen = !!openPeriods[p.key];
+      return `<section class="h-panel wbox${isOpen ? " is-open" : ""}" aria-label="${esc(p.label)}">
+        <div class="wbox-head" onclick="FinUI.togglePeriod('${p.key}')" role="button" tabindex="0" aria-expanded="${isOpen}">
+          <div class="wbox-head-left">
+            <div class="wbox-title-row">
+              <h3>${esc(p.label)}</h3>
+              <span class="wbox-badge">${list.length} 笔</span>
+            </div>
+          </div>
+          <div class="wbox-head-right">
+            <div class="wbox-total">
+              <strong>${money(sum)}</strong>
+            </div>
+            <span class="wbox-toggle-btn">${isOpen ? "收起 ▲" : "展开 ▼"}</span>
+          </div>
+        </div>
+        ${isOpen ? `<div class="wbox-body">
+          <div class="q-list">${list.length ? list.map(r => renderBillRow(r, t)).join("") : `<p class="pool-note" style="padding:4px 0">该时间段内暂无待还账单。</p>`}</div>
+        </div>` : ""}
+      </section>`;
+    }).join("");
+
+    const paidSum = paidList.reduce((s, r) => s + r.amount, 0);
+    const paidOpen = !!openPeriods.paid;
+    const paidRowsHTML = paidList.length ? paidList.map(r => `
+      <div class="q-row" style="align-items:center">
+        <div class="q-k">
+          <b>${Core.fmtMD(r.date)} · ${esc(r.name)}</b>
+          <small>已标记还款${r.range ? ` · 区间 ¥${r.range[0]}–${r.range[1]}` : ""}</small>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex:none">
+          <span class="q-v" style="color:var(--good)">${money(r.amount)}</span>
+          <button type="button" class="action-btn btn-small" onclick="FinUI.restorePaid('${esc(r.id)}', '${esc(r.name)}', '${esc(r.date)}')">复原</button>
+        </div>
+      </div>`).join("") : `<p class="pool-note" style="padding:4px 0">暂无标记已还的账单记录。</p>`;
+
+    const customOpen = !!openPeriods.custom;
+    const debtsJSON = JSON.stringify(fin.debts || [], null, 2);
+
+    return `<div class="f-stack">
+      ${periodCards}
+
+      <section class="h-panel wbox${customOpen ? " is-open" : ""}" aria-label="自定义日期统计">
+        <div class="wbox-head" onclick="FinUI.togglePeriod('custom')" role="button" tabindex="0" aria-expanded="${customOpen}">
+          <div class="wbox-head-left">
+            <div class="wbox-title-row">
+              <h3>自定义日期待还统计</h3>
+              <input type="date" class="opt-input f-cdate-input" value="${esc(customDate)}" onclick="event.stopPropagation()" onchange="FinUI.onCustomDate(this.value)" aria-label="自定义截止日期">
+              <span class="wbox-badge">${customList.length} 笔</span>
+            </div>
+          </div>
+          <div class="wbox-head-right">
+            <div class="wbox-total">
+              <strong>${money(customSum)}</strong>
+            </div>
+            <span class="wbox-toggle-btn">${customOpen ? "收起 ▲" : "展开 ▼"}</span>
+          </div>
+        </div>
+        <div class="wbox-body" style="padding-top:12px">
+          <div class="slot-kv">
+            <div><span>截止日期</span><b>${Core.fmtMD(customDate)} <small style="font-weight:500;color:var(--ink-3)">(${customDays >= 0 ? customDays + "d后" : -customDays + "d前"})</small></b></div>
+            <div><span>期间待还笔数</span><b>${customList.length} 笔</b></div>
+            <div><span>期间待还总额</span><b>${money(customSum)}</b></div>
+            <div><span>届时预计结余</span><b class="${customBalAfter < 0 ? "fin-neg" : ""}">${money(customBalAfter)}</b></div>
+          </div>
+          ${customOpen ? `<div class="q-list" style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line)">${customList.length ? customList.map(r => renderBillRow(r, t)).join("") : `<p class="pool-note" style="padding:4px 0">截止 ${Core.fmtMD(customDate)} 前暂无未还账单。</p>`}</div>` : ""}
+        </div>
+      </section>
+
+      <section class="h-panel wbox${paidOpen ? " is-open" : ""}" aria-label="已还账单记录">
+        <div class="wbox-head" onclick="FinUI.togglePeriod('paid')" role="button" tabindex="0" aria-expanded="${paidOpen}">
+          <div class="wbox-head-left">
+            <div class="wbox-title-row">
+              <h3>已还账单记录</h3>
+              <span class="wbox-badge">${paidList.length} 笔</span>
+            </div>
+          </div>
+          <div class="wbox-head-right">
+            <div class="wbox-total">
+              <span>已还总计</span>
+              <strong style="color:var(--good)">${money(paidSum)}</strong>
+            </div>
+            <span class="wbox-toggle-btn">${paidOpen ? "收起 ▲" : "展开 ▼"}</span>
+          </div>
+        </div>
+        ${paidOpen ? `<div class="wbox-body">
+          <div class="q-list">${paidRowsHTML}</div>
+        </div>` : ""}
+      </section>
+
+      <section class="h-panel h-pad" aria-label="账单源配置">
+        <div class="h-sec-title" style="margin:0">
+          <h3>分期账单源配置</h3>
+          <button type="button" class="h-mini-btn${editJsonOpen ? " is-on" : ""}" onclick="FinUI.toggleEditJson()">${editJsonOpen ? "收起配置" : "编辑账单配置"}</button>
+        </div>
+        ${editJsonOpen ? `<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">
+          <label class="field" style="font-size:12px;color:var(--ink-3)">已确定分期项目配置（JSON）<textarea class="opt-textarea" id="f-debts-json" spellcheck="false" style="min-height:200px;margin-top:6px">${esc(debtsJSON)}</textarea></label>
+          <div class="btn-row" style="margin-top:10px"><button type="button" class="action-btn btn-primary" onclick="FinUI.saveDebtsJson()">保存账单项目</button></div>
+        </div>` : ""}
+      </section>
+    </div>`;
+  }
+
+  function pillsSummaryHTML(wallets) {
+    if (!wallets.length) return "";
+    return wallets.map(w => `<span class="wbox-pill"><b>${esc(w.name || "未命名")}</b> ${money(parseFloat(w.amount) || 0)}</span>`).join("");
+  }
+
+  function render() {
+    updateStrip();
+    const host = document.getElementById("f-view");
+    if (!host) return;
+    host.innerHTML = tab === "debt" ? renderDebtTab() : renderWalletTab();
+  }
+
+  function setTab(next) {
+    tab = next === "debt" ? "debt" : "wallet";
+    try { localStorage.setItem(TAB_KEY, tab); } catch (e) {}
+    render();
+    window.scrollTo({ top: 0 });
+    Core.renderSideMods();
   }
 
   function toggleWalletBox() {
@@ -10688,11 +10953,25 @@ const FinUI = (() => {
     render();
   }
 
+  function togglePeriod(k) {
+    openPeriods[k] = !openPeriods[k];
+    render();
+  }
+
+  function onCustomDate(val) {
+    if (!val || !/^\d{4}-\d{2}-\d{2}$/.test(val)) return;
+    H.setCustomDueDate(val);
+    openPeriods.custom = true;
+    render();
+  }
+
   function onWalletInput(idx, field, val) {
     const list = H.wallets().slice();
     if (!list[idx]) return;
     if (field === "name") {
       list[idx] = Object.assign({}, list[idx], { name: val });
+      const sel = document.getElementById("f-tx-wallet");
+      if (sel && sel.options[idx]) sel.options[idx].textContent = `联动：${val || "未命名卡包"}`;
     } else {
       const num = parseFloat(val);
       list[idx] = Object.assign({}, list[idx], { amount: isFinite(num) ? Math.round(num * 100) / 100 : 0 });
@@ -10701,8 +10980,6 @@ const FinUI = (() => {
     updateStrip();
     const totEl = document.getElementById("f-wbox-total");
     if (totEl) totEl.textContent = money(H.settings().finance.balance);
-    const billsEl = document.getElementById("f-bills-wrap");
-    if (billsEl && !editJsonOpen) billsEl.innerHTML = billsHTML();
   }
 
   function onWalletCommit() {
@@ -10732,6 +11009,56 @@ const FinUI = (() => {
     render();
   }
 
+  function setTxType(tp) {
+    txType = tp === "in" ? "in" : "out";
+    render();
+  }
+  function setTxWallet(wid) { txWalletId = wid; }
+  function setTxDate(d) { txDate = d; }
+
+  function addTx() {
+    const amtEl = document.getElementById("f-tx-amt");
+    const noteEl = document.getElementById("f-tx-note");
+    const dateEl = document.getElementById("f-tx-date");
+    const wEl = document.getElementById("f-tx-wallet");
+    if (!amtEl) return;
+    const amt = parseFloat(amtEl.value);
+    if (!isFinite(amt) || amt <= 0) { showToast("请输入大于 0 的流水金额"); amtEl.focus(); return; }
+    const wid = wEl ? wEl.value : txWalletId;
+    const item = H.addLedgerTx({
+      type: txType,
+      amount: amt,
+      note: noteEl ? noteEl.value : "",
+      date: (dateEl && dateEl.value) ? dateEl.value : H.today(),
+      walletId: wid === "__none__" ? "" : wid
+    });
+    if (item) {
+      showToast(`已记入流水：${item.note} ${item.type === "in" ? "+" : "−"}${money(item.amount)}`);
+      render();
+    }
+  }
+
+  function removeTx(id) {
+    const removed = H.removeLedgerTx(id);
+    if (removed) {
+      showToast(`已撤回流水「${removed.note}」${removed.walletName ? `，已同步还原「${removed.walletName}」余额` : ""}`);
+      render();
+    }
+  }
+
+  function markBillPaid(id, name, date) {
+    H.markPaid([id], true);
+    openPeriods.paid = true;
+    showToast(`已标记「${Core.fmtMD(date)} · ${name}」为已还（可在下方「已还账单记录」随时复原）`);
+    render();
+  }
+
+  function restorePaid(id, name, date) {
+    H.markPaid([id], false);
+    showToast(`已复原「${Core.fmtMD(date)} · ${name}」回待还状态`);
+    render();
+  }
+
   function toggleEditJson() {
     editJsonOpen = !editJsonOpen;
     render();
@@ -10757,13 +11084,38 @@ const FinUI = (() => {
     render();
   }
 
-  function show() { render(); }
+  function sideMods() {
+    return [
+      { act: "wallet", label: "卡包", sub: "卡包盒 · 流水", active: tab === "wallet" },
+      { act: "debt", label: "待还", sub: "多期统计 · 已还", active: tab === "debt" }
+    ];
+  }
+  function sideAct(act) { setTab(act); }
+  function onKey(e) {
+    const t = e.target;
+    if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT")) return false;
+    if (e.ctrlKey || e.metaKey || e.altKey) return false;
+    if (e.key === "1") { setTab("wallet"); return true; }
+    if (e.key === "2") { setTab("debt"); return true; }
+    return false;
+  }
+
+  function show(opts) {
+    if (opts && (opts.tab === "debt" || opts.tab === "wallet")) {
+      tab = opts.tab;
+      try { localStorage.setItem(TAB_KEY, tab); } catch (e) {}
+    }
+    render();
+  }
   function refresh() { if (Core.subject() === "fin") render(); else updateStrip(); }
 
   return {
-    show, refresh, render, updateStrip, toggleWalletBox, onWalletInput, onWalletCommit,
-    addWallet, removeWallet, toggleEditJson, saveDebtsJson, togglePaid,
-    openOptions: () => { walletOpen = true; editJsonOpen = true; render(); }
+    show, refresh, render, updateStrip, setTab, toggleWalletBox, togglePeriod, onCustomDate,
+    onWalletInput, onWalletCommit, addWallet, removeWallet,
+    setTxType, setTxWallet, setTxDate, addTx, removeTx,
+    markBillPaid, restorePaid, toggleEditJson, saveDebtsJson, togglePaid,
+    sideMods, sideAct, onKey,
+    openOptions: () => { tab = "debt"; editJsonOpen = true; render(); }
   };
 })();
 Core.register("fin", FinUI);
