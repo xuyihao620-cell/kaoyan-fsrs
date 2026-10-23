@@ -2355,59 +2355,73 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
 .wbox-total { text-align: right; display: flex; align-items: center; }
 .wbox-total strong { display: block; font: 700 20px/1 var(--font-num); font-variant-numeric: tabular-nums; color: var(--ink); white-space: nowrap; }
 .wbox-toggle-btn { display: inline-flex; align-items: center; height: 28px; padding: 0 9px; border-radius: 8px; background: var(--sunken); color: var(--ink-2); font: 600 11.5px/1 var(--font-ui); white-space: nowrap; }
-.wbox-body { padding: 14px 20px 18px; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--sunken) 40%, var(--surface)); }
-.wbox-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.wbox-body { padding: 14px 20px 18px; border-top: 1px solid var(--line); background: var(--surface); }
+.wbox-list, .sub-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .wbox-item {
   display: grid;
   grid-template-columns: 22px minmax(0, 1.15fr) minmax(0, 1fr) 28px;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px;
-  border-radius: 12px;
-  background: var(--surface);
-  box-shadow: 0 0 0 1px var(--line);
 }
+.sub-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--sunken) 45%, var(--surface));
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.sub-item-top {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1.15fr) minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 8px;
+}
+.sub-item-bot {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding-left: 30px;
+}
+.sub-sel { height: 32px; width: 100%; font-size: 12.5px; }
 .wbox-idx { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; background: var(--sunken); color: var(--ink-3); font: 600 11.5px/1 var(--font-mono); }
-.wbox-name { width: 100%; height: 34px; padding: 0 10px; font-weight: 600; font-size: 13.5px; }
+.wbox-name { width: 100%; height: 36px; padding: 0 10px; font-weight: 600; font-size: 13.5px; }
 .wbox-amt-wrap { position: relative; display: flex; align-items: center; }
 .wbox-yen { position: absolute; left: 9px; font: 600 13px/1 var(--font-mono); color: var(--ink-3); pointer-events: none; }
-.wbox-amt { width: 100%; height: 34px; padding: 0 8px 0 22px; font: 600 14px/1 var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; }
+.wbox-amt { width: 100%; height: 36px; padding: 0 8px 0 22px; font: 600 14px/1 var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; }
 .wbox-del { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--ink-3); font-size: 17px; line-height: 1; cursor: pointer; }
 .wbox-del:hover { background: color-mix(in srgb, var(--again) 12%, transparent); color: var(--again); }
-.wbox-add-btn {
+
+/* 统一主操作按钮（卡包盒 + 流水记录 + 固定支出 100% 同款材质与色彩） */
+.fin-action-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
   height: 36px;
   margin-top: 10px;
-  padding: 0 14px;
-  border: 1px dashed var(--line-2);
+  padding: 0 16px;
+  border: 1px solid var(--line);
   border-radius: 10px;
-  background: color-mix(in srgb, var(--surface) 75%, transparent);
-  color: var(--ink-2);
-  font: 600 12.5px/1 var(--font-ui);
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-}
-.wbox-add-btn:hover { background: var(--surface); color: var(--ink); border-color: var(--ink-3); }
-
-/* 标题内嵌日期选择器（xx年xx月xx日待还）与防溢出透明原生控件 */
-.cdate-h3 { display: inline-flex; align-items: baseline; gap: 1px; margin: 0; }
-.cdate-inline {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  padding: 1px 4px;
-  margin-right: 1px;
-  border-radius: 6px;
   background: var(--sunken);
-  border-bottom: 1.5px dashed var(--ink-3);
+  color: var(--ink);
+  font: 600 13px/1 var(--font-ui);
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
 }
-.cdate-inline:hover { background: var(--hover); }
-.cdate-inline-txt { font-variant-numeric: tabular-nums; color: var(--ink); }
+.fin-action-btn:hover { background: var(--hover); border-color: var(--line-2); }
+.fin-action-btn:active { transform: scale(0.992); }
+
+/* 展开态自定义事件参数栏（事件名称 + 截止日期） */
+.cdate-param-bar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.cdate-param-item { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.cdate-param-lbl { font-size: 11.5px; font-weight: 600; color: var(--ink-3); }
+.cdate-title-inp { height: 36px; width: 100%; font-weight: 600; font-size: 13.5px; box-sizing: border-box; }
 .cdate-native {
   position: absolute;
   inset: 0;
@@ -2422,7 +2436,7 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
   appearance: none;
 }
 
-/* 账单金额原位轻点编辑（平时纯排版零输入框，点击平滑展开） */
+/* 账单金额原位轻点编辑（平时纯排版零输入框、无下划线，点击平滑展开） */
 .bill-row { display: flex; flex-direction: column; align-items: stretch !important; gap: 8px; }
 .bill-row-main { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; }
 .bill-row-right { display: inline-flex; align-items: center; gap: 8px; flex: none; }
@@ -2442,9 +2456,8 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
   transition: background 0.15s ease;
 }
 .bill-amt-btn:hover { background: var(--sunken); }
-.bill-amt-btn .bill-amt-num { border-bottom: 1px dashed color-mix(in srgb, var(--ink-3) 55%, transparent); padding-bottom: 1px; }
-.bill-amt-btn.is-approx .bill-amt-num { border-bottom-color: var(--ink-2); }
-.bill-amt-btn.is-custom .bill-amt-num { color: var(--c-math, var(--ink)); border-bottom-style: solid; }
+.bill-amt-btn .bill-amt-num { border: 0; }
+.bill-amt-btn.is-custom .bill-amt-num { color: var(--c-math, var(--ink)); }
 .bill-est-badge {
   display: inline-flex;
   align-items: center;
@@ -2470,29 +2483,25 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
 .bill-edit-inp { height: 30px !important; font-size: 13.5px !important; background: var(--surface) !important; }
 .bill-edit-btns { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 6px; }
 
-/* 流水记录表单与列表 */
+/* 流水记录表单与列表（与卡包盒同构的白底面板 + 浅灰输入槽） */
 .tx-form {
   display: grid;
-  grid-template-columns: auto minmax(120px, 0.9fr) minmax(100px, 0.7fr) minmax(130px, 0.95fr) minmax(140px, 1.2fr) auto;
+  grid-template-columns: auto minmax(120px, 0.9fr) minmax(100px, 0.7fr) minmax(130px, 0.95fr) minmax(140px, 1.2fr);
   align-items: center;
   gap: 8px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: var(--sunken);
-  box-shadow: inset 0 0 0 1px var(--line);
 }
-.tx-type-switch { display: inline-flex; padding: 2px; border-radius: 8px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); min-width: 0; }
-.tx-tbtn { height: 30px; padding: 0 10px; border: 0; border-radius: 6px; background: transparent; color: var(--ink-3); font: 600 12px/1 var(--font-ui); cursor: pointer; }
-.tx-tbtn.is-out { background: color-mix(in srgb, var(--again) 14%, var(--surface)); color: var(--again); }
-.tx-tbtn.is-in { background: color-mix(in srgb, var(--good) 14%, var(--surface)); color: var(--good); }
-.tx-sel, .tx-note { height: 34px; width: 100%; min-width: 0; font-size: 13px; box-sizing: border-box; }
+.tx-type-switch { display: inline-flex; height: 36px; padding: 3px; border-radius: 10px; background: var(--sunken); box-shadow: inset 0 0 0 1px var(--line); min-width: 0; box-sizing: border-box; }
+.tx-tbtn { height: 30px; padding: 0 10px; border: 0; border-radius: 7px; background: transparent; color: var(--ink-3); font: 600 12.5px/1 var(--font-ui); cursor: pointer; }
+.tx-tbtn.is-out { background: var(--surface); color: var(--again); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); }
+.tx-tbtn.is-in { background: var(--surface); color: var(--good); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); }
+.tx-sel, .tx-note { height: 36px; width: 100%; min-width: 0; font-size: 13px; box-sizing: border-box; }
 .tx-date-box {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 4px;
-  height: 34px;
+  height: 36px;
   width: 100%;
   min-width: 0;
   padding: 0 10px;
@@ -2503,24 +2512,6 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
 }
 .tx-date-txt { font: 500 12.5px/1 var(--font-ui); font-variant-numeric: tabular-nums; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tx-date-caret { font-size: 11px; color: var(--ink-3); flex: none; }
-.tx-submit-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 34px;
-  padding: 0 16px;
-  border: 1px solid var(--line-2);
-  border-radius: 10px;
-  background: var(--surface);
-  color: var(--ink);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  font: 600 13px/1 var(--font-ui);
-  white-space: nowrap;
-  cursor: pointer;
-  transition: background 0.15s ease, transform 0.1s ease;
-}
-.tx-submit-btn:hover { background: var(--hover); }
-.tx-submit-btn:active { transform: scale(0.99); }
 .tx-row { align-items: center; }
 .tx-right { display: inline-flex; align-items: center; gap: 10px; flex: none; }
 .tx-in { color: var(--good); }
@@ -2537,13 +2528,13 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
   .wbox-total strong { font-size: 16.5px; }
   .wbox-toggle-btn { height: 26px; padding: 0 7px; font-size: 11px; }
   .wbox-body { padding: 12px 14px 14px; }
-  .wbox-list { grid-template-columns: minmax(0, 1fr); gap: 8px; }
-  .wbox-item { grid-template-columns: 20px minmax(0, 1.1fr) minmax(0, 1fr) 26px; gap: 6px; padding: 7px 8px; }
+  .wbox-list, .sub-list { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .wbox-item, .sub-item-top { grid-template-columns: 20px minmax(0, 1.1fr) minmax(0, 1fr) 26px; gap: 6px; }
+  .sub-item-bot { padding-left: 26px; gap: 6px; }
   .tx-form { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .tx-type-switch { justify-content: stretch; }
   .tx-tbtn { flex: 1; }
   .tx-note { grid-column: 1 / -1; }
-  .tx-submit-btn { grid-column: 1 / -1; width: 100%; height: 36px; }
   .bill-edit-inp-wrap { width: 116px; }
 }
 @media (max-width: 420px) {
@@ -8166,6 +8157,8 @@ const HubEngine = (() => {
         { id: "w_bank", name: "银行卡", amount: 0 }
       ],
       ledger: [],
+      subscriptions: [],
+      customDueTitle: "考研初试",
       customDueDate: "2026-12-20",
       inflows: [],
       debts: DEFAULT_DEBTS
@@ -8213,7 +8206,20 @@ const HubEngine = (() => {
       }));
     }
     if (!Array.isArray(fin.ledger)) fin.ledger = [];
+    if (!Array.isArray(fin.subscriptions)) {
+      fin.subscriptions = [];
+    } else {
+      fin.subscriptions = fin.subscriptions.map((s, i) => ({
+        id: (s && s.id) ? String(s.id) : `sub_${i}_${Date.now()}`,
+        name: (s && s.name != null) ? String(s.name) : "",
+        amount: Math.round((parseFloat(s && s.amount) || 0) * 100) / 100,
+        day: Math.max(1, Math.min(31, parseInt(s && s.day, 10) || 1)),
+        walletId: (s && s.walletId != null) ? String(s.walletId) : (fin.wallets[0] ? fin.wallets[0].id : ""),
+        lastAutoYM: (s && s.lastAutoYM) ? String(s.lastAutoYM) : ""
+      }));
+    }
     if (!fin.amountOverrides || typeof fin.amountOverrides !== "object") fin.amountOverrides = {};
+    if (typeof fin.customDueTitle !== "string") fin.customDueTitle = "考研初试";
     if (!fin.customDueDate || !/^\d{4}-\d{2}-\d{2}$/.test(fin.customDueDate)) fin.customDueDate = "2026-12-20";
     fin.balance = calcWalletTotal(fin.wallets);
   }
@@ -8545,6 +8551,27 @@ const HubEngine = (() => {
         });
       });
     });
+    const subMonths = Object.keys(monthly("2026-10", "2028-12", 0));
+    (f.subscriptions || []).forEach(s => {
+      if (!s || !s.amount || s.amount <= 0) return;
+      const title = s.name || "固定支出";
+      subMonths.forEach(ym => {
+        const [yy, mm] = ym.split("-").map(Number);
+        const maxD = new Date(yy, mm, 0).getDate();
+        const dNum = Math.min(Math.max(1, s.day || 1), maxD);
+        const date = `${ym}-${String(dNum).padStart(2, "0")}`;
+        if (date < fromKey || date > toKey) return;
+        const id = `sub_${s.id}:${ym}`;
+        const hasOv = ovMap[id] != null && isFinite(parseFloat(ovMap[id]));
+        const amt = hasOv ? Math.round(parseFloat(ovMap[id]) * 100) / 100 : s.amount;
+        out.push({
+          type: "out", id, debt: `sub_${s.id}`, isSub: true, subId: s.id, ym, name: title, date,
+          amount: amt, baseAmount: s.amount, customized: hasOv,
+          range: null, approx: false,
+          paid: isPaid(id), paidAt: isPaid(id) ? state.paid[id] : 0
+        });
+      });
+    });
     (f.inflows || []).forEach((x, i) => { if (x.date >= fromKey && x.date <= toKey) out.push({ type: "in", id: `in:${i}`, name: x.name, date: x.date, amount: x.amount }); });
     return out.sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.type === "in" ? -1 : 1));
   }
@@ -8553,6 +8580,12 @@ const HubEngine = (() => {
     const f = state.settings.finance;
     sanitizeFinance(f);
     const [debtId, ym] = id.split(":");
+    if (debtId.startsWith("sub_") && applyFuture && newAmt !== null && newAmt !== "") {
+      const sid = debtId.slice(4);
+      const subObj = (f.subscriptions || []).find(s => s.id === sid);
+      const val = Math.round(parseFloat(newAmt) * 100) / 100;
+      if (subObj && isFinite(val) && val >= 0) subObj.amount = val;
+    }
     const debtObj = (f.debts || []).find(d => d.id === debtId);
     const targetMonths = (applyFuture && debtObj)
       ? (debtObj.range ? Object.keys(monthly(debtObj.from, debtObj.to, 0)) : Object.keys(debtObj.amounts || {})).filter(m => m >= ym)
@@ -8567,6 +8600,56 @@ const HubEngine = (() => {
     state.settings.updatedAt = Date.now();
     persist(true);
     return true;
+  }
+  function subscriptions() {
+    const f = state.settings.finance;
+    sanitizeFinance(f);
+    return f.subscriptions;
+  }
+  function setSubscriptions(list, immediate) {
+    const f = state.settings.finance;
+    f.subscriptions = Array.isArray(list) ? list : [];
+    sanitizeFinance(f);
+    state.settings.updatedAt = Date.now();
+    persist(!!immediate);
+  }
+  function autoDeductSubscriptions(now) {
+    const f = state.settings.finance;
+    sanitizeFinance(f);
+    const t = today(now);
+    const ymCur = t.slice(0, 7);
+    const [yy, mm] = ymCur.split("-").map(Number);
+    const maxD = new Date(yy, mm, 0).getDate();
+    let changed = false;
+    (f.subscriptions || []).forEach(s => {
+      if (!s || !s.amount || s.amount <= 0 || !s.name) return;
+      const dNum = Math.min(Math.max(1, s.day || 1), maxD);
+      const dueDate = `${ymCur}-${String(dNum).padStart(2, "0")}`;
+      const evId = `sub_${s.id}:${ymCur}`;
+      if (t >= dueDate && s.lastAutoYM !== ymCur && !isPaid(evId)) {
+        const w = (s.walletId && f.wallets.find(x => x.id === s.walletId)) || f.wallets[0] || null;
+        if (w) w.amount = Math.round((w.amount - s.amount) * 100) / 100;
+        f.ledger.unshift({
+          id: `tx_sub_${s.id}_${ymCur}`,
+          date: dueDate,
+          type: "out",
+          amount: s.amount,
+          note: `固定支出 · ${s.name}`,
+          walletId: w ? w.id : "",
+          walletName: w ? w.name : "",
+          ts: Date.now()
+        });
+        state.paid[evId] = Date.now();
+        s.lastAutoYM = ymCur;
+        changed = true;
+      }
+    });
+    if (changed) {
+      sanitizeFinance(f);
+      state.settings.updatedAt = Date.now();
+      persist(true);
+    }
+    return changed;
   }
   function wallets() {
     const f = state.settings.finance;
@@ -8626,6 +8709,17 @@ const HubEngine = (() => {
     state.settings.updatedAt = Date.now();
     persist(true);
     return tx;
+  }
+  function customDueTitle() {
+    const f = state.settings.finance;
+    sanitizeFinance(f);
+    return f.customDueTitle || "考研初试";
+  }
+  function setCustomDueTitle(val, immediate) {
+    const f = state.settings.finance;
+    f.customDueTitle = String(val == null ? "" : val);
+    state.settings.updatedAt = Date.now();
+    persist(!!immediate);
   }
   function customDueDate() {
     const f = state.settings.finance;
@@ -8811,9 +8905,11 @@ const HubEngine = (() => {
   function importJSON(str) { const p = JSON.parse(str); if (!p || !p.settings) throw new Error("缺少 settings"); state = Object.assign(state, p); if (state.settings && state.settings.finance) sanitizeFinance(state.settings.finance); persist(true); }
 
   load();
+  autoDeductSubscriptions();
 
   return { KEY, SYNC_FILE, EN_SETS, settings, setSettings, get, today, countdownToExam, daysToExam, logistic, englishVocab, englishScore, scores, snap, history,
-    phase, plan, toggleDone, allocateNew, nextEnSet, simulate, wallets, setWallets, ledger, addLedgerTx, removeLedgerTx, customDueDate, setCustomDueDate, cardOrder, setCardOrder,
+    phase, plan, toggleDone, allocateNew, nextEnSet, simulate, wallets, setWallets, ledger, addLedgerTx, removeLedgerTx,
+    subscriptions, setSubscriptions, autoDeductSubscriptions, customDueTitle, setCustomDueTitle, customDueDate, setCustomDueDate, cardOrder, setCardOrder,
     events, setBillAmount, projection, alerts, markPaid, isPaid, togglePaid, paidEvents, focusMinutes, setEnergy, energy, streak,
     setEnSet, setEnWriting, addMock, sync, merge, exportJSON, importJSON, DEFAULT_SETTINGS, persist };
 })();
@@ -10831,12 +10927,14 @@ const FinUI = (() => {
   const esc = Core.esc;
   const TAB_KEY = "kaoyan_fin_tab";
   const WBOX_KEY = "kaoyan_fin_wbox_open";
+  const LBOX_KEY = "kaoyan_fin_lbox_open";
   let tab = (() => { try { return localStorage.getItem(TAB_KEY) === "debt" ? "debt" : "wallet"; } catch (e) { return "wallet"; } })();
   let walletOpen = (() => { try { return localStorage.getItem(WBOX_KEY) !== "0"; } catch (e) { return true; } })();
+  let ledgerOpen = (() => { try { return localStorage.getItem(LBOX_KEY) !== "0"; } catch (e) { return true; } })();
   let txType = "out";
   let txWalletId = "";
   let txDate = "";
-  let openPeriods = { p7: true, p30: false, p90: false, p180: false, p365: false, custom: false, paid: true };
+  let openPeriods = { p7: true, p30: false, p90: false, p180: false, p365: false, custom: false, subs: false, paid: false };
   let editJsonOpen = false;
   let editingBillId = null;
   const money = x => (x < 0 ? "−" : "") + "¥" + Math.abs(x).toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -10847,6 +10945,7 @@ const FinUI = (() => {
   };
 
   function updateStrip() {
+    H.autoDeductSubscriptions();
     H.wallets();
     const fin = H.settings().finance;
     const t = H.today();
@@ -10962,6 +11061,7 @@ const FinUI = (() => {
       </div>`;
     }).join("") : `<p class="pool-note" style="padding:8px 0">暂无流水记录。在上方记一笔收支，可自动同步加减对应卡包余额。</p>`;
 
+    const netTx = Math.round((sumIn - sumOut) * 100) / 100;
     const cardMap = {
       wallet: `<section class="h-panel wbox${walletOpen ? " is-open" : ""}" data-card-id="wallet" aria-label="卡包盒">
         <div class="wbox-head" onclick="FinUI.toggleWalletBox()" role="button" tabindex="0" aria-expanded="${walletOpen}">
@@ -10980,33 +11080,45 @@ const FinUI = (() => {
         </div>
         ${walletOpen ? `<div class="wbox-body">
           <div class="wbox-list">${walletRows || `<p class="pool-note" style="padding:4px 0">暂无卡包，请点击下方按钮添加。</p>`}</div>
-          <button type="button" class="wbox-add-btn" onclick="FinUI.addWallet('')">+ 添加卡包</button>
+          <button type="button" class="fin-action-btn" onclick="FinUI.addWallet('')">+ 添加卡包</button>
         </div>` : ""}
       </section>`,
-      ledger: `<section class="h-panel h-pad" data-card-id="ledger" aria-label="流水记录">
-        <div class="h-sec-title wbox-drag-handle" style="margin:0 0 12px">
-          <h3>流水记录</h3>
-          <span>共 ${ledger.length} 笔 · 收入 +${money(sumIn)} · 支出 −${money(sumOut)}</span>
-        </div>
-        <div class="tx-form">
-          <div class="tx-type-switch" role="group" aria-label="收支类型">
-            <button type="button" class="tx-tbtn${txType === "out" ? " is-out" : ""}" onclick="FinUI.setTxType('out')">支出 −</button>
-            <button type="button" class="tx-tbtn${txType === "in" ? " is-in" : ""}" onclick="FinUI.setTxType('in')">收入 +</button>
+      ledger: `<section class="h-panel wbox${ledgerOpen ? " is-open" : ""}" data-card-id="ledger" aria-label="流水记录">
+        <div class="wbox-head" onclick="FinUI.toggleLedgerBox()" role="button" tabindex="0" aria-expanded="${ledgerOpen}">
+          <div class="wbox-head-left">
+            <div class="wbox-title-row">
+              <h3>流水记录</h3>
+              <span class="wbox-badge">${ledger.length} 笔</span>
+            </div>
           </div>
-          <select class="opt-input tx-sel" id="f-tx-wallet" aria-label="选择关联卡包" onchange="FinUI.setTxWallet(this.value)">${walletOpts}</select>
-          <div class="wbox-amt-wrap tx-amt-wrap">
-            <span class="wbox-yen">¥</span>
-            <input type="number" step="0.01" inputmode="decimal" class="opt-input wbox-amt" id="f-tx-amt" placeholder="金额" aria-label="流水金额">
+          <div class="wbox-head-right">
+            <div class="wbox-total">
+              <strong>${netTx === 0 ? "¥0.00" : (netTx > 0 ? "+" : "−") + money(Math.abs(netTx))}</strong>
+            </div>
+            <span class="wbox-toggle-btn">${ledgerOpen ? "收起 ▲" : "展开 ▼"}</span>
           </div>
-          <label class="opt-input tx-date-box" title="选择流水日期">
-            <span class="tx-date-txt" id="f-tx-date-txt">${fmtCNDate(txDate)}</span>
-            <span class="tx-date-caret">▾</span>
-            <input type="date" class="cdate-native" id="f-tx-date" value="${esc(txDate)}" aria-label="流水日期" onchange="FinUI.setTxDate(this.value)">
-          </label>
-          <input type="text" class="opt-input tx-note" id="f-tx-note" placeholder="备注（如：午饭、买书）" aria-label="流水备注" onkeydown="if(event.key==='Enter')FinUI.addTx()">
-          <button type="button" class="tx-submit-btn" onclick="FinUI.addTx()">记一笔</button>
         </div>
-        <div class="q-list" style="margin-top:10px">${txRows}</div>
+        ${ledgerOpen ? `<div class="wbox-body">
+          <div class="tx-form">
+            <div class="tx-type-switch" role="group" aria-label="收支类型">
+              <button type="button" class="tx-tbtn${txType === "out" ? " is-out" : ""}" onclick="FinUI.setTxType('out')">支出 −</button>
+              <button type="button" class="tx-tbtn${txType === "in" ? " is-in" : ""}" onclick="FinUI.setTxType('in')">收入 +</button>
+            </div>
+            <select class="opt-input tx-sel" id="f-tx-wallet" aria-label="选择关联卡包" onchange="FinUI.setTxWallet(this.value)">${walletOpts}</select>
+            <div class="wbox-amt-wrap tx-amt-wrap">
+              <span class="wbox-yen">¥</span>
+              <input type="number" step="0.01" inputmode="decimal" class="opt-input wbox-amt" id="f-tx-amt" placeholder="金额" aria-label="流水金额">
+            </div>
+            <label class="opt-input tx-date-box" title="选择流水日期">
+              <span class="tx-date-txt" id="f-tx-date-txt">${fmtCNDate(txDate)}</span>
+              <span class="tx-date-caret">▾</span>
+              <input type="date" class="cdate-native" id="f-tx-date" value="${esc(txDate)}" aria-label="流水日期" onchange="FinUI.setTxDate(this.value)">
+            </label>
+            <input type="text" class="opt-input tx-note" id="f-tx-note" placeholder="备注（如：午饭、买书）" aria-label="流水备注" onkeydown="if(event.key==='Enter')FinUI.addTx()">
+          </div>
+          <button type="button" class="fin-action-btn" onclick="FinUI.addTx()">+ 记一笔</button>
+          <div class="q-list" style="margin-top:10px">${txRows}</div>
+        </div>` : ""}
       </section>`
     };
 
@@ -11075,13 +11187,14 @@ const FinUI = (() => {
       </div>`).join("") : `<p class="pool-note" style="padding:4px 0">暂无标记已还的账单记录。</p>`;
 
     const customOpen = !!openPeriods.custom;
+    const customTitle = H.customDueTitle();
     const debtsJSON = JSON.stringify(fin.debts || [], null, 2);
 
-    cardMap.custom = `<section class="h-panel wbox${customOpen ? " is-open" : ""}" data-card-id="custom" aria-label="指定日期前待还统计">
+    cardMap.custom = `<section class="h-panel wbox${customOpen ? " is-open" : ""}" data-card-id="custom" aria-label="自定义事件待还统计">
       <div class="wbox-head" onclick="FinUI.togglePeriod('custom')" role="button" tabindex="0" aria-expanded="${customOpen}">
         <div class="wbox-head-left">
           <div class="wbox-title-row">
-            <h3 class="cdate-h3"><label class="cdate-inline" onclick="event.stopPropagation()" title="点击修改截止日期"><span class="cdate-inline-txt">${fmtCNDate(customDate)}</span><input type="date" class="cdate-native" value="${esc(customDate)}" onclick="event.stopPropagation()" onchange="FinUI.onCustomDate(this.value)" aria-label="选择截止日期"></label><span>待还</span></h3>
+            <h3 id="f-custom-title-h3">${esc(customTitle || "自定义事件")}</h3>
             <span class="wbox-badge">${customList.length} 笔</span>
           </div>
         </div>
@@ -11092,14 +11205,72 @@ const FinUI = (() => {
           <span class="wbox-toggle-btn">${customOpen ? "收起 ▲" : "展开 ▼"}</span>
         </div>
       </div>
-      ${customOpen ? `<div class="wbox-body" style="padding-top:12px">
-        <div class="slot-kv">
+      ${customOpen ? `<div class="wbox-body">
+        <div class="cdate-param-bar">
+          <div class="cdate-param-item">
+            <span class="cdate-param-lbl">事件名称</span>
+            <input type="text" class="opt-input cdate-title-inp" value="${esc(customTitle)}" placeholder="如：考研初试" aria-label="事件名称" oninput="FinUI.onCustomTitle(this.value)" onchange="FinUI.onCustomTitleCommit(this.value)">
+          </div>
+          <div class="cdate-param-item">
+            <span class="cdate-param-lbl">截止日期</span>
+            <label class="opt-input tx-date-box" title="选择截止日期">
+              <span class="tx-date-txt">${fmtCNDate(customDate)}</span>
+              <span class="tx-date-caret">▾</span>
+              <input type="date" class="cdate-native" value="${esc(customDate)}" aria-label="截止日期" onchange="FinUI.onCustomDate(this.value)">
+            </label>
+          </div>
+        </div>
+        <div class="slot-kv" style="margin-top:10px">
           <div><span>截止日期</span><b>${Core.fmtMD(customDate)} <small style="font-weight:500;color:var(--ink-3)">(${customDays >= 0 ? customDays + "d后" : -customDays + "d前"})</small></b></div>
           <div><span>期间待还笔数</span><b>${customList.length} 笔</b></div>
           <div><span>期间待还总额</span><b>${money(customSum)}</b></div>
           <div><span>届时预计结余</span><b class="${customBalAfter < 0 ? "fin-neg" : ""}">${money(customBalAfter)}</b></div>
         </div>
         <div class="q-list" style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line)">${customList.length ? customList.map(r => renderBillRow(r, t)).join("") : `<p class="pool-note" style="padding:4px 0">截止 ${Core.fmtMD(customDate)} 前暂无未还账单。</p>`}</div>
+      </div>` : ""}
+    </section>`;
+
+    const subs = H.subscriptions();
+    const wallets = H.wallets();
+    const subsSum = subs.reduce((s, x) => s + (parseFloat(x.amount) || 0), 0);
+    const subsOpen = !!openPeriods.subs;
+    const dayOpts = dVal => Array.from({ length: 31 }, (_, i) => i + 1).map(d => `<option value="${d}"${d === dVal ? " selected" : ""}>每月 ${d} 日</option>`).join("");
+    const subWalletOpts = wid => wallets.map(w => `<option value="${esc(w.id)}"${w.id === wid ? " selected" : ""}>扣款：${esc(w.name || "未命名卡包")}</option>`).join("");
+    const subRows = subs.map((s, idx) => `
+      <div class="sub-item" data-sid="${esc(s.id)}">
+        <div class="sub-item-top">
+          <span class="wbox-idx">${idx + 1}</span>
+          <input type="text" class="opt-input wbox-name" id="f-sname-${idx}" value="${esc(s.name)}" placeholder="订阅项目（如 iCloud、Claude）" aria-label="订阅名称" oninput="FinUI.onSubInput(${idx}, 'name', this.value)" onchange="FinUI.onSubCommit()">
+          <div class="wbox-amt-wrap">
+            <span class="wbox-yen">¥</span>
+            <input type="number" step="0.01" inputmode="decimal" class="opt-input wbox-amt" id="f-samt-${idx}" value="${s.amount}" placeholder="0.00" aria-label="每月金额" oninput="FinUI.onSubInput(${idx}, 'amount', this.value)" onchange="FinUI.onSubCommit()">
+          </div>
+          <button type="button" class="wbox-del" onclick="FinUI.removeSub(${idx})" title="删除此固定支出" aria-label="删除此固定支出">×</button>
+        </div>
+        <div class="sub-item-bot">
+          <select class="opt-input sub-sel" aria-label="每月扣款日" onchange="FinUI.onSubSelect(${idx}, 'day', this.value)">${dayOpts(s.day || 1)}</select>
+          <select class="opt-input sub-sel" aria-label="扣款卡包" onchange="FinUI.onSubSelect(${idx}, 'walletId', this.value)">${subWalletOpts(s.walletId)}</select>
+        </div>
+      </div>`).join("");
+
+    cardMap.subs = `<section class="h-panel wbox${subsOpen ? " is-open" : ""}" data-card-id="subs" aria-label="固定支出">
+      <div class="wbox-head" onclick="FinUI.togglePeriod('subs')" role="button" tabindex="0" aria-expanded="${subsOpen}">
+        <div class="wbox-head-left">
+          <div class="wbox-title-row">
+            <h3>固定支出</h3>
+            <span class="wbox-badge">${subs.length} 项</span>
+          </div>
+        </div>
+        <div class="wbox-head-right">
+          <div class="wbox-total">
+            <strong id="f-subs-total">${money(subsSum)}</strong>
+          </div>
+          <span class="wbox-toggle-btn">${subsOpen ? "收起 ▲" : "展开 ▼"}</span>
+        </div>
+      </div>
+      ${subsOpen ? `<div class="wbox-body">
+        <div class="sub-list">${subRows || `<p class="pool-note" style="padding:4px 0">暂无固定支出（可添加 AI 订阅、iCloud 续费等，到期自动扣款并汇入待还）。</p>`}</div>
+        <button type="button" class="fin-action-btn" onclick="FinUI.addSub()">+ 添加固定支出</button>
       </div>` : ""}
     </section>`;
 
@@ -11123,7 +11294,7 @@ const FinUI = (() => {
       </div>` : ""}
     </section>`;
 
-    const defaultOrder = ["p7", "p30", "p90", "p180", "p365", "custom", "paid"];
+    const defaultOrder = ["p7", "p30", "p90", "p180", "p365", "custom", "subs", "paid"];
     const order = H.cardOrder("debt", defaultOrder);
     const cfgModal = editJsonOpen ? `<section class="h-panel h-pad" aria-label="账单源配置">
       <div class="h-sec-title" style="margin:0 0 10px">
@@ -11226,15 +11397,97 @@ const FinUI = (() => {
     render();
   }
 
+  function toggleLedgerBox() {
+    ledgerOpen = !ledgerOpen;
+    try { localStorage.setItem(LBOX_KEY, ledgerOpen ? "1" : "0"); } catch (e) {}
+    render();
+  }
+
   function togglePeriod(k) {
     openPeriods[k] = !openPeriods[k];
     render();
   }
 
+  function onCustomTitle(val) {
+    H.setCustomDueTitle(val, false);
+    const h3 = document.getElementById("f-custom-title-h3");
+    if (h3) h3.textContent = val || "自定义事件";
+  }
+
+  function onCustomTitleCommit(val) {
+    H.setCustomDueTitle(val, true);
+  }
+
   function onCustomDate(val) {
     if (!val || !/^\d{4}-\d{2}-\d{2}$/.test(val)) return;
     H.setCustomDueDate(val);
-    openPeriods.custom = true;
+    render();
+  }
+
+  function onSubInput(idx, field, val) {
+    const list = H.subscriptions().slice();
+    if (!list[idx]) return;
+    if (field === "name") {
+      list[idx] = Object.assign({}, list[idx], { name: val });
+    } else if (field === "amount") {
+      const num = parseFloat(val);
+      list[idx] = Object.assign({}, list[idx], { amount: isFinite(num) ? Math.round(num * 100) / 100 : 0 });
+    }
+    H.setSubscriptions(list, false);
+    updateStrip();
+    const totEl = document.getElementById("f-subs-total");
+    if (totEl) {
+      const sSum = H.subscriptions().reduce((s, x) => s + (parseFloat(x.amount) || 0), 0);
+      totEl.textContent = money(sSum);
+    }
+  }
+
+  function onSubSelect(idx, field, val) {
+    const list = H.subscriptions().slice();
+    if (!list[idx]) return;
+    if (field === "day") {
+      list[idx] = Object.assign({}, list[idx], { day: Math.max(1, Math.min(31, parseInt(val, 10) || 1)) });
+    } else if (field === "walletId") {
+      list[idx] = Object.assign({}, list[idx], { walletId: val });
+    }
+    H.setSubscriptions(list, true);
+    render();
+  }
+
+  function onSubCommit() {
+    H.setSubscriptions(H.subscriptions(), true);
+    render();
+  }
+
+  function addSub() {
+    const list = H.subscriptions().slice();
+    const wallets = H.wallets();
+    const idx = list.length;
+    const t = H.today();
+    const curDay = parseInt(t.slice(8, 10), 10) || 1;
+    list.push({
+      id: `s_${Date.now()}_${idx}`,
+      name: "",
+      amount: 0,
+      day: curDay,
+      walletId: wallets[0] ? wallets[0].id : "",
+      lastAutoYM: t.slice(0, 7)
+    });
+    H.setSubscriptions(list, true);
+    openPeriods.subs = true;
+    render();
+    setTimeout(() => {
+      const target = document.getElementById(`f-sname-${idx}`);
+      if (target) target.focus();
+    }, 20);
+  }
+
+  function removeSub(idx) {
+    const list = H.subscriptions().slice();
+    if (!list[idx]) return;
+    const removed = list.splice(idx, 1)[0];
+    H.setSubscriptions(list, true);
+    showToast(`已移除固定支出「${removed.name || "未命名"}」`);
     render();
   }
 
@@ -11423,7 +11676,9 @@ const FinUI = (() => {
   function refresh() { if (Core.subject() === "fin") render(); else updateStrip(); }
 
   return {
-    show, refresh, render, updateStrip, setTab, toggleWalletBox, togglePeriod, onCustomDate,
+    show, refresh, render, updateStrip, setTab, toggleWalletBox, toggleLedgerBox, togglePeriod,
+    onCustomTitle, onCustomTitleCommit, onCustomDate,
+    onSubInput, onSubSelect, onSubCommit, addSub, removeSub,
     onWalletInput, onWalletCommit, addWallet, removeWallet,
     setTxType, setTxWallet, setTxDate, addTx, removeTx,
     startEditBill, saveBillEdit, resetBillEdit, cancelBillEdit,
