@@ -9038,9 +9038,6 @@ const HubEngine = (() => {
     const baseWalTs = baseFin.walletsUpdatedAt || 0;
 
     const wallets = JSON.parse(JSON.stringify(baseFin.wallets || []));
-    (otherFin.wallets || []).forEach(ow => {
-      if (ow && ow.id && !wallets.some(w => w.id === ow.id)) wallets.push(JSON.parse(JSON.stringify(ow)));
-    });
 
     const baseLedgerIds = new Set((baseFin.ledger || []).map(x => x && x.id).filter(Boolean));
     (baseFin.ledger || []).forEach(tx => {
@@ -9080,7 +9077,7 @@ const HubEngine = (() => {
       ledger: mergedLedger,
       deletedTx,
       subscriptions: Array.from(subMap.values()),
-      amountOverrides: Object.assign({}, secondaryFin.amountOverrides || {}, primaryFin.amountOverrides || {})
+      amountOverrides: Object.assign({}, primaryFin.amountOverrides || {})
     });
     sanitizeFinance(merged);
 
@@ -9187,7 +9184,6 @@ const HubEngine = (() => {
     events, setBillAmount, projection, alerts, markPaid, isPaid, togglePaid, paidEvents, focusMinutes, setEnergy, energy, streak,
     setEnSet, setEnWriting, addMock, sync, merge, exportJSON, importJSON, DEFAULT_SETTINGS, persist };
 })();
-
 
 // ---- math-ui.js ----
 // ============================================================================
