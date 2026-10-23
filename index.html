@@ -2374,14 +2374,106 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
 .wbox-amt { width: 100%; height: 34px; padding: 0 8px 0 22px; font: 600 14px/1 var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; }
 .wbox-del { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--ink-3); font-size: 17px; line-height: 1; cursor: pointer; }
 .wbox-del:hover { background: color-mix(in srgb, var(--again) 12%, transparent); color: var(--again); }
-.wbox-foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); }
-.wbox-presets { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 12px; color: var(--ink-3); }
-.f-cdate-input { height: 26px; width: 124px; padding: 0 6px; font-size: 11.5px; font-family: var(--font-mono); flex: none; }
+.wbox-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 36px;
+  margin-top: 10px;
+  padding: 0 14px;
+  border: 1px dashed var(--line-2);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface) 75%, transparent);
+  color: var(--ink-2);
+  font: 600 12.5px/1 var(--font-ui);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.wbox-add-btn:hover { background: var(--surface); color: var(--ink); border-color: var(--ink-3); }
+
+/* 标题内嵌日期选择器（xx年xx月xx日待还）与防溢出透明原生控件 */
+.cdate-h3 { display: inline-flex; align-items: baseline; gap: 1px; margin: 0; }
+.cdate-inline {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 4px;
+  margin-right: 1px;
+  border-radius: 6px;
+  background: var(--sunken);
+  border-bottom: 1.5px dashed var(--ink-3);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.cdate-inline:hover { background: var(--hover); }
+.cdate-inline-txt { font-variant-numeric: tabular-nums; color: var(--ink); }
+.cdate-native {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* 账单金额原位轻点编辑（平时纯排版零输入框，点击平滑展开） */
+.bill-row { display: flex; flex-direction: column; align-items: stretch !important; gap: 8px; }
+.bill-row-main { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; }
+.bill-row-right { display: inline-flex; align-items: center; gap: 8px; flex: none; }
+.bill-amt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 6px;
+  margin: -3px 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink);
+  font: 700 14.5px/1.2 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.bill-amt-btn:hover { background: var(--sunken); }
+.bill-amt-btn .bill-amt-num { border-bottom: 1px dashed color-mix(in srgb, var(--ink-3) 55%, transparent); padding-bottom: 1px; }
+.bill-amt-btn.is-approx .bill-amt-num { border-bottom-color: var(--ink-2); }
+.bill-amt-btn.is-custom .bill-amt-num { color: var(--c-math, var(--ink)); border-bottom-style: solid; }
+.bill-est-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 17px;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--sunken);
+  color: var(--ink-3);
+  font: 600 10px/1 var(--font-ui);
+}
+.bill-edit-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--sunken);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.bill-edit-inp-wrap { width: 132px; flex: none; }
+.bill-edit-inp { height: 30px !important; font-size: 13.5px !important; background: var(--surface) !important; }
+.bill-edit-btns { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 6px; }
 
 /* 流水记录表单与列表 */
 .tx-form {
   display: grid;
-  grid-template-columns: auto minmax(120px, 0.9fr) minmax(100px, 0.7fr) minmax(130px, 1.2fr) 136px auto;
+  grid-template-columns: auto minmax(120px, 0.9fr) minmax(100px, 0.7fr) minmax(130px, 0.95fr) minmax(140px, 1.2fr) auto;
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
@@ -2389,12 +2481,46 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
   background: var(--sunken);
   box-shadow: inset 0 0 0 1px var(--line);
 }
-.tx-type-switch { display: inline-flex; padding: 2px; border-radius: 8px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
+.tx-type-switch { display: inline-flex; padding: 2px; border-radius: 8px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); min-width: 0; }
 .tx-tbtn { height: 30px; padding: 0 10px; border: 0; border-radius: 6px; background: transparent; color: var(--ink-3); font: 600 12px/1 var(--font-ui); cursor: pointer; }
 .tx-tbtn.is-out { background: color-mix(in srgb, var(--again) 14%, var(--surface)); color: var(--again); }
 .tx-tbtn.is-in { background: color-mix(in srgb, var(--good) 14%, var(--surface)); color: var(--good); }
-.tx-sel, .tx-note, .tx-date { height: 34px; width: 100%; font-size: 13px; }
-.tx-submit { height: 34px; white-space: nowrap; }
+.tx-sel, .tx-note { height: 34px; width: 100%; min-width: 0; font-size: 13px; box-sizing: border-box; }
+.tx-date-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  height: 34px;
+  width: 100%;
+  min-width: 0;
+  padding: 0 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+}
+.tx-date-txt { font: 500 12.5px/1 var(--font-ui); font-variant-numeric: tabular-nums; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tx-date-caret { font-size: 11px; color: var(--ink-3); flex: none; }
+.tx-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  padding: 0 16px;
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  font: 600 13px/1 var(--font-ui);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.tx-submit-btn:hover { background: var(--hover); }
+.tx-submit-btn:active { transform: scale(0.99); }
 .tx-row { align-items: center; }
 .tx-right { display: inline-flex; align-items: center; gap: 10px; flex: none; }
 .tx-in { color: var(--good); }
@@ -2410,14 +2536,15 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
   .wbox-head-right { gap: 8px; }
   .wbox-total strong { font-size: 16.5px; }
   .wbox-toggle-btn { height: 26px; padding: 0 7px; font-size: 11px; }
-  .f-cdate-input { width: 112px; height: 24px; padding: 0 4px; font-size: 11px; }
-  .wbox-body { padding: 12px 14px 16px; }
+  .wbox-body { padding: 12px 14px 14px; }
   .wbox-list { grid-template-columns: minmax(0, 1fr); gap: 8px; }
   .wbox-item { grid-template-columns: 20px minmax(0, 1.1fr) minmax(0, 1fr) 26px; gap: 6px; padding: 7px 8px; }
   .tx-form { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .tx-type-switch { justify-content: stretch; }
   .tx-tbtn { flex: 1; }
   .tx-note { grid-column: 1 / -1; }
+  .tx-submit-btn { grid-column: 1 / -1; width: 100%; height: 36px; }
+  .bill-edit-inp-wrap { width: 116px; }
 }
 @media (max-width: 420px) {
   .hm-grid { gap: 5px; }
@@ -8086,6 +8213,7 @@ const HubEngine = (() => {
       }));
     }
     if (!Array.isArray(fin.ledger)) fin.ledger = [];
+    if (!fin.amountOverrides || typeof fin.amountOverrides !== "object") fin.amountOverrides = {};
     if (!fin.customDueDate || !/^\d{4}-\d{2}-\d{2}$/.test(fin.customDueDate)) fin.customDueDate = "2026-12-20";
     fin.balance = calcWalletTotal(fin.wallets);
   }
@@ -8397,20 +8525,48 @@ const HubEngine = (() => {
   function isPaid(id) { return (state.paid[id] || 0) > 0; }
   function events(fromKey, toKey) {
     const f = state.settings.finance;
+    const ovMap = (f && f.amountOverrides && typeof f.amountOverrides === "object") ? f.amountOverrides : {};
     const out = [];
     (f.debts || []).forEach(d => {
       const months = d.range ? Object.keys(monthly(d.from, d.to, 0)) : Object.keys(d.amounts || {});
       months.forEach(ym => {
         const date = `${ym}-${String(d.day).padStart(2, "0")}`;
         if (date < fromKey || date > toKey) return;
-        const amt = d.range ? d.range[1] : d.amounts[ym];
-        if (!amt) return;
         const id = `${d.id}:${ym}`;
-        out.push({ type: "out", id, debt: d.id, name: d.name, date, amount: amt, range: d.range || null, approx: (d.approx || []).includes(ym), paid: isPaid(id), paidAt: isPaid(id) ? state.paid[id] : 0 });
+        const baseAmt = d.range ? d.range[1] : d.amounts[ym];
+        const hasOv = ovMap[id] != null && isFinite(parseFloat(ovMap[id]));
+        const amt = hasOv ? Math.round(parseFloat(ovMap[id]) * 100) / 100 : baseAmt;
+        if (!amt && !hasOv) return;
+        out.push({
+          type: "out", id, debt: d.id, ym, name: d.name, date,
+          amount: amt, baseAmount: baseAmt, customized: hasOv,
+          range: d.range || null, approx: (d.approx || []).includes(ym),
+          paid: isPaid(id), paidAt: isPaid(id) ? state.paid[id] : 0
+        });
       });
     });
     (f.inflows || []).forEach((x, i) => { if (x.date >= fromKey && x.date <= toKey) out.push({ type: "in", id: `in:${i}`, name: x.name, date: x.date, amount: x.amount }); });
     return out.sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.type === "in" ? -1 : 1));
+  }
+  function setBillAmount(id, newAmt, applyFuture) {
+    if (!id || !id.includes(":")) return false;
+    const f = state.settings.finance;
+    sanitizeFinance(f);
+    const [debtId, ym] = id.split(":");
+    const debtObj = (f.debts || []).find(d => d.id === debtId);
+    const targetMonths = (applyFuture && debtObj)
+      ? (debtObj.range ? Object.keys(monthly(debtObj.from, debtObj.to, 0)) : Object.keys(debtObj.amounts || {})).filter(m => m >= ym)
+      : [ym];
+    if (newAmt === null || newAmt === "") {
+      targetMonths.forEach(m => { delete f.amountOverrides[`${debtId}:${m}`]; });
+    } else {
+      const val = Math.round(parseFloat(newAmt) * 100) / 100;
+      if (!isFinite(val) || val < 0) return false;
+      targetMonths.forEach(m => { f.amountOverrides[`${debtId}:${m}`] = val; });
+    }
+    state.settings.updatedAt = Date.now();
+    persist(true);
+    return true;
   }
   function wallets() {
     const f = state.settings.finance;
@@ -8658,7 +8814,7 @@ const HubEngine = (() => {
 
   return { KEY, SYNC_FILE, EN_SETS, settings, setSettings, get, today, countdownToExam, daysToExam, logistic, englishVocab, englishScore, scores, snap, history,
     phase, plan, toggleDone, allocateNew, nextEnSet, simulate, wallets, setWallets, ledger, addLedgerTx, removeLedgerTx, customDueDate, setCustomDueDate, cardOrder, setCardOrder,
-    events, projection, alerts, markPaid, isPaid, togglePaid, paidEvents, focusMinutes, setEnergy, energy, streak,
+    events, setBillAmount, projection, alerts, markPaid, isPaid, togglePaid, paidEvents, focusMinutes, setEnergy, energy, streak,
     setEnSet, setEnWriting, addMock, sync, merge, exportJSON, importJSON, DEFAULT_SETTINGS, persist };
 })();
 
@@ -10682,7 +10838,13 @@ const FinUI = (() => {
   let txDate = "";
   let openPeriods = { p7: true, p30: false, p90: false, p180: false, p365: false, custom: false, paid: true };
   let editJsonOpen = false;
+  let editingBillId = null;
   const money = x => (x < 0 ? "−" : "") + "¥" + Math.abs(x).toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtCNDate = ymd => {
+    if (!ymd || !/^\d{4}-\d{2}-\d{2}$/.test(ymd)) return ymd || "";
+    const [y, m, d] = ymd.split("-").map(Number);
+    return `${y}年${m}月${d}日`;
+  };
 
   function updateStrip() {
     H.wallets();
@@ -10732,12 +10894,33 @@ const FinUI = (() => {
   function renderBillRow(r, t) {
     const d = Core.daysBetween(t, r.date);
     const when = d < 0 ? `已过 ${-d} 天` : d === 0 ? "今天到期" : `${d} 天后`;
-    return `<div class="q-row" style="align-items:center">
-      <div class="q-k"><b>${Core.fmtMD(r.date)} · ${esc(r.name)}</b><small>${when}${r.range ? ` · 区间估算 ¥${r.range[0]}–${r.range[1]}` : ""} · 扣款后预计 <span class="${r.bal < 0 ? "fin-neg" : ""}">${money(r.bal)}</span></small></div>
-      <div style="display:flex;align-items:center;gap:10px;flex:none">
-        <span class="q-v">${money(r.amount)}</span>
-        <button type="button" class="action-btn btn-small" onclick="FinUI.markBillPaid('${esc(r.id)}', '${esc(r.name)}', '${esc(r.date)}')">标记已还</button>
+    const isEst = (r.range || r.approx) && !r.customized;
+    const hint = r.customized
+      ? ` · 已改实还（原 ¥${r.baseAmount}）`
+      : r.range
+        ? ` · 预估 ¥${r.range[0]}–${r.range[1]}（点金额可改）`
+        : " · 点金额可改";
+    const isEditing = editingBillId === r.id;
+    return `<div class="q-row bill-row${isEditing ? " is-editing" : ""}">
+      <div class="bill-row-main">
+        <div class="q-k"><b>${Core.fmtMD(r.date)} · ${esc(r.name)}</b><small>${when}${hint} · 扣款后预计 <span class="${r.bal < 0 ? "fin-neg" : ""}">${money(r.bal)}</span></small></div>
+        <div class="bill-row-right">
+          <button type="button" class="bill-amt-btn${r.customized ? " is-custom" : (isEst ? " is-approx" : "")}" onclick="FinUI.startEditBill('${esc(r.id)}')" title="点击修改本期实际待还金额">${isEst ? `<span class="bill-est-badge">预估</span>` : ""}<span class="bill-amt-num">${money(r.amount)}</span></button>
+          <button type="button" class="action-btn btn-small" onclick="FinUI.markBillPaid('${esc(r.id)}', '${esc(r.name)}', '${esc(r.date)}')">标记已还</button>
+        </div>
       </div>
+      ${isEditing ? `<div class="bill-edit-bar">
+        <div class="wbox-amt-wrap bill-edit-inp-wrap">
+          <span class="wbox-yen">¥</span>
+          <input type="number" step="0.01" inputmode="decimal" class="opt-input wbox-amt bill-edit-inp" id="f-bill-edit-inp" value="${r.amount}" aria-label="修改待还金额" onkeydown="if(event.key==='Enter')FinUI.saveBillEdit('${esc(r.id)}', false);if(event.key==='Escape')FinUI.cancelBillEdit()">
+        </div>
+        <div class="bill-edit-btns">
+          <button type="button" class="h-mini-btn is-on" onclick="FinUI.saveBillEdit('${esc(r.id)}', false)">改本期</button>
+          <button type="button" class="h-mini-btn" onclick="FinUI.saveBillEdit('${esc(r.id)}', true)" title="将本期及后续月份统一改为此金额">含后续各期</button>
+          ${r.customized ? `<button type="button" class="h-mini-btn" onclick="FinUI.resetBillEdit('${esc(r.id)}')">恢复默认</button>` : ""}
+          <button type="button" class="h-mini-btn" onclick="FinUI.cancelBillEdit()">取消</button>
+        </div>
+      </div>` : ""}
     </div>`;
   }
 
@@ -10797,9 +10980,7 @@ const FinUI = (() => {
         </div>
         ${walletOpen ? `<div class="wbox-body">
           <div class="wbox-list">${walletRows || `<p class="pool-note" style="padding:4px 0">暂无卡包，请点击下方按钮添加。</p>`}</div>
-          <div class="wbox-foot">
-            <button type="button" class="action-btn btn-primary btn-small" onclick="FinUI.addWallet('')">+ 添加卡包</button>
-          </div>
+          <button type="button" class="wbox-add-btn" onclick="FinUI.addWallet('')">+ 添加卡包</button>
         </div>` : ""}
       </section>`,
       ledger: `<section class="h-panel h-pad" data-card-id="ledger" aria-label="流水记录">
@@ -10817,9 +10998,13 @@ const FinUI = (() => {
             <span class="wbox-yen">¥</span>
             <input type="number" step="0.01" inputmode="decimal" class="opt-input wbox-amt" id="f-tx-amt" placeholder="金额" aria-label="流水金额">
           </div>
-          <input type="date" class="opt-input tx-date" id="f-tx-date" value="${esc(txDate)}" aria-label="流水日期" onchange="FinUI.setTxDate(this.value)">
+          <label class="opt-input tx-date-box" title="选择流水日期">
+            <span class="tx-date-txt" id="f-tx-date-txt">${fmtCNDate(txDate)}</span>
+            <span class="tx-date-caret">▾</span>
+            <input type="date" class="cdate-native" id="f-tx-date" value="${esc(txDate)}" aria-label="流水日期" onchange="FinUI.setTxDate(this.value)">
+          </label>
           <input type="text" class="opt-input tx-note" id="f-tx-note" placeholder="备注（如：午饭、买书）" aria-label="流水备注" onkeydown="if(event.key==='Enter')FinUI.addTx()">
-          <button type="button" class="action-btn btn-primary btn-small tx-submit" onclick="FinUI.addTx()">记一笔</button>
+          <button type="button" class="tx-submit-btn" onclick="FinUI.addTx()">记一笔</button>
         </div>
         <div class="q-list" style="margin-top:10px">${txRows}</div>
       </section>`
@@ -10892,12 +11077,11 @@ const FinUI = (() => {
     const customOpen = !!openPeriods.custom;
     const debtsJSON = JSON.stringify(fin.debts || [], null, 2);
 
-    cardMap.custom = `<section class="h-panel wbox${customOpen ? " is-open" : ""}" data-card-id="custom" aria-label="自定义待还统计">
+    cardMap.custom = `<section class="h-panel wbox${customOpen ? " is-open" : ""}" data-card-id="custom" aria-label="指定日期前待还统计">
       <div class="wbox-head" onclick="FinUI.togglePeriod('custom')" role="button" tabindex="0" aria-expanded="${customOpen}">
         <div class="wbox-head-left">
           <div class="wbox-title-row">
-            <h3>自定义待还</h3>
-            <input type="date" class="opt-input f-cdate-input" value="${esc(customDate)}" onclick="event.stopPropagation()" onchange="FinUI.onCustomDate(this.value)" aria-label="自定义截止日期">
+            <h3 class="cdate-h3"><label class="cdate-inline" onclick="event.stopPropagation()" title="点击修改截止日期"><span class="cdate-inline-txt">${fmtCNDate(customDate)}</span><input type="date" class="cdate-native" value="${esc(customDate)}" onclick="event.stopPropagation()" onchange="FinUI.onCustomDate(this.value)" aria-label="选择截止日期"></label><span>待还</span></h3>
             <span class="wbox-badge">${customList.length} 笔</span>
           </div>
         </div>
@@ -10974,7 +11158,7 @@ const FinUI = (() => {
 
     const onStart = (clientX, clientY, target) => {
       if (!target || !target.closest) return;
-      if (target.closest("input, select, textarea, .action-btn, .h-mini-btn, .wbox-del, .tx-tbtn")) return;
+      if (target.closest("input, select, textarea, label, button, .action-btn, .h-mini-btn, .wbox-del, .tx-tbtn, .cdate-inline")) return;
       const head = target.closest(".wbox-head, .wbox-drag-handle");
       if (!head) return;
       const card = head.closest("[data-card-id]");
@@ -11103,7 +11287,11 @@ const FinUI = (() => {
     render();
   }
   function setTxWallet(wid) { txWalletId = wid; }
-  function setTxDate(d) { txDate = d; }
+  function setTxDate(d) {
+    txDate = d;
+    const txt = document.getElementById("f-tx-date-txt");
+    if (txt) txt.textContent = fmtCNDate(d);
+  }
 
   function addTx() {
     const amtEl = document.getElementById("f-tx-amt");
@@ -11135,8 +11323,44 @@ const FinUI = (() => {
     }
   }
 
+  function startEditBill(id) {
+    editingBillId = editingBillId === id ? null : id;
+    render();
+    if (editingBillId) {
+      setTimeout(() => {
+        const inp = document.getElementById("f-bill-edit-inp");
+        if (inp) { inp.focus(); inp.select(); }
+      }, 20);
+    }
+  }
+
+  function saveBillEdit(id, applyFuture) {
+    const inp = document.getElementById("f-bill-edit-inp");
+    if (!inp) return;
+    const val = parseFloat(inp.value);
+    if (!isFinite(val) || val < 0) { showToast("请输入有效的待还金额"); inp.focus(); return; }
+    if (H.setBillAmount(id, val, !!applyFuture)) {
+      editingBillId = null;
+      showToast(applyFuture ? `已将本期及后续各期金额更新为 ${money(val)}` : `已将本期金额更新为 ${money(val)}`);
+      render();
+    }
+  }
+
+  function resetBillEdit(id) {
+    H.setBillAmount(id, null, false);
+    editingBillId = null;
+    showToast("已恢复该账单默认预估金额");
+    render();
+  }
+
+  function cancelBillEdit() {
+    editingBillId = null;
+    render();
+  }
+
   function markBillPaid(id, name, date) {
     H.markPaid([id], true);
+    editingBillId = null;
     openPeriods.paid = true;
     showToast(`已标记「${Core.fmtMD(date)} · ${name}」为已还（可在下方「已还账单记录」随时复原）`);
     render();
@@ -11202,6 +11426,7 @@ const FinUI = (() => {
     show, refresh, render, updateStrip, setTab, toggleWalletBox, togglePeriod, onCustomDate,
     onWalletInput, onWalletCommit, addWallet, removeWallet,
     setTxType, setTxWallet, setTxDate, addTx, removeTx,
+    startEditBill, saveBillEdit, resetBillEdit, cancelBillEdit,
     markBillPaid, restorePaid, toggleEditJson, saveDebtsJson, togglePaid,
     sideMods, sideAct, onKey,
     openOptions: () => { tab = "debt"; editJsonOpen = true; render(); }
