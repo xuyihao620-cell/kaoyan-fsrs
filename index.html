@@ -6111,7 +6111,7 @@ THM_H0({
   ch: 1, sec: "§1", order: -30, slot: "MA-01", hub: "H0", up: ["AX_ORD"],
   build: TX`序公理「三歧律 + 同乘 $\dfrac{1}{2}$」 ⟶ 放缩链条收尾时消去任意小正数 $\eps$ 锁定 $\le$ 或 $=$`,
   body: [
-    { k: "p", t: TX`**【核心功能：消去任意小 $\eps$，收尾判 $\le$ 与 $=$】**（把 $<$ 换为 $\le$ 同样成立）\n① **任意 $\eps$ 定序**：$$a < b + \overset{\forall > 0}{\varepsilon} \iff \text{⟦c1¦$a \le b$¦消去 $+\eps$ 锁定保序⟧}$$\n② **任意 $\eps$ 定等**：$$\lvert a - b \rvert < \overset{\forall > 0}{\varepsilon} \iff \text{⟦c2¦$a = b$¦消去 $\eps$ 锁定相等⟧}$$` },
+    { k: "p", t: TX`**【核心功能：消去任意小 $\eps$，收尾判 $\le$ 与 $=$】**（把 $<$ 换为 $\le$ 同样成立）\n① **任意 $\eps$ 定序**：$a < b + \overset{\forall > 0}{\varepsilon} \iff$ ⟦c1¦$a \le b$¦消去 $+\eps$ 锁定保序⟧\n② **任意 $\eps$ 定等**：$\lvert a - b \rvert < \overset{\forall > 0}{\varepsilon} \iff$ ⟦c2¦$a = b$¦消去 $\eps$ 锁定相等⟧` },
     { k: "steps", track: "main", label: "三歧反证 + 差值折半证明", items: [
       { id: "s1", tag: "差值折半引爆矛盾（证 ① 定序）", cue: TX`反证假设 $a > b$（即 $a - b > 0$），取哪个具体的正数 $\eps_0$ 代入 $a < b + \eps_0$ 最干净？`, a: TX`由序公理知 $\dfrac{1}{2} > 0$，取 $\eps_0 = \dfrac{a - b}{2} > 0$ 代入得 $a < b + \dfrac{a - b}{2} = \dfrac{a + b}{2} \implies 2a < a + b \implies a < b$，与 $a > b$ 矛盾！故 $a \le b$。` },
       { id: "s2", tag: "去绝对值双向定序（证 ② 定等）", cue: TX`如何把 $\lvert a - b \rvert < \forall \eps$ 拆成两个单向不等式套 ① 收尾？`, a: TX`去绝对值得 $-\eps < a - b < \eps \iff a < b + \eps$ 且 $b < a + \eps$，分别套 ① 得 $a \le b$ 且 $b \le a$，由反对称性得 $a = b$。` }
@@ -6127,7 +6127,7 @@ THM_H0({
   ch: 1, sec: "§2", order: -20, slot: "MA-01", hub: "H0", up: ["AX_SUP"],
   build: TX`确界公理 + 上确界定义 2（取 $\eps=1$） ⟶ 正整数 $n$ 可取足够大、倒数 $\dfrac{1}{n}$ 可取任意小`,
   body: [
-    { k: "p", t: TX`**【核心功能：$n$ 可取足够大、$\dfrac{1}{n}$ 可取任意小】**（阿基米德性）\n$$\overset{\exists \in \mathbb{N}_+}{n} > \forall x \quad\Longleftrightarrow\quad \text{⟦c1¦$\dfrac{1}{\exists n \in \mathbb{N}_+} < \overset{\forall > 0}{\varepsilon}$¦倒数任意小等价形式⟧}$$` },
+    { k: "p", t: TX`**【核心功能：$n$ 可取足够大、$\dfrac{1}{n}$ 可取任意小】**（阿基米德性）\n$\overset{\exists \in \mathbb{N}_+}{n} > \forall x \iff$ ⟦c1¦$\dfrac{1}{\exists n \in \mathbb{N}_+} < \overset{\forall > 0}{\varepsilon}$¦倒数任意小等价形式⟧` },
     { k: "steps", track: "main", label: "反证取 sup ℕ₊ + 取 ε=1 证明", items: [
       { id: "s1", tag: "反证有上界并取 ε=1", cue: TX`反证若 $\N$ 有上界，设 $\sup\N$ 存在，对上确界定义 2 取哪个具体 $\eps$ 可利用 $n_0 + 1 \in \N$ 破局？`, a: TX`取 $\eps = 1 > 0$，由上确界定义 2 右半知必存在 $n_0 \in \N$ 使得 $n_0 > \sup\N - 1$。` },
       { id: "s2", tag: "移项越界矛盾与取倒数", cue: TX`将 $n_0 > \sup\N - 1$ 移项后为什么直接与上界矛盾？又怎样推出 $\dfrac{1}{n} < \eps$？`, a: TX`移项得 $n_0 + 1 > \sup\N$，但 $n_0 + 1 \in \N$，与 $\sup\N$ 是 $\N$ 的上界矛盾！故对 $\forall x$ 必有 $\exists n \in \N > x$；对 $\forall \eps > 0$ 令 $x = \dfrac{1}{\eps}$ 即得 $\dfrac{1}{n} < \eps$。` }
