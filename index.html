@@ -9374,10 +9374,10 @@ const MathUI = (() => {
   const KIND_NAME = { c: "挖空", n: "否定", s: "步骤", x: "反例", k: "点算", phi: "Φ⁻¹", r: "矩阵行" };
 
   // ---------------------------------------------------------------- state
-  let ui = Object.assign({ flow: "B", scope: "H0", filter: "all", mode: null, view: "stage", cur: "AX_EQ", h0V2: 0 }, E.getUI());
+  let ui = Object.assign({ flow: "B", scope: "all", filter: "all", mode: null, view: "stage", cur: "AX_EQ", h0V3: 0 }, E.getUI());
   if (!["A", "B", "C", "D"].includes(ui.flow)) ui.flow = "B";
   if (!ui.mode) ui.mode = E.getCfg().defaultMode || "smart";
-  if (!ui.h0V2) { ui.scope = "H0"; ui.filter = "all"; ui.cur = "AX_EQ"; ui.h0V2 = 1; E.setUI(ui); }
+  if (!ui.h0V3) { ui.scope = "all"; ui.filter = "all"; ui.cur = "AX_EQ"; ui.h0V3 = 1; E.setUI(ui); }
   let search = "";
   let Q = { list: [], counts: {} };
   let forced = null;
@@ -9393,7 +9393,7 @@ const MathUI = (() => {
   const openRows = new Set();
   let inited = false;
 
-  function saveUI() { E.setUI({ flow: ui.flow, scope: ui.scope, filter: ui.filter, mode: ui.mode, view: ui.view, cur: ui.cur, h0V2: ui.h0V2 || 1 }); }
+  function saveUI() { E.setUI({ flow: ui.flow, scope: ui.scope, filter: ui.filter, mode: ui.mode, view: ui.view, cur: ui.cur, h0V3: ui.h0V3 || 1 }); }
   function card() { return sess ? E.byId[sess.cid] : null; }
   const now = () => Date.now();
 
