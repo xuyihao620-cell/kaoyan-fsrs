@@ -1935,6 +1935,16 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
 .m-arc .lbl { font: 500 9.5px/1 var(--font-mono); fill: var(--ink-3); }
 .m-arc-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 4px 0 6px; font-size: 11.5px; color: var(--ink-3); }
 .m-arc-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.m-grid-svg { display: block; width: 100%; min-width: 640px; max-width: 780px; height: auto; margin: 2px auto 6px; overflow: visible; }
+.m-grid-svg .g-edge { fill: none; stroke: var(--line-strong); stroke-width: 1.6; }
+.m-grid-svg .g-node { cursor: pointer; }
+.m-grid-svg .g-box { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.25; transition: stroke 0.15s ease, fill 0.15s ease, filter 0.15s ease; }
+.m-grid-svg .g-node.is-axiom .g-box { fill: color-mix(in srgb, var(--accent) 5%, var(--surface)); stroke: color-mix(in srgb, var(--accent) 38%, var(--line-strong)); }
+.m-grid-svg .g-node.is-cur .g-box { fill: color-mix(in srgb, var(--accent) 13%, var(--surface)); stroke: var(--accent); stroke-width: 2.2; }
+.m-grid-svg .g-node:hover .g-box { stroke: var(--accent); stroke-width: 1.8; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.06)); }
+.m-grid-svg .g-title { font: 700 13px/1 var(--font-math); fill: var(--ink); }
+.m-grid-svg .g-sub { font: 500 10.5px/1 var(--font-ui); fill: var(--ink-3); }
+.m-grid-svg .g-note { font: 500 11px/1 var(--font-ui); fill: var(--ink-3); }
 
 .m-row { border-bottom: 1px solid var(--line); }
 .m-row:last-child { border-bottom: 0; }
@@ -5927,6 +5937,7 @@ const MATH_ALPHA = {
 
 // 证明链枢纽（视图 B 的分组）
 const MATH_HUBS = [
+  ["H0", "实数公理与底层工具", "Ch.1 · 底层重筑"],
   ["H1", "数列极限基本性质", "Ch.2"],
   ["H2", "实数完备性七大定理闭环", "Ch.1/2/7"],
   ["H3", "函数极限与闭区间连续", "Ch.3/4"],
@@ -5997,6 +6008,149 @@ const MATH_TIERS = [
 // ============================================================================
 const MATH_DECK = [];
 const DEF = c => { c.type = "DEF"; c.subj = c.subj || "626"; c.book = c.book || "ECNU"; c.level = c.level || "L0"; c.tier = c.tier || "C1"; MATH_DECK.push(c); };
+const THM_H0 = c => { c.type = "THM"; c.subj = c.subj || "626"; c.book = c.book || "ECNU"; c.level = c.level || "L1"; c.tier = c.tier || "C1"; MATH_DECK.push(c); };
+
+// ============================================================================
+// [H0] 实数公理与底层工具（4 张基本公理 + 4 张核心衍生工具 · 独立重构区）
+// ============================================================================
+DEF({
+  id: "AX_EQ", noCode: true, grid: [0, 0],
+  graphTitle: "相等公理", graphSub: "替换 · 两边同运算",
+  title: "相等公理 · 等量替换与两边同运算",
+  sub: "自反公理 · 莱布尼茨替换律 · 等号两边同作单值运算",
+  ch: 1, sec: "§1", order: -80, slot: "MA-01", hub: "H0", up: [],
+  build: TX`逻辑原始词「相等 $=$」+ 替换公理 ⟶ 等号两边同时进行任意单值运算 $F$ 仍相等`,
+  body: [
+    { k: "table", cols: ["版本层级", "公理 / 性质表述"], rows: [
+      { id: "r_a", cells: ["版本 A · 逻辑源头", TX`**逻辑原始词**：相等 $=$\n① **自反公理**：$a = a$\n② **替换公理（莱布尼茨律）**：若 $a=b$，任一命题中可将 $a$ 的 ⟦c_a¦若干或全部出现换为 $b$，真值不变¦莱布尼茨替换律⟧。`] },
+      { id: "r_b", cells: ["版本 B · 常用法则", TX`① **自反**：$a=a$\n② **对称**：$a=b \implies b=a$\n③ **传递**：$a=b,\; b=c \implies a=c$\n④ **等号两边同时进行某种运算**：⟦c_b¦$a=b \implies F(a)=F(b)$¦单值运算保等⟧。`] }
+    ] },
+    { k: "p", t: TX`**【由 A 推 B 核心】**：对恒真式 $F(a)=F(a)$（自反公理），利用替换公理将 ⟦c1¦右边的一个 $a$ 替换为 $b$¦替换哪一处⟧，即得 $F(a)=F(b)$——即等号两边同时进行某种单值运算 $F$（同加、同乘、同平方、同作用单值函数）仍相等。` }
+  ]
+});
+
+DEF({
+  id: "AX_FLD", noCode: true, grid: [1, 0],
+  graphTitle: "域公理", graphSub: "四则 · 补项 · 积0",
+  title: "域公理 · 四则运算与补项验逆",
+  sub: "加乘 7 公理 · 无条件补项 · 唯一性验逆 · 0做因子 ⟺ 积为0",
+  ch: 1, sec: "§1", order: -70, slot: "MA-01", hub: "H0", up: ["AX_EQ"],
+  build: TX`集合 $\R$ 与加乘 7 公理 ⟶ 四则自由移项消去、无条件补项插项与零因子判定`,
+  body: [
+    { k: "table", cols: ["版本层级", "公理 / 性质表述"], rows: [
+      { id: "r_a", cells: ["版本 A · 原始 7 公理", TX`**实数原始词**：集合 $\R$、加法 $+$、乘法 $\cdot$\n① **封闭**：$a+b,\; ab \in \R$　② **交换**：$a+b=b+a,\; ab=ba$\n③ **结合**：$(a+b)+c=a+(b+c)$ 及乘法　④ **分配**：$a(b+c)=ab+ac$\n⑤ **单位元**：$\exists 0 \neq 1$ 使 $0+a=a,\; 1\cdot a=a$\n⑥ **负元**：$\forall a,\; \exists(-a)$ 使 ⟦c_a1¦$a+(-a)=0$¦加法逆元⟧　⑦ **倒数**：$\forall a \neq 0,\; \exists a^{-1}$ 使 ⟦c_a2¦$aa^{-1}=1$¦乘法逆元⟧。`] },
+      { id: "r_b", cells: ["版本 B · 常用法则", TX`• 四则运算（除数 $\neq 0$）封闭，自由消去与移项变号\n• 自由交换、结合、分配与提公因式\n• **无条件补项 / 补因子**：⟦c_b¦$a = a + x - x$；$a = a \cdot x \cdot x^{-1}\; (x \neq 0)$¦插项与插因子恒等变形⟧。`] }
+    ] },
+    { k: "p", t: TX`**【衍生：差、商、平方、自然数定义】**：\n• 差 $a-b := a+(-b)$；商 $\dfrac{a}{b} := ab^{-1}\; (b\neq 0)$\n• 平方 $a^2 := a\cdot a$；自然数 $2:=1+1,\; 3:=2+1,\;\dots$` },
+    { k: "p", t: TX`**【规律 1：唯一性验逆】**：$\exists! 0, 1, -a, a^{-1}$；证 $-X=Y \iff$ ⟦c1¦$X+Y=0$¦如何验负元⟧；证 $X^{-1}=Y \iff$ ⟦c2¦$XY=1$¦如何验倒数⟧。` },
+    { k: "p", t: TX`**【规律 2：0做因子 $\iff$ 积为0（等式两边若有一边有 $0$，另一边也至少有一个 $0$）】**：\n• ⟦c3¦$ab = 0 \iff (a=0 \text{ 或 } b=0)$¦零因子律⟧（特例 $b=a$：$a^2=0 \iff a=0$）。` }
+  ]
+});
+
+DEF({
+  id: "AX_ORD", noCode: true, grid: [2, 0],
+  graphTitle: "序公理", graphSub: "保序 · 同号 · 去绝对值",
+  title: "序公理 · 不等式保序与去绝对值",
+  sub: "正集 ℝ₊ 三歧律 · 不等式 5 性质 · 同号积正 · 去绝对值",
+  ch: 1, sec: "§1", order: -60, slot: "MA-01", hub: "H0", up: ["AX_FLD"],
+  build: TX`正实数集 $\R_+$ 的加乘封闭与三歧律 ⟶ 不等式保序、同号积正与去绝对值`,
+  body: [
+    { k: "table", cols: ["版本层级", "公理 / 性质表述"], rows: [
+      { id: "r_a", cells: ["版本 A · 原始 2 公理", TX`**实数原始词**：正（设存在子集 $\R_+ \subseteq \R$，其元素称为**正实数**），满足：\n⑧ **$\R_+$ 加乘封闭**：⟦c_a1¦$a,b \in \R_+ \implies a+b,\; ab \in \R_+$¦正集封闭性⟧\n⑨ **$\in \R_+$ 三歧律**：对 $\forall a \in \R$，以下三命题恰有一真：⟦c_a2¦$a \in \R_+,\quad -a \in \R_+,\quad a = 0$¦三歧互斥完备⟧。`] },
+      { id: "r_b", cells: ["版本 B · 常用 5 性质", TX`① **三歧律**：$a<b,\; a=b,\; a>b$ 恰有一真\n② **反对称**：⟦c_b1¦$a \le b \text{ 且 } b \le a \iff a=b$¦夹逼定等底座⟧\n③ **传递**：$a<b,\; b<c \implies a<c$\n④ **同加保序**：$a<b \implies a+c < b+c$\n⑤ **同乘保号/反号**：$a<b,\; c>0 \implies ac<bc$（$c<0$ 反向）。`] }
+    ] },
+    { k: "p", t: TX`**【衍生：小于/大于、最值、绝对值定义】**：\n• **小于/大于**：$a<b :\iff$ ⟦c1¦$b-a \in \R_+$¦用正集定义小于⟧；$a>b :\iff b<a$；$a\le b :\iff a<b \text{ 或 } a=b$（特例 $a>0 \iff a\in\R_+$，$a<0 \iff -a\in\R_+$）\n• **最值**：$\max S :\iff \overset{\in S}{\max} \ge \overset{\forall \in S}{x}$（同理 $\min S :\iff \overset{\in S}{\min} \le \overset{\forall \in S}{x}$）\n• **绝对值**：$\lvert a \rvert := \begin{cases} a, & a\ge 0 \\ -a, & a<0 \end{cases} =$ ⟦c2¦$\max\{a,-a\}$¦最值刻画⟧。` },
+    { k: "p", t: TX`**【规律 3：同号积正（平方非负）、异号积负（对标研究积 $=0$，这里研究积 $>0$、积 $<0$）】**：\n• $ab > 0 \iff a,b \text{ 同号}\quad\big(\text{令 } b=a\text{：}a\neq 0 \iff a^2>0 \implies a^2 \ge 0\big)$；$ab < 0 \iff a,b \text{ 异号}$\n• **正整数与其倒数恒 $>0$**：由 $1\neq 0 \implies 1=1^2>0$，结合 $\R_+$ 加法封闭得 $2=1+1>0,\; \forall n\in\N > 0$；再由 $a\cdot a^{-1}=1>0$（同号积正）得 $a>0 \iff a^{-1}>0$（故 $\dfrac{1}{2}>0,\; \dfrac{1}{n}>0$）。` },
+    { k: "p", t: TX`**【规律 4：去绝对值】**：\n• **非负定零**：$a \neq 0 \iff \lvert a \rvert > 0$，$a = 0 \iff \lvert a \rvert = 0$\n• **去绝对值**：$\pm a \le \lvert a \rvert \iff$ ⟦c3¦$-\lvert a \rvert \le a \le \lvert a \rvert$¦本身夹在正负绝对值之间⟧；$\lvert a \rvert \le M \iff \pm a \le M \iff$ ⟦c4¦$-M \le a \le M$¦脱去绝对值外壳⟧。` }
+  ]
+});
+
+DEF({
+  id: "AX_SUP", noCode: true, grid: [3, 0],
+  graphTitle: "确界公理", graphSub: "最小上界 · 逆否双定义",
+  title: "确界公理 · 最小上界与逆否双定义",
+  sub: "确界原理 · 上界与上确界双定义 · 右半取逆否 · 确界唯一性",
+  ch: 1, sec: "§2", order: -50, slot: "MA-01", hub: "H0", up: ["AX_ORD"],
+  build: TX`实数连续性公理 ⑩ 最小上界公理 ⟶ 上确界逆否双定义与确界唯一性`,
+  body: [
+    { k: "table", cols: ["版本层级", "公理 / 性质表述"], rows: [
+      { id: "r_a", cells: ["版本 A · 最小上界公理", TX`⑩ **最小上界公理**：任何 ⟦c_a¦非空有上界的实数集 $S \subseteq \R$，必在 $\R$ 中存在最小上界 $\sup$¦存在性公理⟧。`] },
+      { id: "r_b", cells: ["版本 B · 确界原理", TX`• 非空有上界数集必有上确界 $\sup$\n• 非空有下界数集必有下确界 ⟦c_b¦$\inf S = -\sup(-S)$¦由负集 $-S=\{-x\mid x\in S\}$ 推出⟧。`] }
+    ] },
+    { k: "p", t: TX`**【上界定义】**：$\text{上界} \ge \overset{\forall \in S}{x}$（上界不必属于 $S$）。` },
+    { k: "p", t: TX`**【上确界定义】**：\n• **定义 1（文字直译）**：⟦c1¦$\overset{\forall \in S}{x} \le \sup \le \forall\text{上界}$¦左半是上界 · 右半最小⟧\n• **定义 2（分析 $\eps$ 语言）**：$$\overset{\forall \in S}{x} \le \sup \;\ge\; \overset{\exists \in S}{x_0\vphantom{>}} \;\overset{\xleftarrow{\hspace{2.2em}}}{>\;\sup\;-}\; \overset{\forall > 0}{\varepsilon\vphantom{>}}$$（右半默写槽：对 $\forall \eps > 0$，必有 ⟦c2¦$\exists x_0 \in S,\; x_0 > \sup - \eps$¦退一步必被集合元素超越⟧）。` },
+    { k: "steps", track: "main", label: "定义等价与唯一性证明", items: [
+      { id: "s1", tag: "右半取逆否（定义1 ⟺ 定义2）", cue: TX`定义 1 右半「凡是上界，都 $\ge \sup$」怎样等价变形为定义 2 右半？`, a: TX`取逆否命题：「凡是 $< \sup$ 的数（写成 $\sup - \eps,\; \eps>0$），都不是 $S$ 的上界」$\stackrel{\text{否定上界定义}}{\Longleftrightarrow}$「存在 $x_0 \in S$ 满足 $x_0 > \sup - \eps$」。` },
+      { id: "s2", tag: "确界唯一性（反对称夹逼）", cue: TX`若 $\sup_1,\; \sup_2$ 均为 $S$ 的最小上界，如何一行证出 $\sup_1 = \sup_2$？`, a: TX`因二者均为最小上界且互为上界，由定义 1 右半得 $\sup_1 \le \sup_2$ 且 $\sup_2 \le \sup_1$，由序公理反对称性得 $\sup_1 = \sup_2$（即 $\exists! \sup$）。` }
+    ] }
+  ]
+});
+
+THM_H0({
+  id: "TL_TRI", noCode: true, grid: [1, 1],
+  graphTitle: "放缩绝对值", graphSub: "三角不等式与三变式",
+  title: "放缩绝对值 · 三角不等式与三大变式",
+  sub: "双向和差夹逼 · 插点拆距 · 乘积插项 · 反转上下保界",
+  ch: 1, sec: "§1", order: -40, slot: "MA-02", hub: "H0", up: ["AX_ORD"],
+  build: TX`序公理「去绝对值」+ 域公理「无条件补项」 ⟶ 放大拆项与反转保界全套绝对值工具`,
+  body: [
+    { k: "p", t: TX`**【核心功能：放缩绝对值】**（由序公理「去绝对值」与域公理「无条件补项」推出）：\n• **原式（双向和差夹逼）**：⟦c1¦$\bigl\lvert \lvert a \rvert - \lvert b \rvert \bigr\rvert \le \lvert a \pm b \rvert \le \lvert a \rvert + \lvert b \rvert$¦左减右加双向不等式⟧\n• **变式 1（插点拆距）**：$\lvert x - z \rvert = \lvert (x - y) + (y - z) \rvert \le$ ⟦c2¦$\lvert x - y \rvert + \lvert y - z \rvert$¦插入中间点 $y$⟧\n• **变式 2（乘积插项拆距）**：$\lvert AB - A_0 B_0 \rvert = \lvert A(B - B_0) + (A - A_0)B_0 \rvert \le$ ⟦c3¦$\lvert A \rvert\lvert B - B_0 \rvert + \lvert B_0 \rvert\lvert A - A_0 \rvert$¦插入混合项 $-AB_0+AB_0$⟧\n• **变式 3（反转上下保界）**：$\lvert x - a \rvert < \eps \implies$ ⟦c4¦$\lvert a \rvert - \eps < \lvert x \rvert < \lvert a \rvert + \eps$¦由距离小于 $\eps$ 反推模的上下界⟧\n*(注：向上取 $\eps=1$ 得有界 $\lvert x \rvert < \lvert a \rvert+1$；当 $a\neq 0$ 时向下取 $\eps=\dfrac{\lvert a \rvert}{2}$ 得远离零下界 $\lvert x \rvert > \dfrac{\lvert a \rvert}{2} > 0$)*。` },
+    { k: "steps", track: "main", label: "去绝对值 + 补项证明主干", items: [
+      { id: "s1", tag: "去绝对值同加（证原式右半）", cue: TX`如何用序公理「去绝对值」一行推出 $\lvert a \pm b \rvert \le \lvert a \rvert + \lvert b \rvert$？`, a: TX`将 $-\lvert a \rvert \le a \le \lvert a \rvert$ 与 $-\lvert b \rvert \le \pm b \le \lvert b \rvert$ 同向相加得 $-(\lvert a \rvert+\lvert b \rvert) \le a\pm b \le \lvert a \rvert+\lvert b \rvert$，再去绝对值即得 $\lvert a \pm b \rvert \le \lvert a \rvert + \lvert b \rvert$。` },
+      { id: "s2", tag: "补项移项（证原式左半）", cue: TX`如何把 $a$ 补项拆成 $(a \mp b) \pm b$ 推出左半 $\bigl\lvert \lvert a \rvert - \lvert b \rvert \bigr\rvert \le \lvert a \pm b \rvert$？`, a: TX`对 $a = (a \mp b) \pm b$ 套右半并移项得 $\lvert a \rvert - \lvert b \rvert \le \lvert a \mp b \rvert$，对调 $a,b$ 得 $\pm(\lvert a \rvert - \lvert b \rvert) \le \lvert a \mp b \rvert$，再去绝对值即得。` },
+      { id: "s3", tag: "插项与反转（证三大变式）", cue: TX`变式 1、2、3 分别怎样从原式一步导出？`, a: TX`变式 1、2 由域公理无条件补项 $-y+y$（或 $-AB_0+AB_0$）后直接套原式右半；变式 3 由原式左半 $\bigl\lvert \lvert x \rvert - \lvert a \rvert \bigr\rvert \le \lvert x - a \rvert < \eps$ 去绝对值移项即得。` }
+    ] }
+  ]
+});
+
+THM_H0({
+  id: "TL_EPS", noCode: true, grid: [2, 1],
+  graphTitle: "消去任意小 ε", graphSub: "定序 a≤b · 定等 a=b",
+  title: "消去任意小 ε · 放缩收尾定序与定等",
+  sub: "a < b + ∀ε>0 ⟺ a ≤ b · |a − b| < ∀ε>0 ⟺ a = b",
+  ch: 1, sec: "§1", order: -30, slot: "MA-01", hub: "H0", up: ["AX_ORD"],
+  build: TX`序公理「三歧律 + 同乘 $\dfrac{1}{2}$」 ⟶ 放缩链条收尾时消去任意小正数 $\eps$ 锁定 $\le$ 或 $=$`,
+  body: [
+    { k: "p", t: TX`**【核心功能：消去任意小 $\eps$，收尾判 $\le$ 与 $=$】**（把 $<$ 换为 $\le$ 同样成立）：\n① **任意 $\eps$ 定序**：$$a < b + \overset{\forall > 0}{\varepsilon} \iff \text{⟦c1¦$a \le b$¦消去 $+\eps$ 锁定保序⟧}$$\n② **任意 $\eps$ 定等**：$$\lvert a - b \rvert < \overset{\forall > 0}{\varepsilon} \iff \text{⟦c2¦$a = b$¦消去 $\eps$ 锁定相等⟧}$$` },
+    { k: "steps", track: "main", label: "三歧反证 + 差值折半证明", items: [
+      { id: "s1", tag: "差值折半引爆矛盾（证 ① 定序）", cue: TX`反证假设 $a > b$（即 $a-b > 0$），取哪个具体的正数 $\eps_0$ 代入 $a < b + \eps_0$ 最干净？`, a: TX`由序公理知 $\dfrac{1}{2}>0$，取 $\eps_0 = \dfrac{a-b}{2} > 0$ 代入得 $a < b + \dfrac{a-b}{2} = \dfrac{a+b}{2} \implies 2a < a+b \implies a < b$，与 $a > b$ 矛盾！故 $a \le b$。` },
+      { id: "s2", tag: "去绝对值双向定序（证 ② 定等）", cue: TX`如何把 $\lvert a-b \rvert < \forall \eps$ 拆成两个单向不等式套 ① 收尾？`, a: TX`去绝对值得 $-\eps < a-b < \eps \iff a < b+\eps$ 且 $b < a+\eps$，分别套 ① 得 $a \le b$ 且 $b \le a$，由反对称性得 $a = b$。` }
+    ] }
+  ]
+});
+
+THM_H0({
+  id: "TL_ARCH", noCode: true, grid: [3, 1],
+  graphTitle: "正整数无上界", graphSub: "n 足够大 · 1/n 任意小",
+  title: "正整数无上界 · n 足够大与 1/n 任意小",
+  sub: "∃n∈ℕ₊ > ∀x ⟺ 1/n < ∀ε>0 · 阿基米德性",
+  ch: 1, sec: "§2", order: -20, slot: "MA-01", hub: "H0", up: ["AX_SUP"],
+  build: TX`确界公理 + 上确界定义 2（取 $\eps=1$） ⟶ 正整数 $n$ 可取足够大、倒数 $\dfrac{1}{n}$ 可取任意小`,
+  body: [
+    { k: "p", t: TX`**【核心功能：$n$ 可取足够大、$\dfrac{1}{n}$ 可取任意小】**（阿基米德性）：\n$$\overset{\exists \in \mathbb{N}_+}{n} > \forall x \quad\Longleftrightarrow\quad \text{⟦c1¦$\dfrac{1}{\exists n \in \mathbb{N}_+} < \overset{\forall > 0}{\varepsilon}$¦倒数任意小等价形式⟧}$$` },
+    { k: "steps", track: "main", label: "反证取 sup ℕ₊ + 取 ε=1 证明", items: [
+      { id: "s1", tag: "反证有上界并取 ε=1", cue: TX`反证若 $\N$ 有上界，设 $\sup\N$ 存在，对上确界定义 2 取哪个具体 $\eps$ 可利用 $n_0+1 \in \N$ 破局？`, a: TX`取 $\eps = 1 > 0$，由上确界定义 2 右半知必存在 $n_0 \in \N$ 使得 $n_0 > \sup\N - 1$。` },
+      { id: "s2", tag: "移项越界矛盾与取倒数", cue: TX`将 $n_0 > \sup\N - 1$ 移项后为什么直接与上界矛盾？又怎样推出 $\dfrac{1}{n} < \eps$？`, a: TX`移项得 $n_0 + 1 > \sup\N$，但 $n_0 + 1 \in \N$，与 $\sup\N$ 是 $\N$ 的上界矛盾！故对 $\forall x$ 必有 $\exists n \in \N > x$；对 $\forall \eps > 0$ 令 $x = \dfrac{1}{\eps}$ 即得 $\dfrac{1}{n} < \eps$。` }
+    ] }
+  ]
+});
+
+THM_H0({
+  id: "TL_DENSE", noCode: true, grid: [3, 2],
+  graphTitle: "两实数间三类数", graphSub: "分比例 · 有理 · 无理",
+  title: "两实数间存在三类数 · 分比例与有理无理",
+  sub: "中点 (x+y)/2 与分比例点 x+λ(y−x) · 有理数 m/n · 无理数",
+  ch: 1, sec: "§2", order: -10, slot: "MA-01", hub: "H0", up: ["TL_ARCH"],
+  build: TX`序公理同乘分比例系数 + 正整数无上界放大区间宽度 $>1$ ⟶ 任意两实数间必有分比例点、有理数与无理数`,
+  body: [
+    { k: "p", t: TX`**【核心功能：在任意开区间 $(x,y)$ 内取点】**　对任意两实数 $x < y$，在 $(x,y)$ 内必存在：\n① **存在中点与分比例点**：$x < \dfrac{x+y}{2} < y$；更一般地，对 $\forall \lambda \in (0,1)$，有 ⟦c1¦$x < x + \lambda(y-x) = (1-\lambda)x + \lambda y < y$¦分比例点凸组合公式⟧\n② **存在有理数（有理数稠密性）**：⟦c2¦$\exists r = \dfrac{m}{n} \in (x,y) \cap \Q$¦存在既约分数落入区间⟧\n③ **存在无理数（无理数稠密性）**：在两有理数 $r_1 < r_2 \in (x,y)$ 间取分比例系数 ⟦c3¦$\lambda = \dfrac{1}{\sqrt{2}} \in (0,1)$¦无理分比例系数⟧，得 $w = r_1 + \dfrac{r_2-r_1}{\sqrt{2}} \in (x,y) \setminus \Q$。` },
+    { k: "steps", track: "main", label: "分比例放缩 + 放大跨整数证明", items: [
+      { id: "s1", tag: "同乘分比例系数（证 ① 分比例点）", cue: TX`已知 $x < y$（即 $y-x > 0$）且 $0 < \lambda < 1$，如何两步推出 $x < x+\lambda(y-x) < y$？`, a: TX`由 $0 < \lambda < 1$ 同乘正数 $y-x > 0$ 得 $0 < \lambda(y-x) < y-x$，再同加 $x$ 即得 $x < x+\lambda(y-x) < y$（取 $\lambda=\dfrac{1}{2}$ 即中点 $\dfrac{x+y}{2}$）。` },
+      { id: "s2", tag: "放大区间宽度 >1 跨整数（证 ② 有理数）", cue: TX`怎样利用「正整数无上界」把区间 $(x,y)$ 放大到宽度 $>1$ 从而捉住整数分子 $m$？`, a: TX`由正整数无上界取 $n \in \N$ 使 $n > \dfrac{1}{y-x} \implies ny - nx > 1$；宽度 $>1$ 的区间必跨过某整数 $m$，使得 $nx < m < ny$，同乘 $\dfrac{1}{n}$ 即得 $x < \dfrac{m}{n} < y$。` },
+      { id: "s3", tag: "有理区间套无理分比例点（证 ③ 无理数）", cue: TX`有理数稠密已证后，如何不费吹灰之力在 $(x,y)$ 中构造一个无理数？`, a: TX`先由 ② 在 $(x,y)$ 内取两个有理数 $r_1 < r_2$，再在 $(r_1,r_2)$ 上直接套 ① 的分比例点公式取 $\lambda = \dfrac{1}{\sqrt{2}} \in (0,1)$，即得无理数 $w = r_1 + \dfrac{r_2-r_1}{\sqrt{2}} \in (r_1,r_2) \subset (x,y)$。` }
+    ] }
+  ]
+});
 
 // ---------------------------------------------------------------- 第 0 层
 DEF({
@@ -7688,6 +7842,7 @@ const MathEngine = (() => {
 
   // 视图 B 的硬门控：上游全部「刷绿」（所有评分项进入复习态）后才解锁新卡
   function lockedBy(c) {
+    if (c.hub === "H0") return [];
     return (c.up || []).filter(u => byId[u] && !status(byId[u]).green);
   }
 
@@ -7844,15 +7999,15 @@ const MathEngine = (() => {
   }
 
   function flowCards(flow) {
-    if (flow === "A") return MATH_DECK.filter(c => c.type === "DEF" && c.layer != null)
-      .sort((a, b) => a.layer - b.layer || ((a.defNos && a.defNos[0]) || 999) - ((b.defNos && b.defNos[0]) || 999) || a.order - b.order);
+    if (flow === "A") return MATH_DECK.filter(c => c.hub === "H0" || (c.type === "DEF" && c.layer != null))
+      .sort((a, b) => (a.hub === "H0" ? -1 : a.layer) - (b.hub === "H0" ? -1 : b.layer) || ((a.defNos && a.defNos[0]) || 999) - ((b.defNos && b.defNos[0]) || 999) || a.order - b.order);
     if (flow === "B") return topoB().order.slice();
     if (flow === "C") {
       return MATH_DECK.slice().sort((a, b) =>
-        (SLOT_RANK[a.slot] - SLOT_RANK[b.slot]) || (LEVEL_RANK[a.level] - LEVEL_RANK[b.level]) || (a.order - b.order));
+        (a.hub === "H0" ? -1 : SLOT_RANK[a.slot]) - (b.hub === "H0" ? -1 : SLOT_RANK[b.slot]) || (LEVEL_RANK[a.level] - LEVEL_RANK[b.level]) || (a.order - b.order));
     }
     // D：课本原序
-    return MATH_DECK.slice().sort((a, b) => (a.book === b.book ? 0 : a.book === "ECNU" ? -1 : 1) || (a.ch - b.ch) || (a.order - b.order));
+    return MATH_DECK.slice().sort((a, b) => (a.hub === "H0" ? -1 : 0) - (b.hub === "H0" ? -1 : 0) || (a.book === b.book ? 0 : a.book === "ECNU" ? -1 : 1) || (a.ch - b.ch) || (a.order - b.order));
   }
 
   // 视图 C 的新卡顺序：战役池（C1 → C2-Top → C2-Bot）→ 两波螺旋（破冰波 L0/L1 + 每槽首张 L2）→ β 加权边际提分 → 层级
@@ -7862,12 +8017,13 @@ const MathEngine = (() => {
     list.slice().sort((a, b) => a.order - b.order).forEach(c => { if ((c.level === "L2" || c.level === "L2.5") && !firstL2[c.slot]) firstL2[c.slot] = c.id; });
     const wave = c => (LEVEL_RANK[c.level] <= 1 || firstL2[c.slot] === c.id) ? 1 : 2;
     return list.slice().sort((a, b) =>
-      (TIER_RANK[a.tier] - TIER_RANK[b.tier]) || (wave(a) - wave(b)) || ((pr[b.slot] || 0) - (pr[a.slot] || 0)) ||
+      (a.hub === "H0" ? -1 : TIER_RANK[a.tier]) - (b.hub === "H0" ? -1 : TIER_RANK[b.tier]) || (wave(a) - wave(b)) || ((pr[b.slot] || 0) - (pr[a.slot] || 0)) ||
       (LEVEL_RANK[a.level] - LEVEL_RANK[b.level]) || (a.order - b.order));
   }
 
   function inScope(c, flow, scope) {
     if (!scope || scope === "all") return true;
+    if (scope === "H0") return c.hub === "H0";
     if (flow === "A") return String(c.layer) === String(scope);
     if (flow === "B") return c.hub === scope;
     if (flow === "C") return (scope === "626" || scope === "817") ? c.subj === scope : c.slot === scope;
@@ -9218,9 +9374,10 @@ const MathUI = (() => {
   const KIND_NAME = { c: "挖空", n: "否定", s: "步骤", x: "反例", k: "点算", phi: "Φ⁻¹", r: "矩阵行" };
 
   // ---------------------------------------------------------------- state
-  let ui = Object.assign({ flow: "B", scope: "all", filter: "all", mode: null, view: "stage", cur: null }, E.getUI());
+  let ui = Object.assign({ flow: "B", scope: "H0", filter: "all", mode: null, view: "stage", cur: "AX_EQ", h0V2: 0 }, E.getUI());
   if (!["A", "B", "C", "D"].includes(ui.flow)) ui.flow = "B";
   if (!ui.mode) ui.mode = E.getCfg().defaultMode || "smart";
+  if (!ui.h0V2) { ui.scope = "H0"; ui.filter = "all"; ui.cur = "AX_EQ"; ui.h0V2 = 1; E.setUI(ui); }
   let search = "";
   let Q = { list: [], counts: {} };
   let forced = null;
@@ -9232,23 +9389,24 @@ const MathUI = (() => {
   let shieldOpen = false;
   let timer = null;
   let maps = { cz: {}, row: {} };
-  const openGroups = new Set();
+  const openGroups = new Set(["H0"]);
   const openRows = new Set();
   let inited = false;
 
-  function saveUI() { E.setUI({ flow: ui.flow, scope: ui.scope, filter: ui.filter, mode: ui.mode, view: ui.view, cur: ui.cur }); }
+  function saveUI() { E.setUI({ flow: ui.flow, scope: ui.scope, filter: ui.filter, mode: ui.mode, view: ui.view, cur: ui.cur, h0V2: ui.h0V2 || 1 }); }
   function card() { return sess ? E.byId[sess.cid] : null; }
   const now = () => Date.now();
 
   // ---------------------------------------------------------------- labels
   function groupsOf(flow) {
-    if (flow === "A") return MATH_LAYERS.map(l => ({ id: String(l.id), name: l.name, sub: l.sub }));
+    const h0Opt = { id: "H0", name: "底层 · 实数公理与底层工具", sub: "4 公理 + 4 衍生工具" };
+    if (flow === "A") return [h0Opt].concat(MATH_LAYERS.map(l => ({ id: String(l.id), name: l.name, sub: l.sub })));
     if (flow === "B") return MATH_HUBS.map(h => ({ id: h.id, name: h.name, sub: h.ch }));
     if (flow === "C") {
-      return [{ id: "626", name: "626 数学分析 · 15 槽", sub: "" }, { id: "817", name: "817 高等代数 · 13 槽", sub: "" }]
+      return [h0Opt, { id: "626", name: "626 数学分析 · 15 槽", sub: "" }, { id: "817", name: "817 高等代数 · 13 槽", sub: "" }]
         .concat(MATH_SLOTS.map(s => ({ id: s.id, name: s.name, sub: `β ${s.beta.toFixed(2)} · ${s.trend}`, slot: s })));
     }
-    const out = [];
+    const out = [h0Opt];
     Object.entries(MATH_BOOKS).forEach(([bk, b]) => {
       out.push({ id: bk, name: b.name + " · 全书", sub: "" });
       Object.entries(b.chapters).forEach(([ch, nm]) => { out.push({ id: `${bk}:${ch}`, name: `第 ${ch} 章 ${nm}`, sub: b.name }); });
@@ -9275,6 +9433,7 @@ const MathUI = (() => {
     return f;
   }
   function crumbOf(c) {
+    if (c.hub === "H0") return `<b>底层重筑</b> 实数公理与底层工具`;
     if (ui.flow === "A" && c.layer != null) { const l = MATH_LAYERS[c.layer]; return `<b>L${c.layer}</b> ${esc(l ? l.name.replace(/^第 \d 层 · /, "") : "")}`; }
     if (ui.flow === "C" || (ui.flow === "A" && c.layer == null)) { const s = E.slotById[c.slot]; return `<b>${esc(c.slot)}</b> ${esc(s ? s.name : "")}`; }
     if (ui.flow === "D") { const b = MATH_BOOKS[c.book]; const ch = b && b.chapters[c.ch]; return `<b>${c.book === "ECNU" ? "华师大" : "北大"} 第 ${c.ch} 章</b> ${esc(ch || "")}`; }
@@ -9534,7 +9693,9 @@ const MathUI = (() => {
     const chip = id => {
       const u = E.byId[id];
       const st = E.status(u);
-      return `<button type="button" class="m-up${peek === id ? " is-on" : ""}" onclick="MathUI.togglePeek('${esc(id)}')" title="原位预览 ${esc(u.title)}"><span class="m-st ${statusClass(st)}"></span><span class="m-up-id">${esc(id)}</span><span class="m-up-t">${tex(u.title)}</span></button>`;
+      const idSpan = u.noCode ? "" : `<span class="m-up-id">${esc(id)}</span>`;
+      const lbl = u.noCode && u.graphTitle ? u.graphTitle : u.title;
+      return `<button type="button" class="m-up${peek === id ? " is-on" : ""}" onclick="MathUI.togglePeek('${esc(id)}')" title="原位预览 ${esc(u.title)}"><span class="m-st ${statusClass(st)}"></span>${idSpan}<span class="m-up-t">${tex(lbl)}</span></button>`;
     };
     let h = `<div class="m-lineage">`;
     if (c.build) h += `<div class="m-build"><span class="m-k">${c.type === "DEF" ? "造词" : "思路"}</span><span>${tex(c.build)}</span></div>`;
@@ -9564,7 +9725,9 @@ const MathUI = (() => {
     const chips = lb.map(id => {
       const u = E.byId[id];
       const st = E.status(u);
-      return `<button type="button" class="m-up" onclick="MathUI.open('${esc(id)}')"><span class="m-st ${statusClass(st)}"></span><span class="m-up-id">${esc(id)}</span><span class="m-up-t">${tex(u.title)}</span><span class="m-up-id">${st.learned}/${st.total}</span></button>`;
+      const idSpan = u.noCode ? "" : `<span class="m-up-id">${esc(id)}</span>`;
+      const lbl = u.noCode && u.graphTitle ? u.graphTitle : u.title;
+      return `<button type="button" class="m-up" onclick="MathUI.open('${esc(id)}')"><span class="m-st ${statusClass(st)}"></span>${idSpan}<span class="m-up-t">${tex(lbl)}</span><span class="m-up-id">${st.learned}/${st.total}</span></button>`;
     }).join("");
     return `<div class="m-locked"><div><b>上游定理还没刷绿。</b>证明链流按拓扑序推卡，这张卡用到下面的结论；先把它们的全部评分项刷进复习态，避免循环论证。<div class="m-ups">${chips}</div></div></div>`;
   }
@@ -9680,8 +9843,10 @@ const MathUI = (() => {
   }
   function cardHTML(c, s, total, idx) {
     maps = { cz: {}, row: {} };
+    const topGraph = c.hub === "H0" ? gridGraphHTML(MATH_DECK.filter(x => x.hub === "H0"), c.id) : "";
     return `<div class="stage-card m-card" data-cid="${esc(c.id)}">
       ${headerHTML(c, total, idx)}
+      ${topGraph}
       ${lockedHTML(c)}
       ${frontHTML(c)}
       <div class="m-body">${bodyHTML(c, s)}</div>
@@ -10142,12 +10307,14 @@ const MathUI = (() => {
 
   // ---------------------------------------------------------------- list view
   function groupKey(c) {
+    if (c.hub === "H0") return "H0";
     if (ui.flow === "A") return String(c.layer);
     if (ui.flow === "B") return c.hub;
     if (ui.flow === "C") return c.slot;
     return `${c.book}:${c.ch}`;
   }
   function groupMeta(key) {
+    if (key === "H0") return { id: "底层", name: "实数公理与底层工具", sub: "4 公理 + 4 衍生工具" };
     if (ui.flow === "A") { const l = MATH_LAYERS[+key]; return { id: "L" + key, name: l ? l.name.replace(/^第 \d 层 · /, "") : key, sub: l ? l.sub : "" }; }
     if (ui.flow === "B") { const h = MATH_HUBS.find(x => x.id === key); return { id: key, name: h ? h.name : key, sub: h ? h.ch : "" }; }
     if (ui.flow === "C") { const s = E.slotById[key]; return { id: key, name: s ? s.name : key, sub: s ? `β ${s.beta.toFixed(2)} · ${s.trend}` : "" }; }
@@ -10180,8 +10347,55 @@ const MathUI = (() => {
     }).join("");
     return `<div class="m-itab-wrap"><table class="m-itab"><thead><tr><th>评分项</th><th>上次</th><th>R</th><th>S</th><th>D</th><th>次数/遗忘</th><th>到期</th></tr></thead><tbody>${tr}</tbody></table></div>`;
   }
+  function gridGraphHTML(cards, curId) {
+    const W = 760, H = 224, bw = 152, bh = 46, rx = 11, hw = 76, hh = 23;
+    const CX = col => 94 + col * 190;
+    const CY = row => 35 + row * 76;
+    const byId = {};
+    cards.forEach(c => { if (c.grid) byId[c.id] = c; });
+    let edges = "";
+    cards.forEach(c => {
+      if (!c.grid) return;
+      const [c2, r2] = c.grid;
+      (c.up || []).forEach(uid => {
+        const u = byId[uid];
+        if (!u || !u.grid) return;
+        const [c1, r1] = u.grid;
+        if (r1 === r2) {
+          const x1 = CX(c1) + hw, y1 = CY(r1), x2 = CX(c2) - hw - 3, y2 = CY(r2);
+          edges += `<path class="g-edge" d="M${x1} ${y1} L${x2} ${y2}" marker-end="url(#m-arr)"/>`;
+        } else if (c1 === c2) {
+          const x1 = CX(c1), y1 = CY(r1) + hh, x2 = CX(c2), y2 = CY(r2) - hh - 3;
+          edges += `<path class="g-edge" d="M${x1} ${y1} L${x2} ${y2}" marker-end="url(#m-arr)"/>`;
+        } else {
+          const x1 = CX(c1) - 24, y1 = CY(r1) + hh, x2 = CX(c2), y2 = CY(r2) - hh - 3, my = (y1 + y2) / 2;
+          edges += `<path class="g-edge" d="M${x1} ${y1} C${x1} ${my},${x2} ${my},${x2} ${y2}" marker-end="url(#m-arr)"/>`;
+        }
+      });
+    });
+    const t = now();
+    const nodes = cards.map(c => {
+      if (!c.grid) return "";
+      const [col, row] = c.grid;
+      const cx = CX(col), cy = CY(row);
+      const st = E.status(c, t);
+      let cls = "n-new";
+      if (st.isNew) cls = ui.flow === "B" && E.lockedBy(c).length ? "n-lock" : "n-new";
+      else if (st.weak) cls = "n-weak";
+      else if (st.green) cls = "n-green";
+      else cls = "n-learn";
+      const nm = c.graphTitle || Core.plain(c.title);
+      const sb = c.graphSub || "";
+      const curCls = curId === c.id ? " is-cur" : "";
+      return `<g class="g-node${row === 0 ? " is-axiom" : ""}${curCls}" onclick="MathUI.open('${esc(c.id)}')"><title>${esc(Core.plain(c.title))} · ${esc(statusText(c, st))}</title><rect class="g-box" x="${cx - hw}" y="${cy - hh}" width="${bw}" height="${bh}" rx="${rx}"/><circle class="n ${cls}" cx="${cx - hw + 15}" cy="${cy - 7}" r="4.5"/><text class="g-title" x="${cx + 6}" y="${cy - 3}" text-anchor="middle">${esc(nm)}</text><text class="g-sub" x="${cx}" y="${cy + 14}" text-anchor="middle">${esc(sb)}</text></g>`;
+    }).join("");
+    const noteBox = `<rect x="18" y="168" width="532" height="38" rx="9" fill="var(--sunken)" stroke="var(--line)" stroke-dasharray="3 3"/><text class="g-note" x="284" y="191" text-anchor="middle">顶排：四大公理从左到右递进  ·  序公理双支：同级并联放缩与收尾  ·  确界单链：阿基米德推稠密</text>`;
+    return `<div class="m-arc-wrap"><svg class="m-arc m-grid-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="实数公理与底层工具关系图"><defs><marker id="m-arr" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 1 1.5 L 8.5 5 L 1 8.5 z" fill="var(--line-strong)"/></marker></defs>${noteBox}${edges}${nodes}</svg>
+      <div class="m-arc-legend"><span><svg width="10" height="10"><circle cx="5" cy="5" r="4.5" fill="var(--good)"/></svg>已刷绿</span><span><svg width="10" height="10"><circle cx="5" cy="5" r="4.5" fill="var(--hard)"/></svg>学习中</span><span><svg width="10" height="10"><circle cx="5" cy="5" r="4.5" fill="var(--again)"/></svg>薄弱</span><span><svg width="10" height="10"><circle cx="5" cy="5" r="4.5" fill="var(--ink-4)"/></svg>新卡</span><span>点击图中任意节点直接打开卡片</span></div></div>`;
+  }
   function arcHTML(cards) {
     if (cards.length < 2) return "";
+    if (cards.some(c => c.grid)) return gridGraphHTML(cards);
     const pos = {};
     cards.forEach((c, i) => { pos[c.id] = i; });
     const step = 46, pad = 26, H = 96, base = 66;
@@ -10229,12 +10443,12 @@ const MathUI = (() => {
     const groups = [];
     const byKey = {};
     cards.forEach(c => { const k = groupKey(c); if (!byKey[k]) { byKey[k] = []; groups.push(k); } byKey[k].push(c); });
-    if (ui.flow === "C") groups.sort((a, b) => MATH_SLOTS.findIndex(s => s.id === a) - MATH_SLOTS.findIndex(s => s.id === b));
+    if (ui.flow === "C") groups.sort((a, b) => (a === "H0" ? -1 : MATH_SLOTS.findIndex(s => s.id === a)) - (b === "H0" ? -1 : MATH_SLOTS.findIndex(s => s.id === b)));
     if (!groups.length) {
       host.innerHTML = `<div class="stage-card stage-empty" style="margin-top:18px"><div class="se-mark is-search"></div><div class="se-title">这个范围里没有符合筛选的卡</div><div class="se-sub">换一个筛选，或回到全部范围。</div><div class="se-actions"><button class="action-btn" type="button" onclick="MathUI.setFilter('all')">回到今日队列</button></div></div>`;
       return;
     }
-    if (!openGroups.size) { const cur = sess && E.byId[sess.cid]; const k = cur ? groupKey(cur) : groups[0]; openGroups.add(groups.includes(k) ? k : groups[0]); }
+    if (!openGroups.size) { if (groups.includes("H0")) openGroups.add("H0"); const cur = sess && E.byId[sess.cid]; const k = cur ? groupKey(cur) : groups[0]; openGroups.add(groups.includes(k) ? k : groups[0]); }
     const f = FLOWS.find(x => x.id === ui.flow);
     let html = `<div class="mod-banner"><span>${f.g} ${f.name} · ${esc(scopeName(ui.flow, ui.scope))}</span><span class="sub">${cards.length} 张卡 · ${groups.length} 组。展开分组看依赖弧线；展开卡片看评分项级 FSRS 账本。</span></div>`;
     groups.forEach(k => {
@@ -10246,18 +10460,19 @@ const MathUI = (() => {
       html += `<div class="pack-card m-group${open ? " open" : ""}" data-g="${esc(k)}">
         <div class="pack-header" onclick="MathUI.toggleGroup('${esc(k)}')"><div class="ph-left"><span class="m-gid">${esc(meta.id)}</span><span>${esc(meta.name)}</span></div>
         <div class="ph-right"><span>${learned}/${list.length}</span>${due ? `<span style="color:var(--again)">到期 ${due}</span>` : ""}<span>${esc(meta.sub)}</span></div></div>
-        <div class="pack-body">${open ? (ui.flow === "A" || ui.flow === "B" ? arcHTML(list) : "") + list.map(c => rowHTMLList(c, t)).join("") : ""}</div></div>`;
+        <div class="pack-body">${open ? (ui.flow === "A" || ui.flow === "B" || k === "H0" ? arcHTML(list) : "") + list.map(c => rowHTMLList(c, t)).join("") : ""}</div></div>`;
     });
     host.innerHTML = html;
   }
   function rowHTMLList(c, t) {
     const st = E.status(c, t);
     const open = openRows.has(c.id);
-    const tags = [c.level, c.slot];
+    const tags = c.noCode ? [c.type === "DEF" ? "基本公理" : "核心工具"] : [c.level, c.slot];
     if (c.type === "THM" || c.type === "PROB") { const tr = E.track(c); const blk = c.body.find(b => b.track === tr); if (blk) tags.push(Core.plain(blk.label)); }
+    const idSpan = c.noCode ? "" : `<span class="m-row-id">${esc(c.id)}</span>`;
     return `<div class="m-row${open ? " is-open" : ""}" data-cid="${esc(c.id)}">
       <div class="m-row-front" onclick="MathUI.toggleRow('${esc(c.id)}')"><span class="m-row-glyph">${TYPE[c.type][0]}</span>
-        <div class="m-row-main"><span class="m-row-title">${tex(c.title)}</span><span class="m-row-id">${esc(c.id)}</span><span class="m-row-tags">${tags.map(x => `<span>${esc(x)}</span>`).join("")}</span></div>
+        <div class="m-row-main"><span class="m-row-title">${tex(c.title)}</span>${idSpan}<span class="m-row-tags">${tags.map(x => `<span>${esc(x)}</span>`).join("")}</span></div>
         <div class="m-row-right">${memHTML(c, st)}</div></div>
       ${open ? `<div class="m-row-detail">${itemTableHTML(c)}<div class="m-row-actions"><button type="button" class="action-btn btn-small btn-primary" onclick="MathUI.open('${esc(c.id)}')">在抽卡台打开</button><button type="button" class="action-btn btn-small" onclick="MathUI.open('${esc(c.id)}', 'full')">全题重考</button><button type="button" class="action-btn btn-small btn-danger" onclick="MathUI.resetCard('${esc(c.id)}')">重置此卡</button></div></div>` : ""}
     </div>`;
