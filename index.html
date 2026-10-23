@@ -2575,14 +2575,14 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
       <div class="side-label">模块</div>
       <button class="subj" type="button" data-subj="hub" onclick="Core.go('hub')"><span class="subj-glyph">综</span><span class="subj-name">综合</span><span class="subj-meta" id="side-meta-hub"></span></button>
       <div class="side-mods" data-for="hub" hidden></div>
-      <button class="subj" type="button" data-subj="en" onclick="Core.go('en')"><span class="subj-glyph">英</span><span class="subj-name">英语</span><span class="subj-meta" id="side-meta-en"></span></button>
-      <div class="side-mods" data-for="en" hidden></div>
       <button class="subj" type="button" data-subj="math" onclick="Core.go('math')"><span class="subj-glyph">数</span><span class="subj-name">数学</span><span class="subj-meta" id="side-meta-math"></span></button>
       <div class="side-mods" data-for="math" hidden></div>
+      <button class="subj" type="button" data-subj="en" onclick="Core.go('en')"><span class="subj-glyph">英</span><span class="subj-name">英语</span><span class="subj-meta" id="side-meta-en"></span></button>
+      <div class="side-mods" data-for="en" hidden></div>
+      <button class="subj is-soon" type="button" data-subj="pol" onclick="Core.go('pol')"><span class="subj-glyph">政</span><span class="subj-name">政治</span><span class="subj-meta">即将接入</span></button>
       <button class="subj" type="button" data-subj="fin" onclick="Core.go('fin')"><span class="subj-glyph">财</span><span class="subj-name">财务</span><span class="subj-meta" id="side-meta-fin"></span></button>
       <div class="side-mods" data-for="fin" hidden></div>
-      <button class="subj is-soon" type="button" data-subj="pol" onclick="Core.go('pol')"><span class="subj-glyph">政</span><span class="subj-name">政治</span><span class="subj-meta">即将接入</span></button>
-      <button class="subj is-soon" type="button" data-subj="health" onclick="Core.go('health')"><span class="subj-glyph">健</span><span class="subj-name">健康</span><span class="subj-meta">在综合内</span></button>
+      <button class="subj is-soon" type="button" data-subj="health" onclick="Core.go('health')"><span class="subj-glyph">健</span><span class="subj-name">健康</span><span class="subj-meta">即将接入</span></button>
     </nav>
   </aside>
 
@@ -7222,8 +7222,7 @@ const Core = (() => {
     if (!info) return;
     if (info.soon) {
       closeSubjectNav();
-      if (id === "health" && modules.hub) { go("hub", { section: "focus" }); return; }
-      showToast(`「${info.name}」模块即将接入。当前可用：综合 · 英语 · 数学 · 财务`);
+      showToast(`「${info.name}」模块即将接入。当前可用：综合 · 数学 · 英语 · 财务`);
       return;
     }
     if (current !== id) Object.values(modules).forEach(m => m.onLeave && m.onLeave());
@@ -7333,7 +7332,6 @@ const Core = (() => {
     tex, texHTML, textHTML, plain, katexReady, onKatex, katexLoaded, register, subject, go, renderSideMods, openOptions,
     registerSync, gistGet, gistPatch, hasCreds, syncAll, pullModules, flushModules, setTheme, modules };
 })();
-
 
 // ---- math-engine.js ----
 // ============================================================================
@@ -10535,8 +10533,7 @@ const HubUI = (() => {
     const host = document.getElementById("h-today");
     if (!host) return;
     const sc = H.snap();
-    const plan = H.plan();
-    host.innerHTML = `<div class="h-grid"><div class="h-col">${northStarHTML(sc)}${timelineHTML(plan)}</div><div class="h-col">${quotasHTML(plan)}${focusHTML()}</div></div>`;
+    host.innerHTML = northStarHTML(sc);
     wireSCurve(sc);
     updateStrip(sc);
   }
@@ -10899,7 +10896,7 @@ const HubUI = (() => {
   }
   function sideMods() {
     return [
-      { act: "today", label: "今日作战", sub: "09–21", active: view === "today" },
+      { act: "today", label: "今日作战", sub: "北极星", active: view === "today" },
       { act: "sandbox", label: "全局沙盘", sub: "28 槽", active: view === "sandbox" }
     ];
   }
