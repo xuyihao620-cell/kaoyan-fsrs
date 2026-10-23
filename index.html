@@ -1935,16 +1935,16 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
 .m-arc .lbl { font: 500 9.5px/1 var(--font-mono); fill: var(--ink-3); }
 .m-arc-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 4px 0 6px; font-size: 11.5px; color: var(--ink-3); }
 .m-arc-legend span { display: inline-flex; align-items: center; gap: 5px; }
-.m-grid-svg { display: block; margin: 4px auto 8px; height: auto; }
-.m-grid-svg .g-edge { fill: none; stroke: var(--line-strong); stroke-width: 1.8; }
+.m-grid-svg { display: block; width: 100%; min-width: 580px; max-width: 740px; height: auto; margin: 2px auto 6px; }
+.m-grid-svg .g-edge { fill: none; stroke: var(--line-strong); stroke-width: 1.6; }
 .m-grid-svg .g-node { cursor: pointer; }
-.m-grid-svg .g-box { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.4; transition: stroke 0.15s ease, fill 0.15s ease, filter 0.15s ease; }
+.m-grid-svg .g-box { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.3; transition: stroke 0.15s ease, fill 0.15s ease, filter 0.15s ease; }
 .m-grid-svg .g-node.is-axiom .g-box { fill: color-mix(in srgb, var(--accent) 5%, var(--surface)); stroke: color-mix(in srgb, var(--accent) 38%, var(--line-strong)); }
-.m-grid-svg .g-node.is-cur .g-box { fill: color-mix(in srgb, var(--accent) 13%, var(--surface)); stroke: var(--accent); stroke-width: 2.3; }
-.m-grid-svg .g-node:hover .g-box { stroke: var(--accent); stroke-width: 1.9; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.06)); }
-.m-grid-svg .g-title { font: 700 15.5px/1 var(--font-math); fill: var(--ink); }
-.m-grid-svg .g-sub { font: 500 12px/1 var(--font-ui); fill: var(--ink-3); }
-.m-grid-svg .g-note { font: 500 12.5px/1 var(--font-ui); fill: var(--ink-3); }
+.m-grid-svg .g-node.is-cur .g-box { fill: color-mix(in srgb, var(--accent) 13%, var(--surface)); stroke: var(--accent); stroke-width: 2.2; }
+.m-grid-svg .g-node:hover .g-box { stroke: var(--accent); stroke-width: 1.8; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.06)); }
+.m-grid-svg .g-title { font: 700 13.5px/1 var(--font-math); fill: var(--ink); }
+.m-grid-svg .g-sub { font: 500 10.8px/1 var(--font-ui); fill: var(--ink-3); }
+.m-grid-svg .g-note { font: 500 11.2px/1 var(--font-ui); fill: var(--ink-3); }
 
 .m-row { border-bottom: 1px solid var(--line); }
 .m-row:last-child { border-bottom: 0; }
@@ -10348,9 +10348,9 @@ const MathUI = (() => {
     return `<div class="m-itab-wrap"><table class="m-itab"><thead><tr><th>评分项</th><th>上次</th><th>R</th><th>S</th><th>D</th><th>次数/遗忘</th><th>到期</th></tr></thead><tbody>${tr}</tbody></table></div>`;
   }
   function gridGraphHTML(cards, curId) {
-    const W = 768, H = 242, bw = 168, bh = 54, rx = 12, hw = 84, hh = 27;
-    const CX = col => 98 + col * 190;
-    const CY = row => 38 + row * 82;
+    const W = 760, H = 224, bw = 152, bh = 46, rx = 11, hw = 76, hh = 23;
+    const CX = col => 94 + col * 190;
+    const CY = row => 35 + row * 76;
     const byId = {};
     cards.forEach(c => { if (c.grid) byId[c.id] = c; });
     let edges = "";
@@ -10387,10 +10387,10 @@ const MathUI = (() => {
       const nm = c.graphTitle || Core.plain(c.title);
       const sb = c.graphSub || "";
       const curCls = curId === c.id ? " is-cur" : "";
-      return `<g class="g-node${row === 0 ? " is-axiom" : ""}${curCls}" onclick="MathUI.open('${esc(c.id)}')"><title>${esc(Core.plain(c.title))} · ${esc(statusText(c, st))}</title><rect class="g-box" x="${cx - hw}" y="${cy - hh}" width="${bw}" height="${bh}" rx="${rx}"/><circle class="n ${cls}" cx="${cx - hw + 16}" cy="${cy - 8}" r="5"/><text class="g-title" x="${cx + 6}" y="${cy - 3}" text-anchor="middle">${esc(nm)}</text><text class="g-sub" x="${cx}" y="${cy + 16}" text-anchor="middle">${esc(sb)}</text></g>`;
+      return `<g class="g-node${row === 0 ? " is-axiom" : ""}${curCls}" onclick="MathUI.open('${esc(c.id)}')"><title>${esc(Core.plain(c.title))} · ${esc(statusText(c, st))}</title><rect class="g-box" x="${cx - hw}" y="${cy - hh}" width="${bw}" height="${bh}" rx="${rx}"/><circle class="n ${cls}" cx="${cx - hw + 15}" cy="${cy - 7}" r="4.5"/><text class="g-title" x="${cx + 6}" y="${cy - 3}" text-anchor="middle">${esc(nm)}</text><text class="g-sub" x="${cx}" y="${cy + 14}" text-anchor="middle">${esc(sb)}</text></g>`;
     }).join("");
-    const noteBox = `<rect x="14" y="180" width="548" height="42" rx="10" fill="var(--sunken)" stroke="var(--line)" stroke-dasharray="3 3"/><text class="g-note" x="288" y="205" text-anchor="middle">顶排：四大公理从左到右递进  ｜  序公理双支：同级并联放缩与收尾  ｜  确界单链：阿基米德推稠密</text>`;
-    return `<div class="m-arc-wrap"><svg class="m-arc m-grid-svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="实数公理与底层工具关系图"><defs><marker id="m-arr" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 1 1.5 L 8.5 5 L 1 8.5 z" fill="var(--line-strong)"/></marker></defs>${noteBox}${edges}${nodes}</svg>
+    const noteBox = `<rect x="18" y="168" width="532" height="38" rx="9" fill="var(--sunken)" stroke="var(--line)" stroke-dasharray="3 3"/><text class="g-note" x="284" y="191" text-anchor="middle">顶排：四大公理从左到右递进  ｜  序公理双支：同级并联放缩与收尾  ｜  确界单链：阿基米德推稠密</text>`;
+    return `<div class="m-arc-wrap"><svg class="m-arc m-grid-svg" width="580" height="171" viewBox="0 0 ${W} ${H}" role="img" aria-label="实数公理与底层工具关系图"><defs><marker id="m-arr" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 1 1.5 L 8.5 5 L 1 8.5 z" fill="var(--line-strong)"/></marker></defs>${noteBox}${edges}${nodes}</svg>
       <div class="m-arc-legend"><span><svg width="10" height="10"><circle cx="5" cy="5" r="4.5" fill="var(--good)"/></svg>已刷绿</span><span><svg width="10" height="10"><circle cx="5" cy="5" r="4.5" fill="var(--hard)"/></svg>学习中</span><span><svg width="10" height="10"><circle cx="5" cy="5" r="4.5" fill="var(--again)"/></svg>薄弱</span><span><svg width="10" height="10"><circle cx="5" cy="5" r="4.5" fill="var(--ink-4)"/></svg>新卡</span><span>点击图中任意节点直接打开卡片</span></div></div>`;
   }
   function arcHTML(cards) {
@@ -10448,7 +10448,6 @@ const MathUI = (() => {
       host.innerHTML = `<div class="stage-card stage-empty" style="margin-top:18px"><div class="se-mark is-search"></div><div class="se-title">这个范围里没有符合筛选的卡</div><div class="se-sub">换一个筛选，或回到全部范围。</div><div class="se-actions"><button class="action-btn" type="button" onclick="MathUI.setFilter('all')">回到今日队列</button></div></div>`;
       return;
     }
-    if (!openGroups.size) { if (groups.includes("H0")) openGroups.add("H0"); const cur = sess && E.byId[sess.cid]; const k = cur ? groupKey(cur) : groups[0]; openGroups.add(groups.includes(k) ? k : groups[0]); }
     const f = FLOWS.find(x => x.id === ui.flow);
     let html = `<div class="mod-banner"><span>${f.g} ${f.name} · ${esc(scopeName(ui.flow, ui.scope))}</span><span class="sub">${cards.length} 张卡 · ${groups.length} 组。展开分组看依赖弧线；展开卡片看评分项级 FSRS 账本。</span></div>`;
     groups.forEach(k => {
