@@ -2882,6 +2882,26 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
         </div>
       </section>
 
+      <section class="opt-sec opt-acc" id="acc-icon">
+        <button type="button" class="opt-acc-head" onclick="toggleOptAcc('acc-icon')">
+          <span class="opt-acc-title">应用图标</span>
+          <span class="opt-acc-right">
+            <span class="opt-acc-meta" id="en-icon-meta">07 · 三色彭罗斯</span>
+            <span class="opt-acc-chev" aria-hidden="true"></span>
+          </span>
+        </button>
+        <div class="opt-acc-body">
+          <div class="app-icon-grid" id="en-app-icon-grid"></div>
+          <div class="btn-row" style="justify-content:space-between;align-items:center;padding-top:4px">
+            <span class="opt-sub" style="margin:0">共 18 款高定数学与几何图标，点击即刻切换网页标签、侧栏徽标与主屏幕图标。</span>
+            <div class="btn-row">
+              <button type="button" class="action-btn" onclick="Core.downloadAppIcon(false)">下载 Mac 圆角图标</button>
+              <button type="button" class="action-btn" onclick="Core.downloadAppIcon(true)">下载 iOS 满铺图标</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="opt-sec opt-acc" id="acc-widget">
         <button type="button" class="opt-acc-head" onclick="toggleOptAcc('acc-widget')">
           <span class="opt-acc-title">桌面小组件与挂件</span>
@@ -7430,8 +7450,14 @@ const Core = (() => {
     document.querySelectorAll(".app-icon-btn[data-icon-opt]").forEach(b => {
       b.classList.toggle("active", b.getAttribute("data-icon-opt") === ic.id);
     });
-    const metaEl = document.getElementById("hx-icon-meta");
-    if (metaEl) metaEl.innerHTML = `<img class="hx-icon-mini" src="${svgUrl}" alt="">${esc(ic.num)} · ${esc(ic.name)}`;
+    const enGrid = document.getElementById("en-app-icon-grid");
+    if (enGrid && !enGrid.children.length) {
+      enGrid.innerHTML = APP_ICONS.map(x => `<button type="button" class="app-icon-btn${ic.id === x.id ? " active" : ""}" data-icon-opt="${x.id}" onclick="Core.setAppIcon('${x.id}', this)" title="${esc(x.num + ' · ' + x.name + '（' + x.sub + '）')}"><img class="app-icon-thumb" src="${getAppIconSvgUrl(x.id)}" alt="${esc(x.name)}" loading="lazy"><span class="app-icon-name">${esc(x.num)} ${esc(x.name)}</span><span class="app-icon-sub">${esc(x.sub.split(" · ")[0])}</span></button>`).join("");
+    }
+    ["hx-icon-meta", "mx-icon-meta", "en-icon-meta"].forEach(mid => {
+      const metaEl = document.getElementById(mid);
+      if (metaEl) metaEl.innerHTML = `<img class="hx-icon-mini" src="${svgUrl}" alt="">${esc(ic.num)} · ${esc(ic.name)}`;
+    });
     renderSvgToPng(makeFullBleedSvg(ic.svg), 180, png180 => {
       const touch = document.getElementById("app-touch-icon");
       if (touch) touch.href = png180;
@@ -10202,6 +10228,19 @@ const MathUI = (() => {
       <section class="opt-sec opt-acc" id="mx-acc-look">
         <button type="button" class="opt-acc-head" onclick="toggleOptAcc('mx-acc-look')"><span class="opt-acc-title">外观</span><span class="opt-acc-right"><span class="opt-acc-meta">四套主题全模块通用</span><span class="opt-acc-chev"></span></span></button>
         <div class="opt-acc-body"><div class="theme-grid">${themeButtons(theme)}</div></div>
+      </section>
+      <section class="opt-sec opt-acc" id="mx-acc-icon">
+        <button type="button" class="opt-acc-head" onclick="toggleOptAcc('mx-acc-icon')"><span class="opt-acc-title">应用图标</span><span class="opt-acc-right"><span class="opt-acc-meta" id="mx-icon-meta"><img class="hx-icon-mini" src="${Core.getAppIconSvgUrl()}" alt="">${esc(Core.getAppIcon().num)} · ${esc(Core.getAppIcon().name)}</span><span class="opt-acc-chev"></span></span></button>
+        <div class="opt-acc-body">
+          <div class="app-icon-grid">${Core.getAppIcons().map(ic => `<button type="button" class="app-icon-btn${Core.getAppIconId() === ic.id ? " active" : ""}" data-icon-opt="${ic.id}" onclick="Core.setAppIcon('${ic.id}', this)" title="${esc(ic.num + ' · ' + ic.name + '（' + ic.sub + '）')}"><img class="app-icon-thumb" src="${Core.getAppIconSvgUrl(ic.id)}" alt="${esc(ic.name)}" loading="lazy"><span class="app-icon-name">${esc(ic.num)} ${esc(ic.name)}</span><span class="app-icon-sub">${esc(ic.sub.split(" · ")[0])}</span></button>`).join("")}</div>
+          <div class="btn-row" style="justify-content:space-between;align-items:center;padding-top:4px">
+            <span class="opt-sub" style="margin:0">共 18 款高定数学与几何图标，点击即刻切换网页标签、侧栏徽标与主屏幕图标。</span>
+            <div class="btn-row">
+              <button type="button" class="action-btn" onclick="Core.downloadAppIcon(false)">下载 Mac 圆角图标</button>
+              <button type="button" class="action-btn" onclick="Core.downloadAppIcon(true)">下载 iOS 满铺图标</button>
+            </div>
+          </div>
+        </div>
       </section>
       <section class="opt-sec opt-acc" id="mx-acc-data">
         <button type="button" class="opt-acc-head" onclick="toggleOptAcc('mx-acc-data')"><span class="opt-acc-title">数据与备份</span><span class="opt-acc-right"><span class="opt-acc-meta">云端文件 ${esc(E.SYNC_FILE)}</span><span class="opt-acc-chev"></span></span></button>
