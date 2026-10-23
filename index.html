@@ -2324,31 +2324,37 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
 }
 
 /* ---------- 独立财务：可展开「我的卡包盒」与账单流 ---------- */
-.f-stack, .f-bills-wrap { display: flex; flex-direction: column; gap: 18px; }
-.wbox { overflow: hidden; border: 1px solid var(--line); }
+.f-stack, .f-bills-wrap { display: flex; flex-direction: column; gap: 16px; }
+.wbox { overflow: hidden; border: 1px solid var(--line); transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease; }
+.wbox.is-dragging {
+  z-index: 30;
+  transform: scale(1.015);
+  border-color: var(--ink);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.16);
+  opacity: 0.96;
+}
 .wbox-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  padding: 18px 20px;
+  gap: 12px;
+  min-height: 58px;
+  padding: 14px 20px;
   cursor: pointer;
   user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-y;
   transition: background 0.15s ease;
 }
 .wbox-head:hover { background: var(--hover); }
 .wbox-head-left { flex: 1; min-width: 0; }
-.wbox-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.wbox-title-row h3 { margin: 0; font-size: 16px; font-weight: 700; color: var(--ink); }
-.wbox-badge { display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: 999px; background: var(--sunken); color: var(--ink-2); font: 600 11px/1 var(--font-mono); }
-.wbox-sub { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; font-size: 12px; line-height: 1.5; color: var(--ink-3); }
-.wbox-pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 6px; background: var(--sunken); color: var(--ink-2); font: 500 11.5px/1.3 var(--font-mono); }
-.wbox-pill b { font-family: var(--font-ui); color: var(--ink); font-weight: 600; }
-.wbox-head-right { display: flex; align-items: center; gap: 14px; flex: none; }
-.wbox-total { text-align: right; }
-.wbox-total span { display: block; font-size: 11px; color: var(--ink-3); }
-.wbox-total strong { display: block; margin-top: 2px; font: 700 22px/1.1 var(--font-num); font-variant-numeric: tabular-nums; color: var(--ink); }
-.wbox-toggle-btn { display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border-radius: 8px; background: var(--sunken); color: var(--ink-2); font: 600 11.5px/1 var(--font-ui); }
+.wbox-title-row { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; white-space: nowrap; }
+.wbox-title-row h3 { margin: 0; font-size: 15.5px; font-weight: 700; line-height: 1.2; color: var(--ink); white-space: nowrap; }
+.wbox-badge { display: inline-flex; align-items: center; flex: none; height: 20px; padding: 0 7px; border-radius: 999px; background: var(--sunken); color: var(--ink-2); font: 600 11px/1 var(--font-mono); white-space: nowrap; }
+.wbox-head-right { display: flex; align-items: center; gap: 10px; flex: none; white-space: nowrap; }
+.wbox-total { text-align: right; display: flex; align-items: center; }
+.wbox-total strong { display: block; font: 700 20px/1 var(--font-num); font-variant-numeric: tabular-nums; color: var(--ink); white-space: nowrap; }
+.wbox-toggle-btn { display: inline-flex; align-items: center; height: 28px; padding: 0 9px; border-radius: 8px; background: var(--sunken); color: var(--ink-2); font: 600 11.5px/1 var(--font-ui); white-space: nowrap; }
 .wbox-body { padding: 14px 20px 18px; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--sunken) 40%, var(--surface)); }
 .wbox-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .wbox-item {
@@ -2370,7 +2376,7 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
 .wbox-del:hover { background: color-mix(in srgb, var(--again) 12%, transparent); color: var(--again); }
 .wbox-foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); }
 .wbox-presets { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 12px; color: var(--ink-3); }
-.f-cdate-input { height: 28px; width: 136px; padding: 0 8px; font-size: 12px; font-family: var(--font-mono); }
+.f-cdate-input { height: 26px; width: 124px; padding: 0 6px; font-size: 11.5px; font-family: var(--font-mono); flex: none; }
 
 /* 流水记录表单与列表 */
 .tx-form {
@@ -2396,9 +2402,15 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
 .tx-wtag { display: inline-block; padding: 1px 6px; border-radius: 5px; background: var(--sunken); color: var(--ink-2); font-weight: 500; }
 
 @media (max-width: 760px) {
-  .f-stack, .f-bills-wrap { gap: 14px; }
-  .wbox-head { padding: 14px 16px; gap: 10px; }
-  .wbox-total strong { font-size: 18px; }
+  .f-stack, .f-bills-wrap { gap: 12px; }
+  .wbox-head { min-height: 52px; padding: 12px 14px; gap: 8px; }
+  .wbox-title-row { gap: 5px; }
+  .wbox-title-row h3 { font-size: 14.5px; }
+  .wbox-badge { height: 19px; padding: 0 6px; font-size: 10.5px; }
+  .wbox-head-right { gap: 8px; }
+  .wbox-total strong { font-size: 16.5px; }
+  .wbox-toggle-btn { height: 26px; padding: 0 7px; font-size: 11px; }
+  .f-cdate-input { width: 112px; height: 24px; padding: 0 4px; font-size: 11px; }
   .wbox-body { padding: 12px 14px 16px; }
   .wbox-list { grid-template-columns: minmax(0, 1fr); gap: 8px; }
   .wbox-item { grid-template-columns: 20px minmax(0, 1.1fr) minmax(0, 1fr) 26px; gap: 6px; padding: 7px 8px; }
@@ -8471,6 +8483,23 @@ const HubEngine = (() => {
     state.settings.updatedAt = Date.now();
     persist(true);
   }
+  function cardOrder(tabKey, defaults) {
+    const f = state.settings.finance;
+    const k = tabKey === "debt" ? "debtOrder" : "walletOrder";
+    const arr = Array.isArray(f[k]) ? f[k] : [];
+    const seen = new Set();
+    const out = [];
+    arr.forEach(id => { if (defaults.includes(id) && !seen.has(id)) { seen.add(id); out.push(id); } });
+    defaults.forEach(id => { if (!seen.has(id)) out.push(id); });
+    return out;
+  }
+  function setCardOrder(tabKey, order) {
+    const f = state.settings.finance;
+    const k = tabKey === "debt" ? "debtOrder" : "walletOrder";
+    f[k] = Array.isArray(order) ? order : [];
+    state.settings.updatedAt = Date.now();
+    persist(true);
+  }
   function projection(days, now) {
     const f = state.settings.finance;
     sanitizeFinance(f);
@@ -8628,11 +8657,10 @@ const HubEngine = (() => {
   load();
 
   return { KEY, SYNC_FILE, EN_SETS, settings, setSettings, get, today, countdownToExam, daysToExam, logistic, englishVocab, englishScore, scores, snap, history,
-    phase, plan, toggleDone, allocateNew, nextEnSet, simulate, wallets, setWallets, ledger, addLedgerTx, removeLedgerTx, customDueDate, setCustomDueDate,
+    phase, plan, toggleDone, allocateNew, nextEnSet, simulate, wallets, setWallets, ledger, addLedgerTx, removeLedgerTx, customDueDate, setCustomDueDate, cardOrder, setCardOrder,
     events, projection, alerts, markPaid, isPaid, togglePaid, paidEvents, focusMinutes, setEnergy, energy, streak,
     setEnSet, setEnWriting, addMock, sync, merge, exportJSON, importJSON, DEFAULT_SETTINGS, persist };
 })();
-
 
 // ---- math-ui.js ----
 // ============================================================================
@@ -10751,19 +10779,17 @@ const FinUI = (() => {
       </div>`;
     }).join("") : `<p class="pool-note" style="padding:8px 0">暂无流水记录。在上方记一笔收支，可自动同步加减对应卡包余额。</p>`;
 
-    return `<div class="f-stack">
-      <section class="h-panel wbox${walletOpen ? " is-open" : ""}" aria-label="卡包盒">
+    const cardMap = {
+      wallet: `<section class="h-panel wbox${walletOpen ? " is-open" : ""}" data-card-id="wallet" aria-label="卡包盒">
         <div class="wbox-head" onclick="FinUI.toggleWalletBox()" role="button" tabindex="0" aria-expanded="${walletOpen}">
           <div class="wbox-head-left">
             <div class="wbox-title-row">
               <h3>卡包盒</h3>
-              <span class="wbox-badge">${wallets.length} 个卡包</span>
+              <span class="wbox-badge">${wallets.length} 个</span>
             </div>
-            ${!walletOpen && wallets.length ? `<div class="wbox-sub" id="f-wbox-pills">${pillsSummaryHTML(wallets)}</div>` : ""}
           </div>
           <div class="wbox-head-right">
             <div class="wbox-total">
-              <span>总财产</span>
               <strong id="f-wbox-total">${money(fin.balance)}</strong>
             </div>
             <span class="wbox-toggle-btn">${walletOpen ? "收起 ▲" : "展开 ▼"}</span>
@@ -10775,10 +10801,9 @@ const FinUI = (() => {
             <button type="button" class="action-btn btn-primary btn-small" onclick="FinUI.addWallet('')">+ 添加卡包</button>
           </div>
         </div>` : ""}
-      </section>
-
-      <section class="h-panel h-pad" aria-label="流水记录">
-        <div class="h-sec-title" style="margin:0 0 12px">
+      </section>`,
+      ledger: `<section class="h-panel h-pad" data-card-id="ledger" aria-label="流水记录">
+        <div class="h-sec-title wbox-drag-handle" style="margin:0 0 12px">
           <h3>流水记录</h3>
           <span>共 ${ledger.length} 笔 · 收入 +${money(sumIn)} · 支出 −${money(sumOut)}</span>
         </div>
@@ -10792,13 +10817,16 @@ const FinUI = (() => {
             <span class="wbox-yen">¥</span>
             <input type="number" step="0.01" inputmode="decimal" class="opt-input wbox-amt" id="f-tx-amt" placeholder="金额" aria-label="流水金额">
           </div>
-          <input type="text" class="opt-input tx-note" id="f-tx-note" placeholder="备注（如：午饭、买书）" aria-label="流水备注" onkeydown="if(event.key==='Enter')FinUI.addTx()">
           <input type="date" class="opt-input tx-date" id="f-tx-date" value="${esc(txDate)}" aria-label="流水日期" onchange="FinUI.setTxDate(this.value)">
+          <input type="text" class="opt-input tx-note" id="f-tx-note" placeholder="备注（如：午饭、买书）" aria-label="流水备注" onkeydown="if(event.key==='Enter')FinUI.addTx()">
           <button type="button" class="action-btn btn-primary btn-small tx-submit" onclick="FinUI.addTx()">记一笔</button>
         </div>
         <div class="q-list" style="margin-top:10px">${txRows}</div>
-      </section>
-    </div>`;
+      </section>`
+    };
+
+    const order = H.cardOrder("wallet", ["wallet", "ledger"]);
+    return `<div class="f-stack" data-stack-tab="wallet">${order.map(k => cardMap[k] || "").join("")}</div>`;
   }
 
   function renderDebtTab() {
@@ -10814,18 +10842,19 @@ const FinUI = (() => {
     const customBalAfter = Math.round((fin.balance - customSum) * 100) / 100;
 
     const periods = [
-      { key: "p7", label: "近一周内待还", days: 7 },
-      { key: "p30", label: "近一个月内待还", days: 30 },
-      { key: "p90", label: "近三个月内待还", days: 90 },
-      { key: "p180", label: "近半年内待还", days: 180 },
-      { key: "p365", label: "近一年内待还", days: 365 }
+      { key: "p7", label: "近一周待还", days: 7 },
+      { key: "p30", label: "近一个月待还", days: 30 },
+      { key: "p90", label: "近三个月待还", days: 90 },
+      { key: "p180", label: "近半年待还", days: 180 },
+      { key: "p365", label: "近一年待还", days: 365 }
     ];
 
-    const periodCards = periods.map(p => {
+    const cardMap = {};
+    periods.forEach(p => {
       const list = unpaidRows.filter(r => Core.daysBetween(t, r.date) <= p.days);
       const sum = list.reduce((s, r) => s + r.amount, 0);
       const isOpen = !!openPeriods[p.key];
-      return `<section class="h-panel wbox${isOpen ? " is-open" : ""}" aria-label="${esc(p.label)}">
+      cardMap[p.key] = `<section class="h-panel wbox${isOpen ? " is-open" : ""}" data-card-id="${p.key}" aria-label="${esc(p.label)}">
         <div class="wbox-head" onclick="FinUI.togglePeriod('${p.key}')" role="button" tabindex="0" aria-expanded="${isOpen}">
           <div class="wbox-head-left">
             <div class="wbox-title-row">
@@ -10844,7 +10873,7 @@ const FinUI = (() => {
           <div class="q-list">${list.length ? list.map(r => renderBillRow(r, t)).join("") : `<p class="pool-note" style="padding:4px 0">该时间段内暂无待还账单。</p>`}</div>
         </div>` : ""}
       </section>`;
-    }).join("");
+    });
 
     const paidSum = paidList.reduce((s, r) => s + r.amount, 0);
     const paidOpen = !!openPeriods.paid;
@@ -10863,73 +10892,132 @@ const FinUI = (() => {
     const customOpen = !!openPeriods.custom;
     const debtsJSON = JSON.stringify(fin.debts || [], null, 2);
 
-    return `<div class="f-stack">
-      ${periodCards}
+    cardMap.custom = `<section class="h-panel wbox${customOpen ? " is-open" : ""}" data-card-id="custom" aria-label="自定义待还统计">
+      <div class="wbox-head" onclick="FinUI.togglePeriod('custom')" role="button" tabindex="0" aria-expanded="${customOpen}">
+        <div class="wbox-head-left">
+          <div class="wbox-title-row">
+            <h3>自定义待还</h3>
+            <input type="date" class="opt-input f-cdate-input" value="${esc(customDate)}" onclick="event.stopPropagation()" onchange="FinUI.onCustomDate(this.value)" aria-label="自定义截止日期">
+            <span class="wbox-badge">${customList.length} 笔</span>
+          </div>
+        </div>
+        <div class="wbox-head-right">
+          <div class="wbox-total">
+            <strong>${money(customSum)}</strong>
+          </div>
+          <span class="wbox-toggle-btn">${customOpen ? "收起 ▲" : "展开 ▼"}</span>
+        </div>
+      </div>
+      ${customOpen ? `<div class="wbox-body" style="padding-top:12px">
+        <div class="slot-kv">
+          <div><span>截止日期</span><b>${Core.fmtMD(customDate)} <small style="font-weight:500;color:var(--ink-3)">(${customDays >= 0 ? customDays + "d后" : -customDays + "d前"})</small></b></div>
+          <div><span>期间待还笔数</span><b>${customList.length} 笔</b></div>
+          <div><span>期间待还总额</span><b>${money(customSum)}</b></div>
+          <div><span>届时预计结余</span><b class="${customBalAfter < 0 ? "fin-neg" : ""}">${money(customBalAfter)}</b></div>
+        </div>
+        <div class="q-list" style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line)">${customList.length ? customList.map(r => renderBillRow(r, t)).join("") : `<p class="pool-note" style="padding:4px 0">截止 ${Core.fmtMD(customDate)} 前暂无未还账单。</p>`}</div>
+      </div>` : ""}
+    </section>`;
 
-      <section class="h-panel wbox${customOpen ? " is-open" : ""}" aria-label="自定义日期统计">
-        <div class="wbox-head" onclick="FinUI.togglePeriod('custom')" role="button" tabindex="0" aria-expanded="${customOpen}">
-          <div class="wbox-head-left">
-            <div class="wbox-title-row">
-              <h3>自定义日期待还统计</h3>
-              <input type="date" class="opt-input f-cdate-input" value="${esc(customDate)}" onclick="event.stopPropagation()" onchange="FinUI.onCustomDate(this.value)" aria-label="自定义截止日期">
-              <span class="wbox-badge">${customList.length} 笔</span>
-            </div>
-          </div>
-          <div class="wbox-head-right">
-            <div class="wbox-total">
-              <strong>${money(customSum)}</strong>
-            </div>
-            <span class="wbox-toggle-btn">${customOpen ? "收起 ▲" : "展开 ▼"}</span>
+    cardMap.paid = `<section class="h-panel wbox${paidOpen ? " is-open" : ""}" data-card-id="paid" aria-label="已还账单记录">
+      <div class="wbox-head" onclick="FinUI.togglePeriod('paid')" role="button" tabindex="0" aria-expanded="${paidOpen}">
+        <div class="wbox-head-left">
+          <div class="wbox-title-row">
+            <h3>已还账单记录</h3>
+            <span class="wbox-badge">${paidList.length} 笔</span>
           </div>
         </div>
-        <div class="wbox-body" style="padding-top:12px">
-          <div class="slot-kv">
-            <div><span>截止日期</span><b>${Core.fmtMD(customDate)} <small style="font-weight:500;color:var(--ink-3)">(${customDays >= 0 ? customDays + "d后" : -customDays + "d前"})</small></b></div>
-            <div><span>期间待还笔数</span><b>${customList.length} 笔</b></div>
-            <div><span>期间待还总额</span><b>${money(customSum)}</b></div>
-            <div><span>届时预计结余</span><b class="${customBalAfter < 0 ? "fin-neg" : ""}">${money(customBalAfter)}</b></div>
+        <div class="wbox-head-right">
+          <div class="wbox-total">
+            <strong style="color:var(--good)">${money(paidSum)}</strong>
           </div>
-          ${customOpen ? `<div class="q-list" style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line)">${customList.length ? customList.map(r => renderBillRow(r, t)).join("") : `<p class="pool-note" style="padding:4px 0">截止 ${Core.fmtMD(customDate)} 前暂无未还账单。</p>`}</div>` : ""}
+          <span class="wbox-toggle-btn">${paidOpen ? "收起 ▲" : "展开 ▼"}</span>
         </div>
-      </section>
+      </div>
+      ${paidOpen ? `<div class="wbox-body">
+        <div class="q-list">${paidRowsHTML}</div>
+      </div>` : ""}
+    </section>`;
 
-      <section class="h-panel wbox${paidOpen ? " is-open" : ""}" aria-label="已还账单记录">
-        <div class="wbox-head" onclick="FinUI.togglePeriod('paid')" role="button" tabindex="0" aria-expanded="${paidOpen}">
-          <div class="wbox-head-left">
-            <div class="wbox-title-row">
-              <h3>已还账单记录</h3>
-              <span class="wbox-badge">${paidList.length} 笔</span>
-            </div>
-          </div>
-          <div class="wbox-head-right">
-            <div class="wbox-total">
-              <span>已还总计</span>
-              <strong style="color:var(--good)">${money(paidSum)}</strong>
-            </div>
-            <span class="wbox-toggle-btn">${paidOpen ? "收起 ▲" : "展开 ▼"}</span>
-          </div>
-        </div>
-        ${paidOpen ? `<div class="wbox-body">
-          <div class="q-list">${paidRowsHTML}</div>
-        </div>` : ""}
-      </section>
+    const defaultOrder = ["p7", "p30", "p90", "p180", "p365", "custom", "paid"];
+    const order = H.cardOrder("debt", defaultOrder);
+    const cfgModal = editJsonOpen ? `<section class="h-panel h-pad" aria-label="账单源配置">
+      <div class="h-sec-title" style="margin:0 0 10px">
+        <h3>分期账单源配置</h3>
+        <button type="button" class="h-mini-btn is-on" onclick="FinUI.toggleEditJson()">收起配置</button>
+      </div>
+      <label class="field" style="font-size:12px;color:var(--ink-3)">已确定分期项目配置（JSON）<textarea class="opt-textarea" id="f-debts-json" spellcheck="false" style="min-height:200px;margin-top:6px">${esc(debtsJSON)}</textarea></label>
+      <div class="btn-row" style="margin-top:10px"><button type="button" class="action-btn btn-primary" onclick="FinUI.saveDebtsJson()">保存账单项目</button></div>
+    </section>` : "";
 
-      <section class="h-panel h-pad" aria-label="账单源配置">
-        <div class="h-sec-title" style="margin:0">
-          <h3>分期账单源配置</h3>
-          <button type="button" class="h-mini-btn${editJsonOpen ? " is-on" : ""}" onclick="FinUI.toggleEditJson()">${editJsonOpen ? "收起配置" : "编辑账单配置"}</button>
-        </div>
-        ${editJsonOpen ? `<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">
-          <label class="field" style="font-size:12px;color:var(--ink-3)">已确定分期项目配置（JSON）<textarea class="opt-textarea" id="f-debts-json" spellcheck="false" style="min-height:200px;margin-top:6px">${esc(debtsJSON)}</textarea></label>
-          <div class="btn-row" style="margin-top:10px"><button type="button" class="action-btn btn-primary" onclick="FinUI.saveDebtsJson()">保存账单项目</button></div>
-        </div>` : ""}
-      </section>
-    </div>`;
+    return `<div class="f-stack" data-stack-tab="debt">${order.map(k => cardMap[k] || "").join("")}${cfgModal}</div>`;
   }
 
-  function pillsSummaryHTML(wallets) {
-    if (!wallets.length) return "";
-    return wallets.map(w => `<span class="wbox-pill"><b>${esc(w.name || "未命名")}</b> ${money(parseFloat(w.amount) || 0)}</span>`).join("");
+  let dragJustEnded = false;
+  function wireDragSort(host) {
+    const stack = host.querySelector(".f-stack");
+    if (!stack || !stack.addEventListener) return;
+    const tabKey = stack.getAttribute("data-stack-tab") || "debt";
+    let timer = null, dragging = null, startX = 0, startY = 0;
+
+    const clearHold = () => { if (timer) { clearTimeout(timer); timer = null; } };
+    const finishDrag = () => {
+      clearHold();
+      if (!dragging) return;
+      dragging.classList.remove("is-dragging");
+      dragging = null;
+      dragJustEnded = true;
+      setTimeout(() => { dragJustEnded = false; }, 180);
+      const ids = Array.from(stack.querySelectorAll("[data-card-id]")).map(el => el.getAttribute("data-card-id")).filter(Boolean);
+      if (ids.length) H.setCardOrder(tabKey, ids);
+    };
+
+    const onStart = (clientX, clientY, target) => {
+      if (!target || !target.closest) return;
+      if (target.closest("input, select, textarea, .action-btn, .h-mini-btn, .wbox-del, .tx-tbtn")) return;
+      const head = target.closest(".wbox-head, .wbox-drag-handle");
+      if (!head) return;
+      const card = head.closest("[data-card-id]");
+      if (!card) return;
+      startX = clientX;
+      startY = clientY;
+      clearHold();
+      timer = setTimeout(() => {
+        dragging = card;
+        card.classList.add("is-dragging");
+        try { if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(15); } catch (e) {}
+      }, 280);
+    };
+
+    const onMove = (clientX, clientY, ev) => {
+      if (!dragging) {
+        if (timer && (Math.abs(clientX - startX) > 10 || Math.abs(clientY - startY) > 10)) clearHold();
+        return;
+      }
+      if (ev && ev.cancelable) ev.preventDefault();
+      const cards = Array.from(stack.querySelectorAll("[data-card-id]"));
+      for (let i = 0; i < cards.length; i++) {
+        const c = cards[i];
+        if (c === dragging) continue;
+        const r = c.getBoundingClientRect();
+        const mid = r.top + r.height / 2;
+        if (clientY >= r.top && clientY <= r.bottom) {
+          if (clientY < mid) stack.insertBefore(dragging, c);
+          else stack.insertBefore(dragging, c.nextSibling);
+          break;
+        }
+      }
+    };
+
+    stack.addEventListener("touchstart", e => { if (e.touches.length === 1) onStart(e.touches[0].clientX, e.touches[0].clientY, e.target); }, { passive: true });
+    stack.addEventListener("touchmove", e => { if (e.touches.length === 1) onMove(e.touches[0].clientX, e.touches[0].clientY, e); }, { passive: false });
+    stack.addEventListener("touchend", finishDrag);
+    stack.addEventListener("touchcancel", finishDrag);
+    stack.addEventListener("mousedown", e => { if (e.button === 0) onStart(e.clientX, e.clientY, e.target); });
+    stack.addEventListener("mousemove", e => { if (timer || dragging) onMove(e.clientX, e.clientY, e); });
+    stack.addEventListener("mouseup", finishDrag);
+    stack.addEventListener("mouseleave", finishDrag);
+    stack.addEventListener("click", e => { if (dragJustEnded) { e.stopPropagation(); e.preventDefault(); } }, true);
   }
 
   function render() {
@@ -10937,6 +11025,7 @@ const FinUI = (() => {
     const host = document.getElementById("f-view");
     if (!host) return;
     host.innerHTML = tab === "debt" ? renderDebtTab() : renderWalletTab();
+    wireDragSort(host);
   }
 
   function setTab(next) {
@@ -11119,7 +11208,6 @@ const FinUI = (() => {
   };
 })();
 Core.register("fin", FinUI);
-
 
 // ---- boot.js ----
 // ============================================================================
