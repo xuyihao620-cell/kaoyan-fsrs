@@ -2504,7 +2504,7 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
       <div id="h-sandbox" class="hub-view hub-only" hidden></div>
 
       <section class="today-strip hub-strip fin-strip fin-only" aria-label="财务今日概览">
-        <div class="ts-item" title="由下方各卡包余额自动相加得出"><span class="ts-label">当前确定余额</span><span class="ts-val"><strong id="f-st-bal">--</strong></span></div>
+        <div class="ts-item" title="由下方各卡包余额自动相加得出"><span class="ts-label">总财产</span><span class="ts-val"><strong id="f-st-bal">--</strong></span></div>
         <div class="ts-item" title="距离最近一笔未还确定账单"><span class="ts-label" id="f-st-next-lbl">最近一期还款</span><span class="ts-val"><strong id="f-st-next">--</strong></span></div>
         <div class="ts-item" title="本月尚未标记已还的确定账单总额"><span class="ts-label">本月剩余待还</span><span class="ts-val"><strong id="f-st-curm">--</strong></span></div>
         <div class="ts-item" title="下月确定账单总额"><span class="ts-label">下月确定待还</span><span class="ts-val"><strong id="f-st-nextm">--</strong></span></div>
@@ -10554,8 +10554,7 @@ const FinUI = (() => {
     set("f-st-bal", money(fin.balance));
     if (nextEv) {
       set("f-st-next", money(nextEv.amount));
-      const d = Core.daysBetween(t, nextEv.date);
-      set("f-st-next-lbl", `最近待还 · ${Core.fmtShortMD(nextEv.date)} (${d === 0 ? "今" : d < 0 ? `逾${-d}d` : `${d}d`})`);
+      set("f-st-next-lbl", `最近待还 ${Core.fmtShortMD(nextEv.date)}`);
     } else {
       set("f-st-next", "¥0.00");
       set("f-st-next-lbl", "最近一期还款");
@@ -10618,7 +10617,7 @@ const FinUI = (() => {
       <section class="h-panel h-pad" aria-label="确定性还款日程表">
         <div class="h-sec-title" style="margin:0 0 10px">
           <h3>确定性账单日程明细（近 4 个月）</h3>
-          <span style="display:inline-flex;align-items:center;gap:8px"><span>实时起点：卡包总计 ${money(fin.balance)}</span><button type="button" class="h-mini-btn${editJsonOpen ? " is-on" : ""}" onclick="FinUI.toggleEditJson()">${editJsonOpen ? "收起配置" : "编辑账单"}</button></span>
+          <span style="display:inline-flex;align-items:center;gap:8px"><span>起点：总财产 ${money(fin.balance)}</span><button type="button" class="h-mini-btn${editJsonOpen ? " is-on" : ""}" onclick="FinUI.toggleEditJson()">${editJsonOpen ? "收起配置" : "编辑账单"}</button></span>
         </div>
         ${editJsonOpen ? `<div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--line)">
           <label class="field" style="font-size:12px;color:var(--ink-3)">已确定分期项目配置（JSON）<textarea class="opt-textarea" id="f-debts-json" spellcheck="false" style="min-height:200px;margin-top:6px">${esc(debtsJSON)}</textarea></label>
@@ -10632,7 +10631,7 @@ const FinUI = (() => {
   }
 
   function pillsSummaryHTML(wallets) {
-    if (!wallets.length) return "尚未添加卡包，点击展开添加";
+    if (!wallets.length) return "";
     return wallets.map(w => `<span class="wbox-pill"><b>${esc(w.name || "未命名")}</b> ${money(parseFloat(w.amount) || 0)}</span>`).join("");
   }
 
@@ -10646,7 +10645,7 @@ const FinUI = (() => {
     const walletRows = wallets.map((w, idx) => `
       <div class="wbox-item" data-wid="${esc(w.id)}">
         <span class="wbox-idx">${idx + 1}</span>
-        <input type="text" class="opt-input wbox-name" id="f-wname-${idx}" value="${esc(w.name)}" placeholder="卡包名称（如：微信、浦发卡）" aria-label="卡包名称" oninput="FinUI.onWalletInput(${idx}, 'name', this.value)" onchange="FinUI.onWalletCommit()">
+        <input type="text" class="opt-input wbox-name" id="f-wname-${idx}" value="${esc(w.name)}" placeholder="卡包名称" aria-label="卡包名称" oninput="FinUI.onWalletInput(${idx}, 'name', this.value)" onchange="FinUI.onWalletCommit()">
         <div class="wbox-amt-wrap">
           <span class="wbox-yen">¥</span>
           <input type="number" step="0.01" inputmode="decimal" class="opt-input wbox-amt" id="f-wamt-${idx}" value="${w.amount}" placeholder="0.00" aria-label="卡包余额" oninput="FinUI.onWalletInput(${idx}, 'amount', this.value)" onchange="FinUI.onWalletCommit()">
@@ -10655,18 +10654,18 @@ const FinUI = (() => {
       </div>`).join("");
 
     host.innerHTML = `<div class="f-stack">
-      <section class="h-panel wbox${walletOpen ? " is-open" : ""}" aria-label="我的卡包盒">
+      <section class="h-panel wbox${walletOpen ? " is-open" : ""}" aria-label="卡包盒">
         <div class="wbox-head" onclick="FinUI.toggleWalletBox()" role="button" tabindex="0" aria-expanded="${walletOpen}">
           <div class="wbox-head-left">
             <div class="wbox-title-row">
-              <h3>我的卡包盒</h3>
+              <h3>卡包盒</h3>
               <span class="wbox-badge">${wallets.length} 个卡包</span>
             </div>
-            <div class="wbox-sub" id="f-wbox-pills">${walletOpen ? "填入各卡包金额后自动相加为「当前确定余额」，无需手动求和或填日期" : pillsSummaryHTML(wallets)}</div>
+            ${!walletOpen && wallets.length ? `<div class="wbox-sub" id="f-wbox-pills">${pillsSummaryHTML(wallets)}</div>` : ""}
           </div>
           <div class="wbox-head-right">
             <div class="wbox-total">
-              <span>当前确定总余额</span>
+              <span>总财产</span>
               <strong id="f-wbox-total">${money(fin.balance)}</strong>
             </div>
             <span class="wbox-toggle-btn">${walletOpen ? "收起 ▲" : "展开 ▼"}</span>
@@ -10676,13 +10675,6 @@ const FinUI = (() => {
           <div class="wbox-list">${walletRows || `<p class="pool-note" style="padding:4px 0">暂无卡包，请点击下方按钮添加。</p>`}</div>
           <div class="wbox-foot">
             <button type="button" class="action-btn btn-primary btn-small" onclick="FinUI.addWallet('')">+ 添加卡包</button>
-            <div class="wbox-presets">
-              <span>快添：</span>
-              <button type="button" class="h-mini-btn" onclick="FinUI.addWallet('微信钱包')">+ 微信</button>
-              <button type="button" class="h-mini-btn" onclick="FinUI.addWallet('支付宝')">+ 支付宝</button>
-              <button type="button" class="h-mini-btn" onclick="FinUI.addWallet('银行卡')">+ 银行卡</button>
-              <button type="button" class="h-mini-btn" onclick="FinUI.addWallet('校园卡/现金')">+ 校园卡/现金</button>
-            </div>
           </div>
         </div>` : ""}
       </section>
