@@ -8377,6 +8377,8 @@ const HubEngine = (() => {
       }));
     }
     if (!fin.amountOverrides || typeof fin.amountOverrides !== "object") fin.amountOverrides = {};
+    if (!fin.deletedTx || typeof fin.deletedTx !== "object") fin.deletedTx = {};
+    if (typeof fin.walletsUpdatedAt !== "number" || !isFinite(fin.walletsUpdatedAt)) fin.walletsUpdatedAt = 0;
     if (typeof fin.customDueTitle !== "string") fin.customDueTitle = "考研初试";
     if (!fin.customDueDate || !/^\d{4}-\d{2}-\d{2}$/.test(fin.customDueDate)) fin.customDueDate = "2026-12-20";
     fin.balance = calcWalletTotal(fin.wallets);
@@ -8817,6 +8819,7 @@ const HubEngine = (() => {
   function setWallets(list, immediate) {
     const f = state.settings.finance;
     f.wallets = Array.isArray(list) ? list : [];
+    f.walletsUpdatedAt = Date.now();
     sanitizeFinance(f);
     state.settings.updatedAt = Date.now();
     persist(!!immediate);
@@ -8857,6 +8860,7 @@ const HubEngine = (() => {
     const idx = f.ledger.findIndex(x => x && x.id === txId);
     if (idx < 0) return null;
     const tx = f.ledger.splice(idx, 1)[0];
+    f.deletedTx[txId] = Date.now();
     if (tx.walletId) {
       const w = f.wallets.find(x => x.id === tx.walletId);
       if (w) {
@@ -8986,14 +8990,92 @@ const HubEngine = (() => {
   function addMock(date, score) { state.mocks.en = (state.mocks.en || []).filter(x => x.date !== date).concat([{ date, score }]); persist(true); }
 
   // ---------------------------------------------------------------- sync
+  function mergeFinance(localFin, remoteFin, localTs, remoteTs) {
+    if (!remoteFin || typeof remoteFin !== "object") return { fin: localFin, localDiff: false, remoteDiff: false };
+    sanitizeFinance(localFin);
+    const rFin = JSON.parse(JSON.stringify(remoteFin));
+    sanitizeFinance(rFin);
+
+    const deletedTx = Object.assign({}, localFin.deletedTx || {}, rFin.deletedTx || {});
+    const lWalTs = localFin.walletsUpdatedAt || 0;
+    const rWalTs = rFin.walletsUpdatedAt || 0;
+    const baseIsRemote = rWalTs > lWalTs || (rWalTs === lWalTs && remoteTs > localTs);
+    const baseFin = baseIsRemote ? rFin : localFin;
+    const otherFin = baseIsRemote ? localFin : rFin;
+    const baseWalTs = baseFin.walletsUpdatedAt || 0;
+
+    const wallets = JSON.parse(JSON.stringify(baseFin.wallets || []));
+    (otherFin.wallets || []).forEach(ow => {
+      if (ow && ow.id && !wallets.some(w => w.id === ow.id)) wallets.push(JSON.parse(JSON.stringify(ow)));
+    });
+
+    const baseLedgerIds = new Set((baseFin.ledger || []).map(x => x && x.id).filter(Boolean));
+    (baseFin.ledger || []).forEach(tx => {
+      if (tx && tx.id && deletedTx[tx.id] && (tx.ts || 0) >= baseWalTs && tx.walletId) {
+        const w = wallets.find(x => x.id === tx.walletId);
+        if (w) w.amount = Math.round((w.amount + (tx.type === "in" ? -tx.amount : tx.amount)) * 100) / 100;
+      }
+    });
+    (otherFin.ledger || []).forEach(tx => {
+      if (tx && tx.id && !baseLedgerIds.has(tx.id) && !deletedTx[tx.id] && (tx.ts || 0) >= baseWalTs && tx.walletId) {
+        const w = wallets.find(x => x.id === tx.walletId);
+        if (w) w.amount = Math.round((w.amount + (tx.type === "in" ? tx.amount : -tx.amount)) * 100) / 100;
+      }
+    });
+
+    const txMap = new Map();
+    [...(baseFin.ledger || []), ...(otherFin.ledger || [])].forEach(tx => {
+      if (tx && tx.id && !deletedTx[tx.id] && !txMap.has(tx.id)) txMap.set(tx.id, tx);
+    });
+    const mergedLedger = Array.from(txMap.values()).sort((a, b) => (b.ts || 0) - (a.ts || 0));
+
+    const primaryFin = remoteTs > localTs ? rFin : localFin;
+    const secondaryFin = remoteTs > localTs ? localFin : rFin;
+    const subMap = new Map();
+    (primaryFin.subscriptions || []).forEach(s => { if (s && s.id) subMap.set(s.id, Object.assign({}, s)); });
+    (secondaryFin.subscriptions || []).forEach(s => {
+      if (!s || !s.id) return;
+      if (subMap.has(s.id)) {
+        const cur = subMap.get(s.id);
+        if ((s.lastAutoYM || "") > (cur.lastAutoYM || "")) cur.lastAutoYM = s.lastAutoYM;
+      }
+    });
+
+    const merged = Object.assign({}, secondaryFin, primaryFin, {
+      wallets,
+      walletsUpdatedAt: Math.max(lWalTs, rWalTs),
+      ledger: mergedLedger,
+      deletedTx,
+      subscriptions: Array.from(subMap.values()),
+      amountOverrides: Object.assign({}, secondaryFin.amountOverrides || {}, primaryFin.amountOverrides || {})
+    });
+    sanitizeFinance(merged);
+
+    const sig = f => JSON.stringify({
+      w: (f.wallets || []).map(x => [x.id, x.name, x.amount]),
+      l: (f.ledger || []).map(x => x.id),
+      d: Object.keys(f.deletedTx || {}).sort(),
+      s: (f.subscriptions || []).map(x => [x.id, x.name, x.amount, x.day, x.lastAutoYM]),
+      o: f.amountOverrides || {}
+    });
+    const mSig = sig(merged);
+    return { fin: merged, remoteDiff: mSig !== sig(localFin), localDiff: mSig !== sig(rFin) };
+  }
+
   function merge(remote) {
     let localNewer = false, remoteNewer = false;
-    if ((remote.settings && remote.settings.updatedAt || 0) > (state.settings.updatedAt || 0)) {
+    const lTs = state.settings.updatedAt || 0;
+    const rTs = (remote.settings && remote.settings.updatedAt) || 0;
+    const fm = mergeFinance(state.settings.finance, remote.settings && remote.settings.finance, lTs, rTs);
+    if (rTs > lTs) {
       state.settings = Object.assign(state.settings, remote.settings);
-      if (state.settings.finance) sanitizeFinance(state.settings.finance);
       remoteNewer = true;
+    } else if (lTs > rTs) {
+      localNewer = true;
     }
-    else if ((state.settings.updatedAt || 0) > ((remote.settings && remote.settings.updatedAt) || 0)) localNewer = true;
+    state.settings.finance = fm.fin;
+    if (fm.remoteDiff) remoteNewer = true;
+    if (fm.localDiff) localNewer = true;
     Object.entries(remote.daily || {}).forEach(([k, d]) => {
       const l = state.daily[k];
       if (!l) { state.daily[k] = d; remoteNewer = true; return; }
