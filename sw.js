@@ -1,12 +1,12 @@
-const CACHE_NAME = "kaoyan-fsrs-v148";
+const CACHE_NAME = "kaoyan-fsrs-v149";
 const AUDIO_CACHE = "kaoyan-5530-audio-v1";
 const FONT_CACHE = "kaoyan-serif-font-v1";
 const ASSETS = [
   "./",
   "./index.html",
   "./icon-E.html",
-  "./app-style.css?v=148",
-  "./app-bundle.js?v=148",
+  "./app-style.css?v=149",
+  "./app-bundle.js?v=149",
   "./manifest.json",
   "./manifest-E.json",
   "./apple-touch-icon.png"
@@ -21,20 +21,21 @@ function fetchWithTimeout(req, timeoutMs) {
 
 self.addEventListener("install", event => {
   self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache =>
-      Promise.all(ASSETS.map(url => fetch(new Request(url, { cache: "no-cache" })).then(resp => {
-        if (resp && resp.status === 200) return cache.put(url, resp);
-      }).catch(() => {})))
-    )
-  );
 });
 
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys => Promise.all(
       keys.filter(k => k !== CACHE_NAME && k !== AUDIO_CACHE && k !== FONT_CACHE).map(k => caches.delete(k))
-    )).then(() => self.clients.claim())
+    )).then(() => self.clients.claim()).then(() =>
+      caches.open(CACHE_NAME).then(cache =>
+        Promise.all(ASSETS.map(url =>
+          cache.match(url).then(hit => hit || fetch(new Request(url, { cache: "no-cache" })).then(resp => {
+            if (resp && resp.status === 200) return cache.put(url, resp);
+          }).catch(() => {}))
+        ))
+      )
+    )
   );
 });
 
@@ -76,27 +77,39 @@ self.addEventListener("fetch", event => {
     return;
   }
   const isDoc = event.request.mode === "navigate" || url.pathname.endsWith("/") || url.pathname.endsWith(".html");
-  const isCoreAsset = isDoc || url.pathname.endsWith(".css") || url.pathname.endsWith(".js");
-  const reqTarget = (isCoreAsset && event.request.method === "GET")
-    ? new Request(event.request.url, { cache: "no-store" })
-    : event.request;
-  event.respondWith(
-    (isCoreAsset ? fetchWithTimeout(reqTarget, 15000) : fetch(reqTarget))
-      .then(resp => {
-        if (resp && resp.status === 200 && event.request.method === "GET") {
-          const clone = resp.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        }
-        return resp;
+  if (isDoc && event.request.method === "GET") {
+    const reqTarget = new Request(event.request.url, { cache: "no-store" });
+    event.respondWith(
+      fetchWithTimeout(reqTarget, 5000)
+        .then(resp => {
+          if (resp && resp.status === 200) {
+            const clone = resp.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          }
+          return resp;
+        })
+        .catch(() => caches.match(event.request).then(r => r || caches.match("./index.html") || Response.error()))
+    );
+    return;
+  }
+  const isVersionedAsset = (url.pathname.endsWith(".css") || url.pathname.endsWith(".js")) && event.request.method === "GET";
+  if (isVersionedAsset) {
+    event.respondWith(
+      caches.match(event.request).then(cached => {
+        if (cached) return cached;
+        return fetch(event.request).then(resp => {
+          if (resp && resp.status === 200) {
+            const clone = resp.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          }
+          return resp;
+        }).catch(() => caches.match(event.request, { ignoreSearch: true }).then(r2 => r2 || Response.error()));
       })
-      .catch(() => caches.match(event.request).then(r => {
-        if (r) return r;
-        return caches.match(event.request, { ignoreSearch: true }).then(r2 => {
-          if (r2) return r2;
-          if (isDoc) return caches.match("./index.html");
-          return Response.error();
-        });
-      }))
+    );
+    return;
+  }
+  event.respondWith(
+    fetch(event.request).catch(() => caches.match(event.request).then(r => r || Response.error()))
   );
 });
 

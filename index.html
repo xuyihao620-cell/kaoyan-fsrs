@@ -11,6 +11,44 @@
 <meta name="theme-color" content="#f9f9f8" id="meta-theme-color">
 <script>
 (function() {
+  var SW_TARGET = "v149";
+  window.__onAssetError = function() {
+    try {
+      if (sessionStorage.getItem("__sw_asset_recover") === SW_TARGET) return;
+      sessionStorage.setItem("__sw_asset_recover", SW_TARGET);
+      localStorage.removeItem("kaoyan_sw_ver");
+    } catch (e) {}
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(regs) {
+        return Promise.all(regs.map(function(r) { return r.unregister(); }));
+      }).finally(function() { location.reload(); });
+    } else {
+      location.reload();
+    }
+  };
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.protocol === "http:")) {
+    var curSw = "";
+    try { curSw = localStorage.getItem("kaoyan_sw_ver") || ""; } catch (e) {}
+    if (curSw !== SW_TARGET) {
+      var reloaded = false;
+      var finishSwUpgrade = function() {
+        if (reloaded) return;
+        reloaded = true;
+        try { localStorage.setItem("kaoyan_sw_ver", SW_TARGET); } catch (e) {}
+        location.reload();
+      };
+      navigator.serviceWorker.addEventListener("controllerchange", finishSwUpgrade);
+      navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" }).then(function(reg) {
+        return reg.update();
+      }).then(function() {
+        setTimeout(finishSwUpgrade, 500);
+      }).catch(function() {
+        finishSwUpgrade();
+      });
+    }
+  }
+})();
+(function() {
   var m = "auto";
   try { m = localStorage.getItem("kaoyan_201_theme") || "auto"; } catch (e) {}
   if (m === "light") m = "auto";
@@ -88,7 +126,7 @@
 <link rel="stylesheet" href="https://fonts.loli.net/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js" crossorigin="anonymous" referrerpolicy="no-referrer" onload="window.__onKatex && window.__onKatex()"></script>
-<link rel="stylesheet" href="./app-style.css?v=148">
+<link rel="stylesheet" href="./app-style.css?v=149" onerror="window.__onAssetError&&window.__onAssetError()">
 </head>
 <body>
 
@@ -322,6 +360,6 @@
   </div>
 </div>
 <div id="toast" class="toast-msg" role="status" aria-live="polite"></div>
-<script src="./app-bundle.js?v=148"></script>
+<script src="./app-bundle.js?v=149" onerror="window.__onAssetError&&window.__onAssetError()"></script>
 </body>
 </html>

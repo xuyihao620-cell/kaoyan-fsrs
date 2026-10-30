@@ -2433,7 +2433,7 @@ const DEFAULT_GIST_ID = "";
 const GIST_TOKEN_KEY = "kaoyan_gist_token";
 const GIST_ID_KEY = "kaoyan_gist_id";
 const GIST_SCHEMA_KEY = "kaoyan_gist_schema";
-const CURRENT_GIST_SCHEMA = "v148";
+const CURRENT_GIST_SCHEMA = "v149";
 
 function ghAuthHeader(t) {
   const s = String(t || "").trim();
