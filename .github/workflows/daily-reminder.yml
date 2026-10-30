@@ -1,0 +1,40 @@
+name: Daily FSRS Reminder Push
+on:
+  schedule:
+    - cron: '0,30 * * * *'
+  repository_dispatch:
+    types: [test_push, daily_push]
+  workflow_dispatch:
+    inputs:
+      force_test:
+        description: 'Send immediate test push to subscribed devices'
+        required: false
+        default: 'false'
+permissions:
+  actions: write
+  contents: read
+jobs:
+  push-reminder:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check Due Cards & Send Web Push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIST_ID: ${{ secrets.GIST_ID }}
+          GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
+          VAPID_PEM: ${{ secrets.VAPID_PEM }}
+          FORCE_TEST: ${{ (github.event_name == 'repository_dispatch' && github.event.action == 'test_push') && 'true' || github.event.inputs.force_test || 'false' }}
+        run: node scripts/send-daily-push.mjs
+      - name: Prune Previous Workflow Runs (Zero Log Accumulation)
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RUNS=$(gh api "/repos/${{ github.repository }}/actions/workflows/daily-reminder.yml/runs?per_page=30" --jq ".workflow_runs[] | select(.id != ${{ github.run_id }}) | .id" || true)
+          for id in $RUNS; do
+            gh api -X DELETE "/repos/${{ github.repository }}/actions/runs/$id" || true
+          done

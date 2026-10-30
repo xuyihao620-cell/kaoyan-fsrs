@@ -1,0 +1,31 @@
+{
+  "name": "卡片盒 · FSRS-6 终身学习",
+  "short_name": "卡片盒",
+  "description": "考研数学一式流 · 英语 5530 词 · 431 金融 FSRS-6 记忆系统",
+  "start_url": "./icon-E.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f9f9f8",
+  "theme_color": "#f9f9f8",
+  "icons": [
+    {
+      "src": "./icons/icon-E-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-E-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-E-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
