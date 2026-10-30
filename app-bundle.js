@@ -2433,7 +2433,12 @@ const DEFAULT_GIST_ID = "";
 const GIST_TOKEN_KEY = "kaoyan_gist_token";
 const GIST_ID_KEY = "kaoyan_gist_id";
 const GIST_SCHEMA_KEY = "kaoyan_gist_schema";
-const CURRENT_GIST_SCHEMA = "v147";
+const CURRENT_GIST_SCHEMA = "v148";
+
+function ghAuthHeader(t) {
+  const s = String(t || "").trim();
+  return s.startsWith("github_pat_") ? `Bearer ${s}` : `token ${s}`;
+}
 
 (function autoImportSyncTokenFromUrl() {
   try {
@@ -2491,15 +2496,19 @@ function getCloudSyncCreds() {
 
 let _discoverGistPromise = null;
 async function ensureCloudGistId(token, forceDiscover) {
+  if (forceDiscover) {
+    try { localStorage.removeItem(GIST_ID_KEY); } catch (e) {}
+    _discoverGistPromise = null;
+  }
   const creds = getCloudSyncCreds();
-  const t = token || (creds && creds.t) || "";
+  const t = (token || (creds && creds.t) || "").trim();
   if (!t) return "";
   if (!forceDiscover && creds && creds.g) return creds.g;
   if (_discoverGistPromise) return _discoverGistPromise;
   _discoverGistPromise = (async () => {
     try {
       const resp = await fetch("https://api.github.com/gists?per_page=30&_t=" + Date.now(), {
-        headers: { "Authorization": `token ${t}`, "Accept": "application/vnd.github+json" },
+        headers: { "Authorization": ghAuthHeader(t), "Accept": "application/vnd.github+json" },
         cache: "no-store"
       });
       if (resp.status === 401) {
@@ -2523,7 +2532,7 @@ async function ensureCloudGistId(token, forceDiscover) {
         }
       }
     } catch (e) {}
-    return (creds && creds.g) || "";
+    return forceDiscover ? "" : ((creds && creds.g) || "");
   })().finally(() => { _discoverGistPromise = null; });
   return _discoverGistPromise;
 }
@@ -2590,7 +2599,8 @@ async function copyMagicSyncLink(inputId) {
     return;
   }
   const gistId = c.g || (await ensureCloudGistId(c.t, false)) || "";
-  const base = location.origin + location.pathname;
+  const isHttp = location.protocol === "https:" || location.protocol === "http:";
+  const base = isHttp ? (location.origin + location.pathname) : "https://xuyihao620-cell.github.io/kaoyan-fsrs/";
   const url = `${base}#token=${encodeURIComponent(c.t)}${gistId ? "&gist=" + encodeURIComponent(gistId) : ""}`;
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(url).then(() => {
@@ -2706,16 +2716,32 @@ async function cloudSyncPush(forceReset, useKeepalive) {
         }
       }
     });
-    const resp = await fetch(`https://api.github.com/gists/${creds.g}`, {
+    let resp = await fetch(`https://api.github.com/gists/${creds.g}`, {
       method: "PATCH",
       keepalive: !!(useKeepalive && bodyStr.length <= 60000),
       headers: {
-        "Authorization": `token ${creds.t}`,
+        "Authorization": ghAuthHeader(creds.t),
         "Accept": "application/vnd.github+json",
         "Content-Type": "application/json"
       },
       body: bodyStr
     });
+    if (resp.status === 404) {
+      const newGid = await ensureCloudGistId(creds.t, true);
+      if (newGid && newGid !== creds.g) {
+        creds.g = newGid;
+        resp = await fetch(`https://api.github.com/gists/${creds.g}`, {
+          method: "PATCH",
+          keepalive: !!(useKeepalive && bodyStr.length <= 60000),
+          headers: {
+            "Authorization": ghAuthHeader(creds.t),
+            "Accept": "application/vnd.github+json",
+            "Content-Type": "application/json"
+          },
+          body: bodyStr
+        });
+      }
+    }
     if (resp.ok) {
       _lastEnPullTs = Date.now();
       if (window.Core && Core.invalidateGistCache) Core.invalidateGistCache();
@@ -2755,13 +2781,26 @@ async function cloudSyncPullAndMerge(showFeedback, skipPushBack) {
     if (window.Core && typeof Core.gistGet === "function") {
       gist = await Core.gistGet();
     } else {
-      const resp = await fetch(`https://api.github.com/gists/${creds.g}?_t=${Date.now()}`, {
+      let resp = await fetch(`https://api.github.com/gists/${creds.g}?_t=${Date.now()}`, {
         headers: {
-          "Authorization": `token ${creds.t}`,
+          "Authorization": ghAuthHeader(creds.t),
           "Accept": "application/vnd.github+json"
         },
         cache: "no-store"
       });
+      if (resp.status === 404) {
+        const newGid = await ensureCloudGistId(creds.t, true);
+        if (newGid && newGid !== creds.g) {
+          creds.g = newGid;
+          resp = await fetch(`https://api.github.com/gists/${creds.g}?_t=${Date.now()}`, {
+            headers: {
+              "Authorization": ghAuthHeader(creds.t),
+              "Accept": "application/vnd.github+json"
+            },
+            cache: "no-store"
+          });
+        }
+      }
       if (!resp.ok) throw new Error("HTTP " + resp.status);
       gist = await resp.json();
     }
@@ -5094,14 +5133,14 @@ const Core = (() => {
         let gid = creds.g || (typeof ensureCloudGistId === "function" ? await ensureCloudGistId(creds.t, false) : "");
         if (!gid) return null;
         let resp = await fetch(`https://api.github.com/gists/${gid}?_t=${Date.now()}`, {
-          headers: { "Authorization": `token ${creds.t}`, "Accept": "application/vnd.github+json" }, cache: "no-store"
+          headers: { "Authorization": ghAuthHeader(creds.t), "Accept": "application/vnd.github+json" }, cache: "no-store"
         });
         if (resp.status === 404 && typeof ensureCloudGistId === "function") {
           const newGid = await ensureCloudGistId(creds.t, true);
           if (newGid && newGid !== gid) {
             gid = newGid;
             resp = await fetch(`https://api.github.com/gists/${gid}?_t=${Date.now()}`, {
-              headers: { "Authorization": `token ${creds.t}`, "Accept": "application/vnd.github+json" }, cache: "no-store"
+              headers: { "Authorization": ghAuthHeader(creds.t), "Accept": "application/vnd.github+json" }, cache: "no-store"
             });
           }
         }
@@ -5127,11 +5166,22 @@ const Core = (() => {
     let gid = creds.g || (typeof ensureCloudGistId === "function" ? await ensureCloudGistId(creds.t, false) : "");
     if (!gid) return false;
     const bodyStr = JSON.stringify({ files: { [fileName]: { content } } });
-    const resp = await fetch(`https://api.github.com/gists/${gid}`, {
+    let resp = await fetch(`https://api.github.com/gists/${gid}`, {
       method: "PATCH", keepalive: !!(keepalive && bodyStr.length <= 60000),
-      headers: { "Authorization": `token ${creds.t}`, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
+      headers: { "Authorization": ghAuthHeader(creds.t), "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
       body: bodyStr
     });
+    if (resp.status === 404 && typeof ensureCloudGistId === "function") {
+      const newGid = await ensureCloudGistId(creds.t, true);
+      if (newGid && newGid !== gid) {
+        gid = newGid;
+        resp = await fetch(`https://api.github.com/gists/${gid}`, {
+          method: "PATCH", keepalive: !!(keepalive && bodyStr.length <= 60000),
+          headers: { "Authorization": ghAuthHeader(creds.t), "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
+          body: bodyStr
+        });
+      }
+    }
     if (resp.status === 401) {
       if (typeof notifySyncAuthError === "function") notifySyncAuthError(resp.status);
     }

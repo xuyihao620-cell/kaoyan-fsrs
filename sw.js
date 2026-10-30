@@ -1,12 +1,12 @@
-const CACHE_NAME = "kaoyan-fsrs-v147";
+const CACHE_NAME = "kaoyan-fsrs-v148";
 const AUDIO_CACHE = "kaoyan-5530-audio-v1";
 const FONT_CACHE = "kaoyan-serif-font-v1";
 const ASSETS = [
   "./",
   "./index.html",
   "./icon-E.html",
-  "./app-style.css?v=146",
-  "./app-bundle.js?v=146",
+  "./app-style.css?v=148",
+  "./app-bundle.js?v=148",
   "./manifest.json",
   "./manifest-E.json",
   "./apple-touch-icon.png"
@@ -81,7 +81,7 @@ self.addEventListener("fetch", event => {
     ? new Request(event.request.url, { cache: "no-store" })
     : event.request;
   event.respondWith(
-    (isCoreAsset ? fetchWithTimeout(reqTarget, 2200) : fetch(reqTarget))
+    (isCoreAsset ? fetchWithTimeout(reqTarget, 15000) : fetch(reqTarget))
       .then(resp => {
         if (resp && resp.status === 200 && event.request.method === "GET") {
           const clone = resp.clone();
@@ -91,8 +91,11 @@ self.addEventListener("fetch", event => {
       })
       .catch(() => caches.match(event.request).then(r => {
         if (r) return r;
-        if (isDoc) return caches.match("./index.html");
-        return Response.error();
+        return caches.match(event.request, { ignoreSearch: true }).then(r2 => {
+          if (r2) return r2;
+          if (isDoc) return caches.match("./index.html");
+          return Response.error();
+        });
       }))
   );
 });
