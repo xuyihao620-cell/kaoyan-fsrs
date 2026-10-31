@@ -1,12 +1,12 @@
-const CACHE_NAME = "kaoyan-fsrs-v149";
+const CACHE_NAME = "kaoyan-fsrs-v150";
 const AUDIO_CACHE = "kaoyan-5530-audio-v1";
 const FONT_CACHE = "kaoyan-serif-font-v1";
 const ASSETS = [
   "./",
   "./index.html",
   "./icon-E.html",
-  "./app-style.css?v=149",
-  "./app-bundle.js?v=149",
+  "./app-style.css?v=150",
+  "./app-bundle.js?v=150",
   "./manifest.json",
   "./manifest-E.json",
   "./apple-touch-icon.png"
