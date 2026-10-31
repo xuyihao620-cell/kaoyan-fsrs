@@ -1494,7 +1494,7 @@ function sanitizeAndMigrateStateMap(rawState, cfg) {
   return clean;
 }
 
-const EN_ZOMBIE_FLOOR_TS = 1793419500000;
+const EN_ZOMBIE_FLOOR_TS = 1793465200000;
 function getEnZombieFloorTs() {
   try {
     if (localStorage.getItem("kaoyan_en_allow_legacy_backup_v2") === "1") return 0;
@@ -1556,15 +1556,16 @@ function loadState() {
           fsrsConfig = sanitizeConfigObject(parsed.config);
         }
         fsrsConfig.resetAt = savedReset;
+        const rawLocalKeys = (parsed.state && typeof parsed.state === "object") ? Object.keys(parsed.state).length : 0;
         fsrsState = sanitizeAndMigrateStateMap(parsed.state, fsrsConfig);
-        const hadZombies = purgeEnStateBeforeReset(fsrsState, savedReset);
+        const hadZombies = purgeEnStateBeforeReset(fsrsState, savedReset) || (rawLocalKeys !== Object.keys(fsrsState).length);
         if (parsed.date === todayStr && !hadZombies) {
           todayCount = Math.max(0, parseInt(parsed.todayCount, 10) || 0);
         } else {
           todayCount = 0;
         }
         if (hadZombies || parsed.resetAt !== savedReset) {
-          saveState(true);
+          saveState(false);
         }
       }
       return;
@@ -3673,6 +3674,7 @@ async function cloudSyncPush(forceReset, useKeepalive) {
     window._enResetAt = curResetAt;
     if (fsrsConfig) fsrsConfig.resetAt = curResetAt;
     purgeEnStateBeforeReset(fsrsState, curResetAt);
+    const curValidWords = Object.keys(wordByName).filter(w => wordByName[w] && wordByName[w].isCore);
     const payload = {
       version: 6,
       updatedAt: Date.now(),
@@ -3680,6 +3682,7 @@ async function cloudSyncPush(forceReset, useKeepalive) {
       date: todayStr,
       todayCount: todayCount,
       activeWord: activeWord,
+      validWords: curValidWords,
       config: fsrsConfig,
       state: fsrsState
     };
@@ -3815,9 +3818,14 @@ async function cloudSyncPullAndMerge(showFeedback, skipPushBack) {
     }
     if (fsrsConfig) fsrsConfig.resetAt = maxResetAt;
 
+    const rawRemKeys = (remote && remote.state && typeof remote.state === "object") ? Object.keys(remote.state).length : 0;
+    const curValidWords = Object.keys(wordByName).filter(w => wordByName[w] && wordByName[w].isCore);
     const remoteState = (remote && remote.state && typeof remote.state === "object")
       ? sanitizeAndMigrateStateMap(remote.state, fsrsConfig)
       : {};
+    if (rawRemKeys !== Object.keys(remoteState).length || !Array.isArray(remote && remote.validWords) || remote.validWords.length !== curValidWords.length) {
+      localHasNewer = true;
+    }
     if (purgeEnStateBeforeReset(remoteState, maxResetAt)) {
       localHasNewer = true;
     }
@@ -4199,7 +4207,15 @@ async function loadSyncState() {
 
 const words = await loadWords();
 const sync = await loadSyncState();
-const stMap = sync.state || sync.fsrsState || {};
+const enResetAt = Math.max(1793465200000, Number(sync.resetAt) || 0, Number(sync.config && sync.config.resetAt) || 0);
+const dynValidEn = Array.isArray(sync.validWords) ? new Set(sync.validWords) : null;
+const rawStMap = sync.state || sync.fsrsState || {};
+const stMap = {};
+for (const k of Object.keys(rawStMap)) {
+  if (dynValidEn && !dynValidEn.has(k)) continue;
+  const s = rawStMap[k];
+  if (s && (s.lastReview || 0) > enResetAt) stMap[k] = s;
+}
 const now = Date.now();
 const rollDate = new Date(now - 4 * 3600000);
 const todayStr = rollDate.getFullYear() + "-" + String(rollDate.getMonth() + 1).padStart(2, "0") + "-" + String(rollDate.getDate()).padStart(2, "0");
@@ -11512,7 +11528,8 @@ function hasAnyCards(d) {
   if (!d || typeof d !== "object") return false;
   const mCnt = Object.keys((d.mathSync && d.mathSync.items) || {}).length;
   const eCnt = Object.keys((d.enSync && (d.enSync.state || d.enSync.fsrsState)) || {}).length;
-  return (mCnt + eCnt) > 0;
+  const hasCleanedEn = !!(d.enSync && (Array.isArray(d.enSync.validWords) || (Number(d.enSync.resetAt) || 0) >= 1793465200000));
+  return (mCnt + eCnt) > 0 || hasCleanedEn;
 }
 
 async function loadAllSync() {
@@ -11615,11 +11632,15 @@ const t0 = dayStart(nowMs, rh);
 const enCfg = syncData.enSync?.config || {};
 const enW = Array.isArray(enCfg.w) ? enCfg.w : null;
 const enReqR = Math.min(0.97, Math.max(0.70, Number(enCfg.requestRetention) || 0.90));
-const enResetAt = Math.max(Number(syncData.enSync?.resetAt) || 0, Number(enCfg.resetAt) || 0);
+const enResetAt = Math.max(1793465200000, Number(syncData.enSync?.resetAt) || 0, Number(enCfg.resetAt) || 0);
+const dynValidEn = Array.isArray(syncData.enSync?.validWords)
+  ? new Set(syncData.enSync.validWords)
+  : (Array.isArray(EMBEDDED_SYNC.enSync?.validWords) ? new Set(EMBEDDED_SYNC.enSync.validWords) : null);
 const rawEnState = syncData.enSync?.state || syncData.enSync?.fsrsState || {};
 const enState = {};
 for (const w of Object.keys(rawEnState)) {
   if (NON_CORE_EN.has(w)) continue;
+  if (dynValidEn && !dynValidEn.has(w)) continue;
   const st = rawEnState[w];
   if (st && (st.lastReview || 0) > enResetAt) enState[w] = st;
 }
@@ -12236,15 +12257,21 @@ Script.complete();`;
   function copyWidgetCode() {
     const creds = (typeof getCloudSyncCreds === "function" && getCloudSyncCreds()) || { g: DEFAULT_GIST_ID, t: "" };
     const nonCoreEnWords = [];
+    const validEnWords = [];
     try {
       if (typeof RAW_DATA === "object" && Array.isArray(RAW_DATA.words)) {
-        RAW_DATA.words.forEach(w => { if (w && !w.isCore && w.w) nonCoreEnWords.push(w.w); });
+        RAW_DATA.words.forEach(w => {
+          if (!w || !w.w) return;
+          if (w.isCore) validEnWords.push(w.w);
+          else nonCoreEnWords.push(w.w);
+        });
       }
     } catch (e) {}
     const initialSeed = {
       globalCfg: (typeof getGlobalClockCfg === "function") ? getGlobalClockCfg() : { rolloverHour: 4 },
       enSync: {
         resetAt: Math.max(getEnZombieFloorTs(), window._enResetAt || 0, (typeof fsrsConfig === "object" && fsrsConfig.resetAt) || 0),
+        validWords: validEnWords,
         config: (typeof fsrsConfig === "object" && fsrsConfig) ? fsrsConfig : {},
         state: (typeof fsrsState === "object" && fsrsState) ? fsrsState : {}
       },
