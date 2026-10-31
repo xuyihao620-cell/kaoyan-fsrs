@@ -6139,10 +6139,12 @@ const Core = (() => {
   }
   function updateTitle() {
     const info = SUBJECTS[current] || {};
+    let name = info.name || "";
+    if (current === "math" && modules.math && modules.math.courseTitle) name = modules.math.courseTitle();
     const tt = document.querySelector("#tb-title .tb-title-text");
-    if (tt) tt.textContent = info.name || "";
+    if (tt) tt.textContent = name;
     const tb = document.getElementById("tb-title");
-    if (tb) tb.setAttribute("aria-label", current === "fin" ? (info.name || "") : `${info.name || ""} · 统计`);
+    if (tb) tb.setAttribute("aria-label", current === "fin" ? name : `${name} · 统计`);
   }
   window.__updateTitle = updateTitle;
   function openStats(ev) {
@@ -7907,13 +7909,58 @@ const MathUI = (() => {
   const GRADE = { 1: "重来", 2: "困难", 3: "良好", 4: "简单" };
   const KIND_NAME = { c: "挖空", n: "否定", s: "步骤", x: "反例", k: "点算", phi: "Φ⁻¹", r: "条目" };
 
+  // ---------------------------------------------------------------- fixed big directory tree (数学分析 19 大目录 + 高等代数 10 大目录)
+  const MATH_BIG_FOLDERS = [
+    // 数学分析 (ma)
+    { id: "ma_real_lim", course: "ma", name: "实数、极限", subs: ["H0", "H1", "H2"] },
+    { id: "ma_cont", course: "ma", name: "连续、闭连续", subs: ["H4", "H5"] },
+    { id: "ma_deriv", course: "ma", name: "导数、微分", subs: ["H6"] },
+    { id: "ma_mvt", course: "ma", name: "微分中值定理", subs: ["H7"] },
+    { id: "ma_indef_int", course: "ma", name: "不定积分", subs: [] },
+    { id: "ma_def_int", course: "ma", name: "定积分", subs: [] },
+    { id: "ma_int_app", course: "ma", name: "定积分应用", subs: [] },
+    { id: "ma_imp_int", course: "ma", name: "反常积分", subs: [] },
+    { id: "ma_num_ser", course: "ma", name: "数项级数", subs: [] },
+    { id: "ma_fn_ser", course: "ma", name: "函数列、函数项级数", subs: [] },
+    { id: "ma_pow_ser", course: "ma", name: "幂级数", subs: [] },
+    { id: "ma_fourier", course: "ma", name: "傅里叶级数", subs: [] },
+    { id: "ma_multi_lim", course: "ma", name: "多元极限、连续", subs: [] },
+    { id: "ma_multi_diff", course: "ma", name: "多元微分", subs: [] },
+    { id: "ma_implicit", course: "ma", name: "隐函数、极值", subs: [] },
+    { id: "ma_param_int", course: "ma", name: "含参量积分", subs: [] },
+    { id: "ma_line_int", course: "ma", name: "曲线积分", subs: [] },
+    { id: "ma_mult_int", course: "ma", name: "重积分", subs: [] },
+    { id: "ma_surf_int", course: "ma", name: "曲面积分", subs: [] },
+    // 高等代数 (la)
+    { id: "la_poly", course: "la", name: "多项式", subs: [] },
+    { id: "la_det", course: "la", name: "行列式", subs: [] },
+    { id: "la_sys", course: "la", name: "线性方程组", subs: [] },
+    { id: "la_mat", course: "la", name: "矩阵", subs: [] },
+    { id: "la_quad", course: "la", name: "二次型", subs: [] },
+    { id: "la_space", course: "la", name: "线性空间", subs: [] },
+    { id: "la_trans", course: "la", name: "线性变换", subs: [] },
+    { id: "la_lambda", course: "la", name: "λ-矩阵", subs: [] },
+    { id: "la_euclid", course: "la", name: "欧几里得空间", subs: [] },
+    { id: "la_bilinear", course: "la", name: "双线性函数", subs: [] }
+  ];
+  const BIG_BY_ID = {}, BIG_BY_NAME = {}, SUB_TO_BIG = {};
+  MATH_BIG_FOLDERS.forEach(b => {
+    BIG_BY_ID[b.id] = b;
+    BIG_BY_NAME[b.name] = b;
+    (b.subs || []).forEach(s => { SUB_TO_BIG[s] = b.id; });
+  });
+
   // ---------------------------------------------------------------- state
-  let ui = Object.assign({ flow: "B", scope: "all", filter: "all", mode: null, view: "stage", cur: "AX_EQ", h0V3: 0 }, E.getUI());
-  // 四种排序视图已撤掉：一种顺序（卡组原序），按模块分组；范围 = 全部 / 某个模块 / 某个考纲槽位
+  let ui = Object.assign({ flow: "B", scope: "all", filter: "all", mode: null, view: "stage", cur: "AX_EQ", course: "ma", h0V3: 0 }, E.getUI());
+  // 四种排序视图已撤掉：一种顺序（卡组原序），按模块分组；范围 = 全部 / 某个科目 / 某个大目录 / 某个子目录
   ui.flow = "D";
   ui.view = "stage";
   ui.filter = "all";
-  function validScope(sc) { return sc && sc !== "all" && MATH_DECK.some(c => (c.hub || "H0") === sc) ? sc : "all"; }
+  function validScope(sc) {
+    if (!sc || sc === "all" || sc === "c:ma" || sc === "c:la") return sc || "all";
+    if (sc.startsWith("b:") && BIG_BY_ID[sc.slice(2)]) return sc;
+    return MATH_DECK.some(c => (c.hub || "H0") === sc) ? sc : "all";
+  }
   ui.scope = validScope(ui.scope);
   let mapKey = null;
   ui.mode = "smart";
@@ -7931,7 +7978,7 @@ const MathUI = (() => {
   let maps = { cz: {}, row: {} };
   let inited = false;
 
-  function saveUI() { E.setUI({ flow: ui.flow, scope: ui.scope, filter: ui.filter, mode: ui.mode, view: ui.view, cur: ui.cur, h0V3: ui.h0V3 || 1, mapOpen: !!ui.mapOpen }); }
+  function saveUI() { E.setUI({ flow: ui.flow, scope: ui.scope, filter: ui.filter, mode: ui.mode, view: ui.view, cur: ui.cur, course: ui.course || "ma", h0V3: ui.h0V3 || 1, mapOpen: !!ui.mapOpen }); }
   function card() { return sess ? E.byId[sess.cid] : null; }
   const now = () => Date.now();
 
@@ -7969,7 +8016,7 @@ const MathUI = (() => {
   // ---------------------------------------------------------------- queue
   function refreshQueue() {
     Q = E.queue({ flow: ui.flow, scope: ui.scope, filter: ui.filter, search }, now());
-    if (ui.scope && ui.scope !== "all") { const sc = ui.scope; Q.list = Q.list.filter(c => groupKey(c) === sc); }
+    if (ui.scope && ui.scope !== "all") { const sc = ui.scope; Q.list = Q.list.filter(c => cardInScope(c, sc)); }
     return Q;
   }
 
@@ -9098,6 +9145,9 @@ const MathUI = (() => {
   function updateButtons() { if (Core.subject() === "math") Core.updateTitle(); }
   function scopeLabel() {
     if (!ui.scope || ui.scope === "all") return "全部";
+    if (ui.scope === "c:ma") return "数学分析";
+    if (ui.scope === "c:la") return "高等代数";
+    if (ui.scope.startsWith("b:")) { const b = BIG_BY_ID[ui.scope.slice(2)]; return b ? b.name : "全部"; }
     return groupMeta(ui.scope).name;
   }
   function closePops() { closeRefPop(); }
@@ -9110,7 +9160,7 @@ const MathUI = (() => {
     if (!silent) renderStage();
   }
 
-  // ---------------------------------------------------------------- module groups & graph
+  // ---------------------------------------------------------------- module groups & big folder tree
   function groupKey(c) {
     return c.hub || "H0";
   }
@@ -9121,10 +9171,75 @@ const MathUI = (() => {
       H2: { name: "实数七大完备性定理互证", sub: "确界原理 · 单调有界定理 · 区间套定理 · 有限覆盖定理 · 聚点定理 · 致密性定理 · 柯西收敛准则 · 二分构造框架" },
       H4: { name: "连续定义、性质、运算、复合", sub: "函数连续定义 · 间断点分类、单调函数间断点定理 · 局部性质、四则与复合连续性 · 反函数的连续性、初等函数的连续性 · 狄利克雷函数与黎曼函数" },
       H5: { name: "闭区间连续函数", sub: "有界性定理 · 最大、最小值定理 · 零点定理与介值性定理 · 一致连续性与康托尔定理" },
-      H6: { name: "导数与微分：定义、运算法则、求导公式与高阶导数", sub: "可导 ⟷ 可微 ⟶ 连续 · 四则/反函数/复合链式求导与一阶微分形式不变性 · 基本初等函数求导公式、高阶导数与莱布尼茨公式、参变量/反函数二阶导数" },
-      H7: { name: "微分中值定理、洛必达法则、泰勒定理与单调极值凸凹性", sub: "费马/罗尔/拉格朗日/柯西中值定理与补 e 积分法 · 达布定理与导函数无第一类间断点 · 洛必达法则与配 e 积分因子 · 泰勒定理、唯一性引理、12+1 麦克劳林公式与展开技术 · 单调性与极值三大判别 · 凸凹函数等价链、Jensen 与 Hadamard 不等式、拐点" }
+      H6: { name: "定义、运算法则、求导公式、高阶导数", sub: "可导 ⟷ 可微 ⟶ 连续 · 四则/反函数/复合链式求导与一阶微分形式不变性 · 基本初等函数求导公式、高阶导数与莱布尼茨公式、参变量/反函数二阶导数" },
+      H7: { name: "中值定理、洛必达、泰勒、单调极值凸凹性", sub: "费马/罗尔/拉格朗日/柯西中值定理与补 e 积分法 · 达布定理与导函数无第一类间断点 · 洛必达法则与配 e 积分因子 · 泰勒定理、唯一性引理、12+1 麦克劳林公式与展开技术 · 单调性与极值三大判别 · 凸凹函数等价链、Jensen 与 Hadamard 不等式、拐点" }
     };
     return map[key] || { name: key, sub: "" };
+  }
+  function cardBigId(c) {
+    if (!c) return "ma_real_lim";
+    if (c.big) {
+      if (BIG_BY_ID[c.big]) return c.big;
+      if (BIG_BY_NAME[c.big]) return BIG_BY_NAME[c.big].id;
+    }
+    const h = c.hub || "H0";
+    if (SUB_TO_BIG[h]) return SUB_TO_BIG[h];
+    if (BIG_BY_ID[h]) return h;
+    if (BIG_BY_NAME[h]) return BIG_BY_NAME[h].id;
+    return "ma_real_lim";
+  }
+  function cardCourse(c) {
+    const b = BIG_BY_ID[cardBigId(c)];
+    return b ? b.course : "ma";
+  }
+  function cardInScope(c, sc) {
+    if (!sc || sc === "all") return true;
+    if (sc === "c:ma") return cardCourse(c) === "ma";
+    if (sc === "c:la") return cardCourse(c) === "la";
+    if (sc.startsWith("b:")) return cardBigId(c) === sc.slice(2);
+    return groupKey(c) === sc;
+  }
+  function activeCourse() {
+    if (ui.scope === "c:la") return "la";
+    if (ui.scope === "c:ma") return "ma";
+    if (ui.scope && ui.scope.startsWith("b:")) { const b = BIG_BY_ID[ui.scope.slice(2)]; if (b) return b.course; }
+    if (ui.scope && ui.scope !== "all" && SUB_TO_BIG[ui.scope]) { const b = BIG_BY_ID[SUB_TO_BIG[ui.scope]]; if (b) return b.course; }
+    if (ui.course === "la" || ui.course === "ma") return ui.course;
+    const c = E.byId[ui.cur];
+    return c ? cardCourse(c) : "ma";
+  }
+  function courseTitle() {
+    return activeCourse() === "la" ? "高等代数" : "数学分析";
+  }
+  function bigTree(courseId) {
+    const t = now();
+    const byBig = {};
+    MATH_BIG_FOLDERS.forEach(b => {
+      if (!courseId || b.course === courseId) {
+        byBig[b.id] = { id: b.id, course: b.course, name: b.name, subFolders: [], subByKey: {}, directCards: [], due: 0, total: 0 };
+      }
+    });
+    MATH_DECK.forEach(c => {
+      const bid = cardBigId(c);
+      const node = byBig[bid];
+      if (!node) return;
+      const st = E.status(c, t);
+      node.total++;
+      if (st.dueNow) node.due++;
+      const hk = groupKey(c);
+      if (hk === bid || hk === node.name) {
+        node.directCards.push(c);
+      } else {
+        if (!node.subByKey[hk]) {
+          node.subByKey[hk] = { key: hk, meta: groupMeta(hk), cards: [], due: 0, total: 0 };
+          node.subFolders.push(node.subByKey[hk]);
+        }
+        node.subByKey[hk].cards.push(c);
+        node.subByKey[hk].total++;
+        if (st.dueNow) node.subByKey[hk].due++;
+      }
+    });
+    return MATH_BIG_FOLDERS.filter(b => !courseId || b.course === courseId).map(b => byBig[b.id]);
   }
   function gridGraphHTML(cards, curId) {
     return "";
@@ -9412,11 +9527,13 @@ const MathUI = (() => {
     opts = opts || {};
     if (!inited) init();
     let changed = false;
+    if (opts.course === "ma" || opts.course === "la") ui.course = opts.course;
     if (opts.scope) { ui.scope = validScope(opts.scope); changed = true; mapKey = null; }
     if (opts.map && MATH_DECK.some(c => groupKey(c) === opts.map)) mapKey = opts.map;
     if (opts.filter) { ui.filter = opts.filter; changed = true; }
     if (opts.mode && MODES.some(m => m.id === opts.mode) && ui.mode !== opts.mode) { ui.mode = opts.mode; sessions.clear(); sess = null; }
     if (changed) { forced = null; search = ""; const box = document.getElementById("m-search"); if (box) box.value = ""; }
+    if (opts.card && E.byId[opts.card]) ui.course = cardCourse(E.byId[opts.card]);
     saveUI();
     updateButtons();
     if (opts.card && E.byId[opts.card]) { openCard(opts.card, { fresh: !sessions.has(opts.card), fromBell: !!opts.fromBell }); return; }
@@ -9450,7 +9567,7 @@ const MathUI = (() => {
     show, refresh, onKey, sideMods, sideAct, openOptions: openModal, onKatex: refresh, updateStrip,
     onLeave: () => { closePops(); stopTimer(); },
     setView, setScope, setFilter, setMode, onSearch, clearSearch, quick,
-    view: () => ui.view, scopeLabel,
+    view: () => ui.view, scopeLabel, activeCourse, courseTitle, bigTree, cardBigId, cardCourse, cardInScope,
     scope: () => ui.scope, curId: () => (mapKey ? null : ui.cur), mapKey: () => mapKey, groups, groupMeta, cardStatus, openMap, studyGroup,
     reveal, grade, regrade, undo, next, prev, open, togglePeek, locateFocus,
     openRefPop, closeRefPop, openFromRef,
@@ -10496,10 +10613,11 @@ Core.register("fin", FinUI);
 const NavTree = (() => {
   const esc = Core.esc;
   const OPEN_KEY = "fsrs_tree_open";
-  const SUBJ = [["hub", "综", "综合"], ["math", "数", "数学"], ["en", "英", "英语"], ["pol", "政", "政治"], ["fin", "财", "财务"], ["health", "健", "健康"]];
+  const SUBJ = [["hub", "综", "综合"], ["ma", "析", "数学分析"], ["la", "代", "高等代数"], ["en", "英", "英语"], ["pol", "政", "政治"], ["fin", "财", "财务"], ["health", "健", "健康"]];
   const EN_MODS = [["A", "A 真词根"], ["B", "B 多义形近"], ["C", "C 微逻辑链"]];
   const FILTERS = [["all", "全部"], ["S3", "54%"], ["S2", "19%"], ["S1", "10%"], ["S0", "3%"], ["poly", "僻义"]];
-  let open = new Set(Core.load(OPEN_KEY, ["s:en"]) || []);
+  let open = new Set(Core.load(OPEN_KEY, ["s:ma", "s:en"]) || []);
+  if (open.has("s:math")) { open.delete("s:math"); open.add("s:ma"); }
   let query = "";
   let timer = null;
   let busy = false;
@@ -10603,14 +10721,27 @@ const NavTree = (() => {
     });
     return h;
   }
-  function mathHTML(cur) {
+  function mathHTML(cur, courseId) {
     let h = "";
     const curId = MathUI.curId(), mk = MathUI.mapKey(), sc = MathUI.scope();
-    MathUI.groups().forEach(g => {
-      const id = "m:g:" + g.key, isOpen = open.has(id);
-      h += folder({ id, d: 1, label: esc(g.meta.name), title: g.meta.name, meta: countMeta(g.due, g.total), isOpen, play: true, on: sc === g.key });
-      if (!isOpen) return;
-      g.cards.forEach(c => {
+    MathUI.bigTree(courseId).forEach(b => {
+      const bid = "m:b:" + b.id, bOpen = open.has(bid);
+      h += folder({ id: bid, d: 1, label: esc(b.name), title: b.name, meta: countMeta(b.due, b.total), isOpen: bOpen, play: b.total > 0, on: sc === "b:" + b.id });
+      if (!bOpen) return;
+      if (!b.subFolders.length && !b.directCards.length) {
+        h += `<div class="tr tr-leaf" style="--d:2"><span class="tr-main" style="cursor:default;color:var(--ink-3);font-size:13px">暂无卡片</span></div>`;
+        return;
+      }
+      b.subFolders.forEach(g => {
+        const gid = "m:g:" + g.key, gOpen = open.has(gid);
+        h += folder({ id: gid, d: 2, label: esc(g.meta.name), title: g.meta.name, meta: countMeta(g.due, g.total), isOpen: gOpen, play: true, on: sc === g.key });
+        if (!gOpen) return;
+        g.cards.forEach(c => {
+          const st = MathUI.cardStatus(c);
+          h += leaf({ id: c.id, d: 3, act: "card", dot: st.cls, label: `<span class="tr-tex">${Core.tex(c.title)}</span>`, title: `${Core.plain(c.title)} · ${st.text}`, cur: cur === "math" && !mk && curId === c.id });
+        });
+      });
+      b.directCards.forEach(c => {
         const st = MathUI.cardStatus(c);
         h += leaf({ id: c.id, d: 2, act: "card", dot: st.cls, label: `<span class="tr-tex">${Core.tex(c.title)}</span>`, title: `${Core.plain(c.title)} · ${st.text}`, cur: cur === "math" && !mk && curId === c.id });
       });
@@ -10624,24 +10755,32 @@ const NavTree = (() => {
   }
   function treeHTML() {
     const cur = Core.subject();
+    const actCourse = MathUI.activeCourse ? MathUI.activeCourse() : "ma";
     let h = "";
     SUBJ.forEach(([k, g, name]) => {
-      const info = Core.SUBJECTS[k] || {};
-      const exp = k === "en" || k === "math" || k === "fin";
+      const isMathCourse = (k === "ma" || k === "la");
+      const info = isMathCourse ? { glyph: g, name } : (Core.SUBJECTS[k] || {});
+      const exp = k === "en" || isMathCourse || k === "fin";
       const id = "s:" + k, isOpen = exp && open.has(id);
       let meta = { txt: "" };
       if (info.soon) meta = { txt: "即将接入" };
       else if (k === "hub") meta = hubMeta();
       else if (k === "fin") meta = finMeta();
       else if (k === "en") { const n = enDue().all; meta = n ? { txt: String(n), hot: true } : { txt: "" }; }
-      else if (k === "math") { const n = MathUI.groups().reduce((a, x) => a + x.due, 0); meta = n ? { txt: String(n), hot: true } : { txt: "" }; }
-      const play = isOpen && (k === "en" || k === "math");
-      const on = play && (k === "en" ? currentMod === "ALL" && currentPackFilter === "ALL" : MathUI.scope() === "all");
-      h += `<div class="tr tr-subj${cur === k ? " is-active" : ""}${info.soon ? " is-soon" : ""}${isOpen ? " is-open" : ""}${on ? " is-on" : ""}" style="--d:0">
+      else if (isMathCourse) {
+        const list = MathUI.bigTree(k);
+        const due = list.reduce((a, x) => a + x.due, 0);
+        const tot = list.reduce((a, x) => a + x.total, 0);
+        meta = due ? { txt: String(due), hot: true } : (tot ? { txt: String(tot) } : { txt: "" });
+      }
+      const play = isOpen && (k === "en" || isMathCourse);
+      const on = play && (k === "en" ? currentMod === "ALL" && currentPackFilter === "ALL" : (MathUI.scope() === "c:" + k || (MathUI.scope() === "all" && k === actCourse)));
+      const isActive = isMathCourse ? (cur === "math" && actCourse === k) : (cur === k);
+      h += `<div class="tr tr-subj${isActive ? " is-active" : ""}${info.soon ? " is-soon" : ""}${isOpen ? " is-open" : ""}${on ? " is-on" : ""}" style="--d:0">
         <button type="button" class="tr-main" data-act="${exp ? "subj" : "go"}" data-id="${k}"${exp ? ` aria-expanded="${isOpen}"` : ""}><span class="subj-glyph">${g}</span><span class="tr-label">${name}</span>${exp ? `<span class="tr-chev" aria-hidden="true"></span>` : ""}</button>
         ${play ? playBtn(id, on) : metaSpan(meta, "side-meta-" + k)}
       </div>`;
-      if (isOpen) h += k === "en" ? enHTML(cur) : k === "math" ? mathHTML(cur) : finHTML(cur);
+      if (isOpen) h += k === "en" ? enHTML(cur) : isMathCourse ? mathHTML(cur, k) : finHTML(cur);
     });
     return h;
   }
@@ -10693,9 +10832,15 @@ const NavTree = (() => {
       const pk = packById[wordByName[activeWord].p];
       if (pk) ["s:en", "en:m:" + pk.mod, "en:p:" + pk.id].forEach(x => open.add(x));
     } else if (cur === "math") {
-      open.add("s:math");
       const mk = MathUI.mapKey(), c = MathEngine.byId[MathUI.curId()];
-      if (mk) open.add("m:g:" + mk); else if (c) open.add("m:g:" + (c.hub || "H0"));
+      const courseId = c ? MathUI.cardCourse(c) : (MathUI.activeCourse ? MathUI.activeCourse() : "ma");
+      open.add("s:" + courseId);
+      if (c) {
+        open.add("m:b:" + MathUI.cardBigId(c));
+        open.add("m:g:" + (c.hub || "H0"));
+      } else if (mk) {
+        open.add("m:g:" + mk);
+      }
     } else if (cur === "fin") open.add("s:fin");
     saveOpen();
     render();
@@ -10712,9 +10857,12 @@ const NavTree = (() => {
   // ---------------------------------------------------------------- actions
   function study(id) {
     if (id === "s:en") { Core.go("en"); setEnglishScope("ALL", "ALL"); }
+    else if (id === "s:ma") Core.go("math", { course: "ma", scope: "c:ma" });
+    else if (id === "s:la") Core.go("math", { course: "la", scope: "c:la" });
     else if (id === "s:math") Core.go("math", { scope: "all" });
     else if (id.startsWith("en:m:")) { Core.go("en"); setEnglishScope(id.slice(5), "ALL"); }
     else if (id.startsWith("en:p:")) { const pk = packById[id.slice(5)]; if (!pk) return; Core.go("en"); setEnglishScope(pk.mod, pk.id); }
+    else if (id.startsWith("m:b:")) Core.go("math", { scope: "b:" + id.slice(4) });
     else if (id.startsWith("m:g:")) Core.go("math", { scope: id.slice(4) });
     closeSubjectNav();
     refresh(true);
@@ -10730,8 +10878,22 @@ const NavTree = (() => {
       render();
     } else if (act === "subj") {
       const sid = "s:" + id;
-      if (Core.subject() !== id) { open.add(sid); saveOpen(); Core.go(id, { keepNav: true }); }
-      else { if (open.has(sid)) open.delete(sid); else open.add(sid); saveOpen(); }
+      if (id === "ma" || id === "la") {
+        const curCourse = MathUI.activeCourse ? MathUI.activeCourse() : "ma";
+        if (Core.subject() !== "math" || curCourse !== id) {
+          open.add(sid);
+          saveOpen();
+          Core.go("math", { course: id, keepNav: true });
+        } else {
+          if (open.has(sid)) open.delete(sid); else open.add(sid);
+          saveOpen();
+        }
+      } else if (Core.subject() !== id) {
+        open.add(sid); saveOpen(); Core.go(id, { keepNav: true });
+      } else {
+        if (open.has(sid)) open.delete(sid); else open.add(sid);
+        saveOpen();
+      }
       render();
     } else if (act === "go") Core.go(id);
     else if (act === "filter") { if (typeof selectFilterOption === "function") selectFilterOption(id); render(); }
@@ -13307,4 +13469,46 @@ window.DailyReminder = DailyReminder;
     }
   } catch (e) {}
   Core.pullModules();
+
+  // ---------------------------------------------------------------- macOS 顶部菜单栏 DeadlineBar 实时同步钩子（仅本地 Mac 触发）
+  function syncDeadlineBar() {
+    if (location.protocol !== "file:" && location.hostname !== "localhost" && location.hostname !== "127.0.0.1") return;
+    try {
+      const learnedByChapter = {}, totalByChapter = {};
+      if (typeof MathUI !== "undefined" && MathUI.bigTree && typeof MathEngine !== "undefined") {
+        const nowTs = Date.now();
+        ["ma", "la"].forEach(course => {
+          MathUI.bigTree(course).forEach(b => {
+            totalByChapter[b.id] = b.total;
+            let learned = 0;
+            b.subFolders.forEach(g => g.cards.forEach(c => { if (!MathEngine.status(c, nowTs).isNew) learned++; }));
+            b.directCards.forEach(c => { if (!MathEngine.status(c, nowTs).isNew) learned++; });
+            learnedByChapter[b.id] = learned;
+          });
+        });
+      }
+      const enCompletedPass = {};
+      const rawSr = localStorage.getItem("kaoyan_en_speedrun_v1");
+      if (rawSr) {
+        const parsed = JSON.parse(rawSr);
+        const hist = (parsed && Array.isArray(parsed.history)) ? parsed.history : [];
+        ["G1", "G2", "G3"].forEach(g => {
+          const rec = hist.find(h => h && h.scopeKey === "STAGE:" + g && h.wordCount > 0);
+          if (rec) {
+            const miss = typeof rec.missedWords === "number" ? rec.missedWords : (rec.clicks || 0);
+            enCompletedPass[g] = Math.min(1, Math.max(0, miss / rec.wordCount));
+          }
+        });
+      }
+      fetch("http://127.0.0.1:19626/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ learnedByChapter, totalByChapter, enCompletedPass })
+      }).catch(() => {});
+    } catch (e) {}
+  }
+  window.__syncDeadlineBar = syncDeadlineBar;
+  setTimeout(syncDeadlineBar, 600);
+  setInterval(() => { if (document.visibilityState === "visible") syncDeadlineBar(); }, 8000);
+  document.addEventListener("click", () => { setTimeout(syncDeadlineBar, 250); }, { passive: true });
 })();
