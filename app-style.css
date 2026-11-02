@@ -47,7 +47,7 @@
   --font-word: "Literata", "Iowan Old Style", "Palatino Linotype", "Palatino", "Songti SC", "STSong", "Noto Serif SC", Georgia, serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --body-stroke: 0.18px;
-  --bold-ink: #9a3412;
+  --bold-ink: #234e9b;
   --bold-stroke: 0.38px;
   --content: 760px;
   /* aliases still read by inline styles inside the script */
@@ -2519,6 +2519,7 @@ button.cz:hover { background: color-mix(in srgb, var(--cz) 13%, transparent); }
 .m-line.m-l2-rom { --ml-pad: 3.45em; text-indent: -1.55em; margin-top: 4px; }
 /* Obsidian 学术讲义同款勃艮第棕红加粗 + 笔画增粗 */
 .m-stmt strong,
+.m-ext-tag strong,
 .m-ext-text strong,
 .m-p strong,
 .m-step-ans strong,
@@ -3367,7 +3368,7 @@ section.m-sec { display: flex; flex-direction: column; gap: 8px; }
   .ns-rows { padding: 4px 16px 14px; }
   .ns-row { grid-template-columns: 7.2em minmax(0, 1fr) 6.2em 3.2em; gap: 10px; }
   .ns-name small { display: none; }
-  .m-card .katex-display > .katex { font-size: 1em; }
+  .m-card .katex-display > .katex { font-size: 1.12em; }
   .ns-spark { display: none; }
   .ns-foot { padding: 12px 16px; }
   .h-tablewrap { margin: 0 16px 16px; }
